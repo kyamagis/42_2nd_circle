@@ -160,7 +160,6 @@ void	QuadraticEquation::PrintAns(std::string solutionStr)
 		{
 			std::cout << this->equation[i] << std::endl;
 		}
-		// ansStr += std::to_string(absCoefficient) + x + std::to_string(i);
 		std::ostringstream oss;
 		oss << std::defaultfloat << absCoefficient;
 		ansStr += oss.str() + x + std::to_string(i);
@@ -176,31 +175,26 @@ bool	QuadraticEquation::StoresCoefficients(const char *quadraticEquationStr, siz
 	double	sign = 1.0;
 	double	coefficient = 0.0;
 
-	// std::cout << &quadraticEquationStr[i] << std::endl;
 	for(; isblank(quadraticEquationStr[i]); ++i);
 	if (!this->StorSign(quadraticEquationStr, i, sign))
 	{
 		return false;
 	}
-	// std::cout << &quadraticEquationStr[i] << std::endl;
 	for(; isblank(quadraticEquationStr[i]); ++i);
 	if (!this->ToDouble(quadraticEquationStr, i, coefficient))
 	{
 		return false;
 	}
-	// std::cout << &quadraticEquationStr[i] << std::endl;
 	for(; isblank(quadraticEquationStr[i]); ++i);
 	if (!this->IsAsterisk(quadraticEquationStr, i))
 	{
 		return false;
 	}
-	// std::cout << &quadraticEquationStr[i] << std::endl;
 	for(; isblank(quadraticEquationStr[i]); ++i);
 	if (!this->StoreCoefficient(quadraticEquationStr, i, sign, coefficient))
 	{
 		return false;
 	}
-	// std::cout << &quadraticEquationStr[i] << std::endl;
 	for(; isblank(quadraticEquationStr[i]); ++i);
 	if (!this->DetectEqual(quadraticEquationStr, i))
 	{
