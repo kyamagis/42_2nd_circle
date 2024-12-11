@@ -4,6 +4,7 @@
  #include <ctype.h>
  #include <math.h>
  #include <string.h>
+ #include <iomanip> 
  
 QuadraticEquation::QuadraticEquation()
 {
@@ -64,10 +65,13 @@ void	QuadraticEquation::QuadraticEquationSolving(void)
 	double	twoA   = 2.0 * this->equation[2];
 	double	vertex = minusB / twoA;
 	std::string	solutionStr = "Discriminant is strictly ";
+	std::ostringstream oss;
+	
 
 	if (d == 0.0)
 	{
-		this->PrintAns(solutionStr + "0, the solution is: \n" + std::to_string(vertex));
+		oss << std::defaultfloat << vertex;
+		this->PrintAns(solutionStr + "0, the solution is: \n" + oss.str());
 	}
 	else if (0.0 < d)
 	{
@@ -82,8 +86,8 @@ void	QuadraticEquation::QuadraticEquationSolving(void)
 			minus = tmp;
 		}
 
-		this->PrintAns(solutionStr + "positive, the two solutions are: \n" 
-					+ std::to_string(plus) + "\n" + std::to_string(minus));
+		oss << std::defaultfloat << plus << "\n" << minus;
+		this->PrintAns(solutionStr + "positive, the two solutions are: \n" + oss.str());
 	}
 	else if (d < 0.0)
 	{
@@ -101,7 +105,9 @@ void	QuadraticEquation::LinearEquationSolving(void)
 {
 	double	ans = this->equation[0] / this->equation[1];
 	ans *= -1.0;
-	this->PrintAns("The solution degree: \n" + std::to_string(ans));
+	std::ostringstream oss;
+	oss << std::defaultfloat << ans;
+	this->PrintAns("The solution degree: \n" + oss.str());
 }
 
 void	QuadraticEquation::ConstantEquationSolving(void)
@@ -142,10 +148,14 @@ void	QuadraticEquation::PrintAns(std::string solutionStr)
 				ansStr += " + ";
 			}
 		}
-		ansStr += std::to_string(absCoefficient) + x + std::to_string(i);
+		// ansStr += std::to_string(absCoefficient) + x + std::to_string(i);
+		std::ostringstream oss;
+		oss << std::defaultfloat << absCoefficient;
+		ansStr += oss.str() + x + std::to_string(i);
 	}
 	ansStr += " = 0\nPolynomial degree: " + 
 			  std::to_string(polynomialDegree) + '\n';
+	std::cout << std::defaultfloat;
 	std::cout << ansStr << solutionStr << std::endl;
 }
 
