@@ -132,11 +132,19 @@ void	QuadraticEquation::PrintAns(std::string solutionStr)
 		polynomialDegree = i;
 		absCoefficient = abs(this->equation[i]);
 		
-		if (this->equation[i] < 0)
+		if (this->equation[i] < 0.0)
 		{
-			ansStr += " - ";
+			if (headFlg == true)
+			{
+				headFlg = false;
+				ansStr += " -";
+			}
+			else
+			{
+				ansStr += " - ";
+			}
 		}
-		else if (0 < this->equation[i])
+		else if (0.0 <= this->equation[i])
 		{
 			if (headFlg == true)
 			{
@@ -147,6 +155,10 @@ void	QuadraticEquation::PrintAns(std::string solutionStr)
 			{
 				ansStr += " + ";
 			}
+		}
+		else
+		{
+			std::cout << this->equation[i] << std::endl;
 		}
 		// ansStr += std::to_string(absCoefficient) + x + std::to_string(i);
 		std::ostringstream oss;
