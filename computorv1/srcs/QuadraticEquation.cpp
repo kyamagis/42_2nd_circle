@@ -311,7 +311,7 @@ bool	QuadraticEquation::DetectEqual(const char *quadraticEquationStr, size_t &i)
 			++i;
 			return true;
 		}
-		else if (this->sideFlg = RightSide)
+		else if (this->sideFlg == RightSide)
 		{
 			std::cerr << "err: double equal:" << &quadraticEquationStr[i] << std::endl;
 			return false;

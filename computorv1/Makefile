@@ -1,8 +1,8 @@
 NAME = computor
 # B_NAME = miniRT_bonus
 CXX = c++
-# CXXFLAGS = -Wall -Wextra -Werror -MMD -MP -g -fsanitize=address
-CXXFLAGS = -MMD -MP -g -fsanitize=address
+CXXFLAGS = -Wall -Wextra -Werror -MMD -MP -g -fsanitize=address
+# CXXFLAGS = -MMD -MP -g -fsanitize=address
 INCLUDE = -I ./includes/
 OBJDIR = ./obj
 SRCSDIR = ./srcs
