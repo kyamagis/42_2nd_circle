@@ -1,10 +1,14 @@
  #include "../includes/QuadraticEquation.hpp"
+ #include "../includes/Mysqrt.hpp"
 
  #include <iostream>
  #include <ctype.h>
- #include <math.h>
  #include <string.h>
- #include <iomanip> 
+ #include <iomanip>
+
+#ifdef DEBUG
+	#include <math.h>
+#endif
  
 QuadraticEquation::QuadraticEquation()
 {
@@ -75,7 +79,12 @@ void	QuadraticEquation::QuadraticEquationSolving(void)
 	}
 	else if (0.0 < d)
 	{
-		double	rootD = sqrt(d);
+		#ifdef DEBUG
+			double	rootD = sqrt(d);
+		#else
+			double	rootD = SqrtPureNewtonMethod(d, MAX_ACCURACY);
+		#endif
+		
 		double	plus  = vertex + rootD / twoA;
 		double	minus = vertex - rootD / twoA;
 
@@ -130,7 +139,14 @@ void	QuadraticEquation::PrintAns(std::string solutionStr)
 			continue;
 		}
 		polynomialDegree = i;
-		absCoefficient = abs(this->equation[i]);
+		if (0.0 <= this->equation[i])
+		{
+			absCoefficient = this->equation[i];
+		}
+		else if (this->equation[i] < 0.0)
+		{
+			absCoefficient = -1 *  this->equation[i];
+		}
 		
 		if (this->equation[i] < 0.0)
 		{
