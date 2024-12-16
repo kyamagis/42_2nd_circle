@@ -67,7 +67,11 @@ void	QuadraticEquation::Solution(void)
 void	QuadraticEquation::QuadraticEquationSolving(void)
 {
 	double	d      = this->Discriminant();
-	double	minusB = -1.0 * this->equation[1];
+	double	minusB = this->equation[1];
+	if (this->equation[1] != 0.0)
+	{
+		minusB *= -1.0;
+	}
 	double	twoA   = 2.0 * this->equation[2];
 	double	vertex = minusB / twoA;
 	std::string	solutionStr = "Discriminant is strictly ";
