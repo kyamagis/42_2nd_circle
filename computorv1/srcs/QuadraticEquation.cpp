@@ -1,10 +1,12 @@
- #include "../includes/QuadraticEquation.hpp"
- #include "../includes/Mysqrt.hpp"
+#include "../includes/QuadraticEquation.hpp"
+#include "../includes/Mysqrt.hpp"
+#include "../includes/Utils.hpp"
+#include "../includes/Solutions.hpp"
 
- #include <iostream>
- #include <ctype.h>
- #include <string.h>
- #include <iomanip>
+#include <iostream>
+#include <ctype.h>
+#include <string.h>
+#include <iomanip>
 
 #ifdef DEBUG
 	#include <math.h>
@@ -70,7 +72,6 @@ void	QuadraticEquation::QuadraticEquationSolving(void)
 	double	vertex = minusB / twoA;
 	std::string	solutionStr = "Discriminant is strictly ";
 	std::ostringstream oss;
-	
 
 	if (d == 0.0)
 	{
@@ -79,28 +80,43 @@ void	QuadraticEquation::QuadraticEquationSolving(void)
 	}
 	else if (0.0 < d)
 	{
+		double					rootD = SqrtPureNewtonMethod(d, MAX_ACCURACY);
+		std::array<double, 2>	solutionArray = QuadraticFormula(rootD, twoA, vertex);
+
+		oss << std::defaultfloat << solutionArray[0] << "\n" << solutionArray[1];
+	
+		this->PrintAns(solutionStr + "positive, the two real solutions are: \n" + oss.str());
+
 		#ifdef DEBUG
-			double	rootD = sqrt(d);
-		#else
-			double	rootD = SqrtPureNewtonMethod(d, MAX_ACCURACY);
+			rootD = sqrt(d);
+			solutionArray = QuadraticFormula(rootD, twoA, vertex);
+			oss.str("");
+			oss << std::defaultfloat << "sqrt solutions: \n"
+									 << solutionArray[0] << "\n" 
+									 << solutionArray[1];
+			std::cout << oss.str() << std::endl;
 		#endif
-		
-		double	plus  = vertex + rootD / twoA;
-		double	minus = vertex - rootD / twoA;
-
-		if (plus < minus)
-		{
-			double tmp = plus;
-			plus = minus;
-			minus = tmp;
-		}
-
-		oss << std::defaultfloat << plus << "\n" << minus;
-		this->PrintAns(solutionStr + "positive, the two solutions are: \n" + oss.str());
 	}
 	else if (d < 0.0)
 	{
-		this->PrintAns(solutionStr + "negative, solution is no real numer");
+		d *= -1.0;
+		double	rootD = SqrtPureNewtonMethod(d, MAX_ACCURACY);
+		double	halfWidth = rootD / twoA;
+
+		oss << std::defaultfloat << vertex << " + " << halfWidth << " * i " << "\n"
+								 << vertex << " - " << halfWidth << " * i ";							;
+
+		this->PrintAns(solutionStr + "negative, the two complex solutions are: \n" + oss.str());
+
+		#ifdef DEBUG
+			rootD = sqrt(d);
+			halfWidth = rootD / twoA;
+			oss.str("");
+			oss << std::defaultfloat << "sqrt solutions: \n" 
+									 << vertex << " + " << halfWidth << " * i " << "\n"
+									 << vertex << " - " << halfWidth << " * i ";
+			std::cout << oss.str() << std::endl;
+		#endif
 	}
 }
 
@@ -121,7 +137,12 @@ void	QuadraticEquation::LinearEquationSolving(void)
 
 void	QuadraticEquation::ConstantEquationSolving(void)
 {
-	this->PrintAns("I can't solve constant equation .");
+	if (this->equation[0] == 0.0)
+	{
+		this->PrintAns("The solution degree: \n0 = 0");
+		return;
+	}
+	this->PrintAns("The wrong equation.");
 }
 
 void	QuadraticEquation::PrintAns(std::string solutionStr)
@@ -139,14 +160,7 @@ void	QuadraticEquation::PrintAns(std::string solutionStr)
 			continue;
 		}
 		polynomialDegree = i;
-		if (0.0 <= this->equation[i])
-		{
-			absCoefficient = this->equation[i];
-		}
-		else if (this->equation[i] < 0.0)
-		{
-			absCoefficient = -1 *  this->equation[i];
-		}
+		absCoefficient = MyAbs(this->equation[i]);
 		
 		if (this->equation[i] < 0.0)
 		{

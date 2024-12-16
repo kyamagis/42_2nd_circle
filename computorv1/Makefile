@@ -10,7 +10,9 @@ SRCSDIR = ./srcs
 
 SRCS =	main.cpp \
 		QuadraticEquation.cpp \
-		Mysqrt.cpp
+		Mysqrt.cpp \
+		Utils.cpp \
+		Solutions.cpp
 
 B_SRCS =	
 
