@@ -209,6 +209,7 @@ bool	QuadraticEquation::StoresCoefficients(const char *quadraticEquationStr, siz
 	double	sign = 1.0;
 	double	coefficient = 0.0;
 
+	//std::istringstream iss;
 	for(; isblank(quadraticEquationStr[i]); ++i);
 	if (!this->StorSign(quadraticEquationStr, i, sign))
 	{
