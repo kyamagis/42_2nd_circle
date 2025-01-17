@@ -1,22 +1,27 @@
 #include "../includes/Print.hpp"
-#include "../includes/Coordinates.hpp"
-#include "../includes/ParseModFile.hpp"
+#include "../includes/TerrestrialSimulation.hpp"
+#include "../includes/Graphic.hpp"
+
+#define DEFAULT_FILE_NAME "./resources/demo1.mod1"
 
 int	main(int argc, char **argv)
 {
+	TerrestrialSimulation	TS;
+
 	switch (argc)
 	{
 		case 1:
+			if (TS.SimulationStart(argc, argv, DEFAULT_FILE_NAME) == false)
+			{
+				return EXIT_FAILURE;
+			}
 			return EXIT_SUCCESS;
 		case 2:
-			{std::deque<Coordinates> posDeque;
-			ParseModFile(argv[1], posDeque);
-			for (size_t i = 0; i < posDeque.size(); ++i)
+			if (TS.SimulationStart(argc, argv, argv[1]) == false)
 			{
-				std::cout << posDeque[i];
+				return EXIT_FAILURE;
 			}
 			return EXIT_SUCCESS;
-			}
 		default :
 			Print::Err("Arg is only 0 to 1");
 			return EXIT_FAILURE;

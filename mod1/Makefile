@@ -1,7 +1,8 @@
 NAME = mod1
 
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -MMD -MP -g -fsanitize=address
+CXXFLAGS = -Wall -Wextra -Werror -Wshadow -MMD -MP -g -fsanitize=address
+LIBS = -lglut -lGLU -lGL 
 DEBUGFLAGS = -g -DDEBUG
 
 INCLUDE = -I ./includes/
@@ -9,8 +10,11 @@ OBJDIR = ./obj
 SRCSDIR = ./srcs
 
 SRCS =	main.cpp \
-		Coordinates.cpp \
-		ParseModFile.cpp 
+		Vec.cpp \
+		ParseModFile.cpp \
+		TerrestrialSimulation.cpp \
+		Graphic.cpp \
+		RenderingAlgorithm.cpp \
 
 B_SRCS =	
 
@@ -19,9 +23,10 @@ B_OBJDIR = ./b_obj
 B_OBJS = $(addprefix $(B_OBJDIR)/, $(B_SRCS:.cpp=.o))
 
 all : $(NAME)
+	$(export) LIBGL_ALWAYS_INDIRECT=0
 
 $(NAME) : $(OBJDIR) $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) $(INLCUDE) -o $(NAME)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBS) $(INLCUDE) -o $(NAME)
 
 bonus: fclean $(B_NAME)
 
