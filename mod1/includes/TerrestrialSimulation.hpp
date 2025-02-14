@@ -5,11 +5,19 @@
 
 #include "./Vec.hpp"
 
+#define X 0
+#define Y 1
+#define Z 0
+#define IS_SPECIFIED 1
+#define TRUE 1
+#define FALSE 0
+
 class TerrestrialSimulation
 {
 	private:
-		std::deque<Vec> _vecDeque;
+		std::deque<Vec> _specificPoints;
 		uint32_t		_mapSize[2];
+		int32_t			***_threeDCoordinates;
 
 		
 	public:
@@ -20,7 +28,9 @@ class TerrestrialSimulation
 								char** argv, 
 								const std::string &fileName);
 		void	DecideMapSize();						
-		void	PrintVecDeque();
+		void	PrintSpecificPoints();
+
+		void	NewThreeDCoordinates();
 };
 
 

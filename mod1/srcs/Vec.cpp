@@ -17,6 +17,28 @@ Vec::~Vec()
 
 }
 
+bool	Vec::operator==(const Vec &vec) const
+{
+	return (this->x == vec.x) && 
+			(this->y == vec.y) && 
+			(this->z == vec.z);
+}
+
+Vec::Vec(const Vec &vec)
+{
+	*this = vec;
+}
+
+Vec&	Vec::operator=(const Vec &vec)
+{
+	if (this != &vec)
+	{
+		this->x = vec.x;
+		this->y = vec.y;
+		this->z = vec.z;
+	}
+	return *this;
+}
 
 std::ostream &operator<<(std::ostream &ostrm, const Vec &Vec)
 {

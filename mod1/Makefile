@@ -9,8 +9,12 @@ INCLUDE = -I ./includes/
 OBJDIR = ./obj
 SRCSDIR = ./srcs
 
+# SRCS = *.cpp
 SRCS =	main.cpp \
 		Vec.cpp \
+		Side.cpp \
+		Triangle.cpp \
+		DelaunayTriangulation.cpp \
 		ParseModFile.cpp \
 		TerrestrialSimulation.cpp \
 		Graphic.cpp \
@@ -22,8 +26,10 @@ OBJS = $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
 B_OBJDIR = ./b_obj
 B_OBJS = $(addprefix $(B_OBJDIR)/, $(B_SRCS:.cpp=.o))
 
+
+export LIBGL_ALWAYS_INDIRECT=0
+
 all : $(NAME)
-	$(export) LIBGL_ALWAYS_INDIRECT=0
 
 $(NAME) : $(OBJDIR) $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) $(LIBS) $(INLCUDE) -o $(NAME)

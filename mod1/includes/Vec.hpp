@@ -10,16 +10,20 @@
 class Vec
 {
 	private:
-		Vec();
 
 	public:
 		int32_t x;
 		int32_t y;
 		int32_t z;
 
+		Vec();
 		~Vec();
 
 		Vec(int32_t X, int32_t Y, int32_t Z);
+		Vec(const Vec &vec);
+
+		bool	operator==(const Vec &vec) const;
+		Vec&	operator=(const Vec &vec);
 };
 
 std::ostream &operator<<(std::ostream &ostrm, const Vec &Vec);

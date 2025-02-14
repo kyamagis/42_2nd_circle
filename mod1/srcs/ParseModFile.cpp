@@ -60,8 +60,42 @@ bool	ExtractNumber(const std::string &getLine,
 	return true;
 }
 
+void	insertionAndSort(std::deque<Vec> &specificPoints, 
+					  int32_t x, 
+					  int32_t y,
+					  int32_t z)
+{
+	if (specificPoints.size() == 0)
+	{
+		specificPoints.push_back(Vec(x, y, z));
+		return;
+	}
+
+	for (std::deque<Vec>::iterator	it = specificPoints.begin(); it < specificPoints.end(); ++it)
+	{
+		if (x < (it)->x)
+		{
+			specificPoints.insert(it, Vec(x, y, z));
+			return;
+		}
+		else if (x == (it)->x && y < (it)->y)
+		{
+			specificPoints.insert(it, Vec(x, y, z));
+			return;
+		}
+		else if (x == (it)->x && y == (it)->y)
+		{
+			return ;
+		}
+		else if (it == specificPoints.end() - 1)
+		{
+			specificPoints.insert(specificPoints.end(), Vec(x, y, z));
+		}
+	}
+}
+
 bool	StorePosition(const std::string &getLine, 
-					  std::deque<Vec> &vecDeque, 
+					  std::deque<Vec> &specificPoints, 
 					  const size_t line, 
 					  size_t &i)
 {
@@ -73,20 +107,28 @@ bool	StorePosition(const std::string &getLine,
 	{
 		return false;
 	}
+	if (x == 0)
+	{
+		return true;
+	}
 	if (ExtractNumber(getLine, line, i, y, ',') == false)
 	{
 		return false;
+	}
+	if (y == 0)
+	{
+		return true;
 	}
 	if (ExtractNumber(getLine, line, i, z, ')') == false)
 	{
 		return false;
 	}
-	vecDeque.push_back(Vec(x, y, z));
-
+	// specificPoints.push_back(Vec(x, y, z));
+	insertionAndSort(specificPoints, x, y, z);
 	return true;
 }
 
-bool	StoreVec(std::deque<Vec> &vecDeque, 
+bool	StoreVec(std::deque<Vec> &specificPoints, 
 						 const std::string &getLine, 
 						 const size_t line)
 {
@@ -100,7 +142,7 @@ bool	StoreVec(std::deque<Vec> &vecDeque,
 			return Print::Err(CreateFileErrorMessage("Except '('", line, i));
 		}
 		++i;
-		if (StorePosition(getLine, vecDeque, line, i) == false)
+		if (StorePosition(getLine, specificPoints, line, i) == false)
 		{
 			return false;
 		}
@@ -109,7 +151,7 @@ bool	StoreVec(std::deque<Vec> &vecDeque,
 	return true;
 }
 
-bool	ParseLines(std::ifstream &ifs, std::deque<Vec> &vecDeque)
+bool	ParseLines(std::ifstream &ifs, std::deque<Vec> &specificPoints)
 {
 	std::string	getLine;
 
@@ -117,7 +159,7 @@ bool	ParseLines(std::ifstream &ifs, std::deque<Vec> &vecDeque)
 
 	for (size_t line = 1; std::getline(ifs, getLine); ++line)
 	{
-		if (StoreVec(vecDeque, getLine, line) == false)
+		if (StoreVec(specificPoints, getLine, line) == false)
 		{
 			return false;
 		}
@@ -125,7 +167,7 @@ bool	ParseLines(std::ifstream &ifs, std::deque<Vec> &vecDeque)
 	return true;
 }
 
-bool	ParseModFile(const std::string &fileName, std::deque<Vec> &vecDeque)
+bool	ParseModFile(const std::string &fileName, std::deque<Vec> &specificPoints)
 {
 	std::ifstream	ifs;
 	bool			errorFlg;
@@ -135,7 +177,11 @@ bool	ParseModFile(const std::string &fileName, std::deque<Vec> &vecDeque)
 	{
 		return Print::Err("Error: mod1 file: Opne failure");
 	}
-	errorFlg = ParseLines(ifs, vecDeque);
+	errorFlg = ParseLines(ifs, specificPoints);
 	ifs.close();
+	for (size_t i = 0; i < specificPoints.size(); ++i)
+	{
+		std::cout << specificPoints[i] << std::endl;
+	}
 	return errorFlg;
 }

@@ -2,6 +2,6 @@
 # define PARSEMODFILE_HPP
 
 #include <deque>
-bool	ParseModFile(const std::string &fileName, std::deque<Vec> &vecDeque);
+bool	ParseModFile(const std::string &fileName, std::deque<Vec> &specificPoints);
 
 #endif

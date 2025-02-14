@@ -18,9 +18,8 @@ Graphic::Graphic(int argc, char** argv)
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_SINGLE);
-	glutInitWindowSize(400, 300);
-	glutInitWindowPosition(200, 200);
-
+	glutInitWindowSize(1000, 900);
+	glutInitWindowPosition(300, 50);
 
 	gWindowID = glutCreateWindow("mod1");
 	glutInitDisplayMode(GLUT_RGBA);
@@ -33,7 +32,6 @@ Graphic::~Graphic()
 {
 	Print::Out("des");
 }
-
 
 void	Graphic::GraphicLoop(void (*func)(void))
 {
