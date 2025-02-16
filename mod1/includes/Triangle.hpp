@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include "./Vec.hpp"
+#include "./Circle.hpp"
 
 
 class Triangle
@@ -14,11 +15,19 @@ class Triangle
 		Vec a;
 		Vec b;
 		Vec c;
+		
+		Circle	circumcircle;
+
+		bool	tempVertexFlg;
 
 		Triangle();
 		~Triangle();
 
-		Triangle(Vec A, Vec B, Vec C);
+		Triangle(Vec A, Vec B, Vec C, bool TempVertexFlg);
+		bool	IsInsideCircumcircle(double x, double y);
+		void	CalcCircumcircle();
+		double	CalcDistanceFromCenterSQ(double x, double y);
+
 
 		bool	InternalAndExternalJudgments(const Vec &point);
 

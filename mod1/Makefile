@@ -14,11 +14,12 @@ SRCS =	main.cpp \
 		Vec.cpp \
 		Side.cpp \
 		Triangle.cpp \
+		Circle.cpp \
 		DelaunayTriangulation.cpp \
 		ParseModFile.cpp \
 		TerrestrialSimulation.cpp \
 		Graphic.cpp \
-		RenderingAlgorithm.cpp \
+		MathUtils.cpp \
 
 B_SRCS =	
 

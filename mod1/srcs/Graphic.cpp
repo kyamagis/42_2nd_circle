@@ -1,9 +1,6 @@
 #include "../includes/Graphic.hpp"
 #include "../includes/Print.hpp"
 
-#include <GL/glut.h>
-#include <GL/freeglut.h>
-
 static int	gWindowID;
 
 // https://tokoik.github.io/opengl/libglut.html
@@ -13,12 +10,14 @@ Graphic::Graphic()
 	
 }
 
-Graphic::Graphic(int argc, char** argv)
+void keyboard(unsigned char key, int x, int y);
+
+Graphic::Graphic(int argc, char** argv, int	sizeX, int	sizeY)
 {
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_SINGLE);
-	glutInitWindowSize(1000, 900);
+	glutInitWindowSize(sizeX, sizeY);
 	glutInitWindowPosition(300, 50);
 
 	gWindowID = glutCreateWindow("mod1");
@@ -37,6 +36,11 @@ void	Graphic::GraphicLoop(void (*func)(void))
 {
 	glutDisplayFunc(func);
 	glutMainLoop();
+}
+
+void	Graphic::KeyboardFunc(void (*func)(unsigned char key, int x, int y))
+{
+	glutKeyboardFunc(func);
 }
 
 void keyboard(unsigned char key, int x, int y)

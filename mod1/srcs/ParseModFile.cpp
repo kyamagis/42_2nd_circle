@@ -179,9 +179,9 @@ bool	ParseModFile(const std::string &fileName, std::deque<Vec> &specificPoints)
 	}
 	errorFlg = ParseLines(ifs, specificPoints);
 	ifs.close();
-	for (size_t i = 0; i < specificPoints.size(); ++i)
-	{
-		std::cout << specificPoints[i] << std::endl;
-	}
+	// for (size_t i = 0; i < specificPoints.size(); ++i)
+	// {
+	// 	std::cout << specificPoints[i] << std::endl;
+	// }
 	return errorFlg;
 }

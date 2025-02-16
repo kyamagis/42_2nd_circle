@@ -44,6 +44,5 @@ std::ostream &operator<<(std::ostream &ostrm, const Vec &Vec)
 {
 	return ostrm << '(' << Vec.x << ", " 
 						<< Vec.y << ", "
-						<< Vec.z << ')' 
-						<< std::endl;
+						<< Vec.z << ')';
 }

@@ -54,3 +54,4 @@ void	IDW(int32_t ***&threeDCoordinates, const uint32_t mapSize[2])
 		}
 	}
 }
+

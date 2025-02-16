@@ -30,7 +30,6 @@ class TerrestrialSimulation
 		void	DecideMapSize();						
 		void	PrintSpecificPoints();
 
-		void	NewThreeDCoordinates();
 };
 
 
