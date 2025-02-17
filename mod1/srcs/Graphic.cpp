@@ -34,7 +34,7 @@ Graphic::Graphic(int argc, char** argv, int	sizeX, int	sizeY)
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
 	// glutInitDisplayMode(GLUT_SINGLE);
-	// glutInitDisplayMode(GLUT_RGBA);
+	glutInitDisplayMode(GLUT_RGBA);
 	glutInitWindowSize(sizeX, sizeY);
 	glutInitWindowPosition(300, 50);
 

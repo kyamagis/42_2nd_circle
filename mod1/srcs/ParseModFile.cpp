@@ -97,9 +97,7 @@ void	insertionAndSort(std::deque<Vec> &specificPoints,
 bool	StorePosition(const std::string &getLine, 
 					  std::deque<Vec> &specificPoints, 
 					  const size_t line, 
-					  size_t &i,
-					  int64_t &maxHeight, 
-					  int64_t &minHeight)
+					  size_t &i)
 {
 	int32_t	x = 0;
 	int32_t	y = 0;
@@ -128,30 +126,12 @@ bool	StorePosition(const std::string &getLine,
 	// specificPoints.push_back(Vec(x, y, z));
 	insertionAndSort(specificPoints, x, y, z);
 
-	if (i == 0)
-	{
-		maxHeight = z;
-		minHeight = z;
-	}
-	else
-	{
-		if (maxHeight < z)
-		{
-			maxHeight = z;
-		}
-		else if (z < minHeight)
-		{
-			minHeight = z;
-		}
-	}
-
 	return true;
 }
 
 bool	StoreVec(std::deque<Vec> &specificPoints, 
 						 const std::string &getLine, 
-						 const size_t line,
-						 int64_t &maxHeight, int64_t &minHeight)
+						 const size_t line)
 {
 	size_t	getLineLen = getLine.length();
 
@@ -163,7 +143,7 @@ bool	StoreVec(std::deque<Vec> &specificPoints,
 			return Print::Err(CreateFileErrorMessage("Except '('", line, i));
 		}
 		++i;
-		if (StorePosition(getLine, specificPoints, line, i, maxHeight, minHeight) == false)
+		if (StorePosition(getLine, specificPoints, line, i) == false)
 		{
 			return false;
 		}
@@ -172,8 +152,7 @@ bool	StoreVec(std::deque<Vec> &specificPoints,
 	return true;
 }
 
-bool	ParseLines(std::ifstream &ifs, std::deque<Vec> &specificPoints,
-				   int64_t &maxHeight, int64_t &minHeight)
+bool	ParseLines(std::ifstream &ifs, std::deque<Vec> &specificPoints)
 {
 	std::string	getLine;
 
@@ -181,7 +160,7 @@ bool	ParseLines(std::ifstream &ifs, std::deque<Vec> &specificPoints,
 
 	for (size_t line = 1; std::getline(ifs, getLine); ++line)
 	{
-		if (StoreVec(specificPoints, getLine, line, maxHeight, minHeight) == false)
+		if (StoreVec(specificPoints, getLine, line) == false)
 		{
 			return false;
 		}
@@ -189,8 +168,7 @@ bool	ParseLines(std::ifstream &ifs, std::deque<Vec> &specificPoints,
 	return true;
 }
 
-bool	ParseModFile(const std::string &fileName, std::deque<Vec> &specificPoints, 
-					 int64_t &maxHeight, int64_t &minHeight)
+bool	ParseModFile(const std::string &fileName, std::deque<Vec> &specificPoints)
 {
 	std::ifstream	ifs;
 	bool			errorFlg;
@@ -200,7 +178,7 @@ bool	ParseModFile(const std::string &fileName, std::deque<Vec> &specificPoints,
 	{
 		return Print::Err("Error: mod1 file: Opne failure");
 	}
-	errorFlg = ParseLines(ifs, specificPoints, maxHeight, minHeight);
+	errorFlg = ParseLines(ifs, specificPoints);
 	ifs.close();
 	for (size_t i = 0; i < specificPoints.size(); ++i)
 	{

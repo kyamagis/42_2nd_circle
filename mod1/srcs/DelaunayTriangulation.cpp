@@ -210,33 +210,31 @@ void	DT::_MakeMap(int64_t **map)
 	}
 }
 
-void	DT::Calculation(int64_t **map)
+void	DT::Calculation(int64_t **map, int64_t &maxHeight, int64_t &minHeight)
 {
-	size_t	size = this->_specificPoints.size();
-
-	// i is 3, because (0,0,0) _tempVertexB, and _tempVertexC is top of this->_specificPoints
-	for (size_t	i = 3; i < size; ++i)
-	{
-		this->_SegmentTriangles(i);
-		std::cout << std::fixed << std::setprecision(1) 
-				  << double(i) / this->_specificPoints.size() * 100
-				  << " %\r" << std::flush;
-	}
-
-	std::cout <<  std::endl << "Triangulation Done" << std::endl;
-
-	this->_EraseTempTriangles();
+	this->Calculation(maxHeight, minHeight);
 
 	this->_MakeMap(map);
 }
 
-std::deque<Triangle>	DT::Calculation(void)
+std::deque<Triangle>	DT::Calculation(int64_t &maxHeight, int64_t &minHeight)
 {
 	size_t	size = this->_specificPoints.size();
+
+	maxHeight = this->_specificPoints[0].z;
+	minHeight = maxHeight;
 
 	// i is 3, because (0,0,0) _tempVertexB, and _tempVertexC is top of this->_specificPoints
 	for (size_t	i = 3; i < size; ++i)
 	{
+		if (maxHeight < this->_specificPoints[i].z)
+		{
+			maxHeight = this->_specificPoints[i].z;
+		}
+		else if (this->_specificPoints[i].z < minHeight)
+		{
+			minHeight = this->_specificPoints[i].z;
+		}
 		this->_SegmentTriangles(i);
 		std::cout <<std::fixed << std::setprecision(1)
 				  << double(i) / this->_specificPoints.size() * 100

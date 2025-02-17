@@ -26,7 +26,7 @@ typedef struct s_data
 	std::deque<Triangle>	origenTs;
 	int64_t	maxHeight;
 	int64_t	minHeight;
-	int64_t	midHeight;
+	double	midHeight;
 	double	shrinkageRatioX;
 	double	shrinkageRatioY;
 	double	radX;
@@ -85,7 +85,7 @@ void	Vertex(Vec &vertex)
 
 	double	coordinateX = vertex.x / double(g_data.mapSize[X]);
 	double	coordinateY =  - 1.0 * (vertex.y / double(g_data.mapSize[Y]));
-	double	coordinateZ = vertex.z / g_data.maxHeight;
+	double	coordinateZ = vertex.z / double(g_data.maxHeight);
 
 	glVertex3f(coordinateX * g_data.scaling, 
 			   coordinateY * g_data.scaling, 
@@ -151,10 +151,7 @@ void drawCircle(const Triangle &t, int num_segments)
 
 void	RenderingAlgorithm()
 {
-	// std::cout << "g_data.radY " << g_data.radY++ << std::endl;
-	 // Zバッファーを有効化
-
-	// glClear(GL_COLOR_BUFFER_BIT);
+	std::cout << "RenderingAlgorithm " << g_data.radY++ << std::endl;
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
 		// glColor3f(1.0, 0.0, 0.0);
@@ -187,17 +184,11 @@ void	RenderingAlgorithm()
 					g_data.origenTs[i].a.z,
 					g_data.origenTs[i].b.z,
 					g_data.origenTs[i].c.z);
-		// drawCircle(g_data.ts[i].circumcircle.x, 
-		// 	g_data.ts[i].circumcircle.y, 
-		// 	g_data.ts[i].circumcircle.r, 
-		// 	100);
 		if (g_data.circleFlg == true)
 		{
 			drawCircle(g_data.ts[i], 100);
 		}
 	}
-	glutSwapBuffers();
-	glEnd();
 	glFlush();
 }
 
@@ -269,6 +260,7 @@ void	OMoveToMapCenter(std::deque<Triangle> &ts)
 
 		ts[i].circumcircle.x -= g_data.halfMapsize[X];
 		ts[i].circumcircle.y -= g_data.halfMapsize[Y];
+
 	}
 }
 
@@ -276,27 +268,28 @@ bool	TerrestrialSimulation::SimulationStart(int argc,
 											   char** argv, 
 											   const std::string &fileName)
 {
-	int64_t	maxHeight;
-	int64_t	minHeight;
-
-	if (ParseModFile(fileName, this->_specificPoints, maxHeight, minHeight) == false)
+	if (ParseModFile(fileName, this->_specificPoints) == false)
 	{
 		return false;
 	}
 	this->DecideMapSize();
-
+	// std::cout << maxHeight << std::endl;
 	DT	dT(this->_specificPoints, this->_mapSize);
-	int64_t **map = new int64_t*[this->_mapSize[X]];
+	// int64_t **map = new int64_t*[this->_mapSize[X]];
 
-	for (size_t	i = 0; i < this->_mapSize[X]; ++i)
-	{
-		map[i] = new int64_t[this->_mapSize[Y]];
-	}
+	// for (size_t	i = 0; i < this->_mapSize[X]; ++i)
+	// {
+	// 	map[i] = new int64_t[this->_mapSize[Y]];
+	// }
 
 	// dT.Calculation(map);
 
-	g_data.map = map;
-	g_data.ts = dT.Calculation();
+	// g_data.map = map;
+	
+	int64_t	maxHeight = 0;
+	int64_t	minHeight = 0;
+
+	g_data.ts = dT.Calculation(maxHeight, minHeight);
 	
 	g_data.mapSize[X] = this->_mapSize[X];
 	g_data.mapSize[Y] = this->_mapSize[Y];
@@ -319,10 +312,8 @@ bool	TerrestrialSimulation::SimulationStart(int argc,
 	g_data.gWindowID = g.gWindowID;
 	OMoveToMapCenter(g_data.ts);
 	g_data.origenTs = g_data.ts;
-	g.KeyboardFunc(keyboard);
-	glutDisplayFunc(RenderingAlgorithm);
-	glutMainLoop();
-	// g.GraphicLoop(RenderingAlgorithm);
+	g.KeyboardFunc(keyboard);;
+	g.GraphicLoop(RenderingAlgorithm);
 
 	// this->PrintSpecificPoints();
 	return true;
