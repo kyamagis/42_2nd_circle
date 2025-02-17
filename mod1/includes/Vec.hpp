@@ -12,9 +12,9 @@ class Vec
 	private:
 
 	public:
-		int32_t x;
-		int32_t y;
-		int32_t z;
+		double x;
+		double y;
+		double z;
 
 		Vec();
 		~Vec();

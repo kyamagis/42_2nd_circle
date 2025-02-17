@@ -57,12 +57,12 @@ void	z_rotation(Vec &vertex, double rad, double x, double y)
 
 void	x_rotation(Vec &vertex, double rad, double y, double z)
 {
-	vertex.y = y * cos(rad) - z * sin(rad);
-	vertex.z = -y * sin(rad) + z * cos(rad);
+	vertex.y =  y * cos(rad) - z * sin(rad);
+	vertex.z =  y * sin(rad) + z * cos(rad);
 }
 
 void	y_rotation(Vec &vertex, double rad, double x, double z)
 {
-	vertex.x = x * cos(rad) + z * sin(rad);
+	vertex.x =  x * cos(rad) + z * sin(rad);
 	vertex.z = -x * sin(rad) + z * cos(rad);
 }

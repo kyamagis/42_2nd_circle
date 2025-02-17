@@ -32,12 +32,13 @@ Graphic::Graphic(int argc, char** argv, int	sizeX, int	sizeY)
 {
 	glutInit(&argc, argv);
 
-	glutInitDisplayMode(GLUT_SINGLE);
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
+	// glutInitDisplayMode(GLUT_SINGLE);
+	// glutInitDisplayMode(GLUT_RGBA);
 	glutInitWindowSize(sizeX, sizeY);
 	glutInitWindowPosition(300, 50);
 
 	g_gWindowID = glutCreateWindow("mod1");
-	glutInitDisplayMode(GLUT_RGBA);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glutKeyboardFunc(defaultkeyboard);
 	glutWMCloseFunc(onWindowClose);

@@ -1,7 +1,6 @@
 #include "../includes/TerrestrialSimulation.hpp"
 #include "../includes/ParseModFile.hpp"
 #include "../includes/Graphic.hpp"
-// #include "../includes/RenderingAlgorithm.hpp"
 #include "../includes/Print.hpp"
 #include "../includes/DelaunayTriangulation.hpp"
 #include "../includes/MathUtils.hpp"
@@ -12,8 +11,7 @@
 #define SCREEN_SIZE_X 1000
 #define SCREEN_SIZE_Y 1000
 
-#define SCALING 0.3
-
+#define SCALING 0.5
 
 #include <string.h>
 #include <GL/glut.h>
@@ -23,17 +21,24 @@ typedef struct s_data
 {
 	int64_t 				**map;
 	uint32_t				mapSize[2];
-	std::deque<Triangle>	t;
+	double					halfMapsize[2];
+	std::deque<Triangle>	ts;
+	std::deque<Triangle>	origenTs;
 	int64_t	maxHeight;
 	int64_t	minHeight;
+	int64_t	midHeight;
+	double	shrinkageRatioX;
+	double	shrinkageRatioY;
 	double	radX;
 	double	radY;
 	double	radZ;
 	double	scaling;
+	size_t	i;
 	Vec		rotatedVertex;
+	bool	circleFlg;
 	int		gWindowID;
+	unsigned char key;
 } t_data;
-
 
 static t_data g_data;
 
@@ -47,79 +52,112 @@ TerrestrialSimulation::~TerrestrialSimulation()
 
 }
 
-void	Vertex(Vec vertex)
+void	Vertex(Vec &vertex)
 {
+	switch (g_data.key)
+	{
+		case 'i':
+			z_rotation(vertex, g_data.radZ , vertex.x, vertex.y);
+			x_rotation(vertex, g_data.radX , vertex.y, vertex.z);
+			break;
+		case 'x':
+			x_rotation(vertex, M_PI / 12.0, vertex.y, vertex.z);
+			break;
+		case 'X':
+			x_rotation(vertex, -M_PI / 12.0, vertex.y, vertex.z);
+			break;
+		case 'y':
+			y_rotation(vertex, M_PI / 12, vertex.x, vertex.z);
+			break;
+		case 'Y':
+			y_rotation(vertex, -M_PI / 12, vertex.x, vertex.z);
+			break;
+		case 'z':
+			z_rotation(vertex, M_PI / 12, vertex.x, vertex.y);
+			break;
+		case 'Z':
+			z_rotation(vertex, -M_PI / 12, vertex.x, vertex.y);
+			break;
+		case 'c':
+		default:
+			break;
+	}
 
-	z_rotation(vertex, g_data.radZ, vertex.x, vertex.y);
-	x_rotation(vertex, g_data.radX, vertex.y, vertex.z);
-	y_rotation(vertex, g_data.radY, vertex.x, vertex.z);
+	double	coordinateX = vertex.x / double(g_data.mapSize[X]);
+	double	coordinateY =  - 1.0 * (vertex.y / double(g_data.mapSize[Y]));
+	double	coordinateZ = vertex.z / g_data.maxHeight;
 
-	double	shrinkageRatioX = 1.0 / g_data.mapSize[X] * 2;
-	double	shrinkageRatioY = 1.0 / g_data.mapSize[Y] * 2;
-
-	double	coordinateX = vertex.x * shrinkageRatioX - 1.0;
-	double	coordinateY =  - 1 * (vertex.y * shrinkageRatioY - 1.0);
-
-	glVertex2f(coordinateX * g_data.scaling , coordinateY * g_data.scaling);
-	// std::cout <<ver.x * shrinkageRatioX - 1 << ", " << ver.y * shrinkageRatioY - 1 << std::endl;
+	glVertex3f(coordinateX * g_data.scaling, 
+			   coordinateY * g_data.scaling, 
+			   -coordinateZ * g_data.scaling);
 }
 
-void	drawTriangle(const Triangle &triangle)
+void	triangleGradation(const int64_t height)
 {
-	glBegin(GL_LINE_LOOP);
-	glColor3d(1.0, 0.0, 0.0);
+	// double	ratio, ratio2;
+	double	ratio;
 
-	Vertex(triangle.a);
-	Vertex(triangle.b);
-	Vertex(triangle.c);
+	if (height <= g_data.midHeight)
+	{
+		ratio = height - g_data.minHeight / (g_data.midHeight - g_data.minHeight);
+		glColor3f(0.0, ratio, 1 - ratio);
+	}
+	else
+	{
+		ratio = height - g_data.midHeight / (g_data.maxHeight - g_data.midHeight);
+		glColor3f(ratio, 1 - ratio, 0.0);
+	}
+}
+
+void	drawTriangle(Triangle &t, 
+					const int64_t heightA, 
+					const int64_t heightB, 
+					const int64_t heightC)
+{
+	// glBegin(GL_LINE_LOOP);
+	glShadeModel(GL_SMOOTH);
+	glBegin(GL_TRIANGLES);
+
+	triangleGradation(heightA);
+	Vertex(t.a);
+	triangleGradation(heightB);
+	Vertex(t.b);
+	triangleGradation(heightC);
+	Vertex(t.c);
 	glEnd();
 }
 
 void drawCircle(double cx, double cy, double r, int num_segments) {
 	glBegin(GL_LINE_LOOP); // 円を線で描く
-	glColor3d(0.0, 1.0, 0.0);
+	glColor3f(0.0, 1.0, 0.0);
 
-	double	shrinkageRatioX = 1.0 / g_data.mapSize[X] * 2.0;
-	double	shrinkageRatioY = 1.0 / g_data.mapSize[Y] * 2.0;
-
-	cx = cx * shrinkageRatioX - 1.0;
-	cy =  - 1 * (cy * shrinkageRatioY - 1.0);
-	r = sqrt(r);
-	r *= shrinkageRatioX;
-
-    for (int i = 0; i < num_segments; i++) {
-        double theta = 2.0 * M_PI * double(i) / double(num_segments); // 角度
-        double x = r * cos(theta); // X座標
-        double y = r * sin(theta); // Y座標
-        glVertex2d((cx + x) * g_data.scaling, (cy + y) * g_data.scaling);
-    }
-    glEnd();
-}
-
-void drawCircle(const Triangle &t, int num_segments) {
-    glBegin(GL_LINE_LOOP); // 円を線で描く
-	glColor3d(0.0, 1.0, 0.0);
-
-	double	shrinkageRatioX = 1.0 / g_data.mapSize[X] * 2.0;
-	double	shrinkageRatioY = 1.0 / g_data.mapSize[Y] * 2.0;
-
-	double	cx = double(t.circumcircle.x) * shrinkageRatioX - 1.0;
-	double	cy = - 1.0 * (double(t.circumcircle.y) * shrinkageRatioY - 1.0);
-	double	r = sqrt(t.circumcircle.r) * shrinkageRatioX;
+	cx = double(cx) / g_data.mapSize[X];
+	cy = - 1.0 * (double(cy) / g_data.mapSize[Y]);
+	r = sqrt(r) / g_data.mapSize[X];
 
 	for (int i = 0; i < num_segments; i++) {
-        double theta = 2.0 * M_PI * double(i) / double(num_segments); // 角度
-        double x = r * cos(theta); // X座標
-        double y = r * sin(theta); // Y座標
-        glVertex2d((cx + x) * g_data.scaling, (cy + y) * g_data.scaling);
-    }
-    glEnd();
+		double theta = 2.0 * M_PI * double(i) / double(num_segments); // 角度
+		double x = r * cos(theta); // X座標
+		double y = r * sin(theta); // Y座標
+		glVertex2d((cx + x) * g_data.scaling, (cy + y) * g_data.scaling);
+	}
+	glEnd();
+}
+
+void drawCircle(const Triangle &t, int num_segments) 
+{
+	drawCircle(t.circumcircle.x, t.circumcircle.y, t.circumcircle.r, num_segments);
 }
 
 void	RenderingAlgorithm()
 {
-	glClear(GL_COLOR_BUFFER_BIT);
-	// glColor3d(1.0, 0.0, 0.0);
+	// std::cout << "g_data.radY " << g_data.radY++ << std::endl;
+	 // Zバッファーを有効化
+
+	// glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
+		// glColor3f(1.0, 0.0, 0.0);
 	// glVertex2d(-0.9, -0.9);
 	// glVertex2d(0.9, -0.9);
 	// glVertex2d(0.9, 0.9);
@@ -139,17 +177,26 @@ void	RenderingAlgorithm()
 
 	// 	std::cout << x << std::endl;
 	// }
-	
-	
-	for (size_t	i = 0; i < g_data.t.size(); ++i)
+	if (g_data.ts.size() < g_data.i)
 	{
-		drawTriangle(g_data.t[i]);
-		// drawCircle(g_data.t[i].circumcircle.x, 
-		// 	g_data.t[i].circumcircle.y, 
-		// 	g_data.t[i].circumcircle.r, 
-		// 	100);
-		// drawCircle(g_data.t[i], 100);
+		g_data.i = g_data.ts.size();
 	}
+	for (size_t	i = 0; i < g_data.i; ++i)
+	{
+		drawTriangle(g_data.ts[i], 
+					g_data.origenTs[i].a.z,
+					g_data.origenTs[i].b.z,
+					g_data.origenTs[i].c.z);
+		// drawCircle(g_data.ts[i].circumcircle.x, 
+		// 	g_data.ts[i].circumcircle.y, 
+		// 	g_data.ts[i].circumcircle.r, 
+		// 	100);
+		if (g_data.circleFlg == true)
+		{
+			drawCircle(g_data.ts[i], 100);
+		}
+	}
+	glutSwapBuffers();
 	glEnd();
 	glFlush();
 }
@@ -158,6 +205,9 @@ void keyboard(unsigned char key, int x, int y)
 {
 	(void)x;
 	(void)y;
+
+	g_data.circleFlg = false;
+	g_data.key = key;
 
 	switch (key)
 	{
@@ -168,25 +218,57 @@ void keyboard(unsigned char key, int x, int y)
 			std::exit(EXIT_SUCCESS);
 			return;
 		case 'x':
-			g_data.radX += M_PI / 12;
-			glutPostRedisplay();
-			return ;
+		case 'X':
 		case 'y':
-			g_data.radY += M_PI / 12;
-			glutPostRedisplay();
-			return ;
+		case 'Y':
 		case 'z':
-			g_data.radZ += M_PI / 12;
+		case 'Z':
 			glutPostRedisplay();
 			return ;
+		case 'i':
 		case 't':
-			g_data.radX = 0;
-			g_data.radY = 0;
-			g_data.radZ = 0;
+			g_data.ts = g_data.origenTs;
+			glutPostRedisplay();
+			return ;
+		case 'c':
+			g_data.ts = g_data.origenTs;
+			g_data.circleFlg = true;
+			glutPostRedisplay();
+			return ;
+		case 'n':
+			++g_data.i;
+			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
+			glutPostRedisplay();
+			return ;
+		case 'p':
+			if (0 < g_data.i)
+			{
+				--g_data.i;
+			}
+			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
 			glutPostRedisplay();
 			return ;
 		default:
 			break;
+	}
+}
+
+void	OMoveToMapCenter(std::deque<Triangle> &ts)
+{
+	for (size_t	i = 0; i < ts.size(); ++i)
+	{
+		ts[i].a.x -= g_data.halfMapsize[X];
+		ts[i].a.y -= g_data.halfMapsize[Y];
+		ts[i].a.z -= g_data.midHeight / 2.0;
+		ts[i].b.x -= g_data.halfMapsize[X];
+		ts[i].b.y -= g_data.halfMapsize[Y];
+		ts[i].b.z -= g_data.midHeight / 2.0;
+		ts[i].c.x -= g_data.halfMapsize[X];
+		ts[i].c.y -= g_data.halfMapsize[Y];
+		ts[i].c.z -= g_data.midHeight / 2.0;
+
+		ts[i].circumcircle.x -= g_data.halfMapsize[X];
+		ts[i].circumcircle.y -= g_data.halfMapsize[Y];
 	}
 }
 
@@ -214,20 +296,33 @@ bool	TerrestrialSimulation::SimulationStart(int argc,
 	// dT.Calculation(map);
 
 	g_data.map = map;
-	g_data.t = dT.Calculation();
+	g_data.ts = dT.Calculation();
+	
 	g_data.mapSize[X] = this->_mapSize[X];
 	g_data.mapSize[Y] = this->_mapSize[Y];
+	g_data.halfMapsize[X] = this->_mapSize[X] / 2.0;
+	g_data.halfMapsize[Y] = this->_mapSize[Y] / 2.0;
 	g_data.maxHeight = maxHeight;
 	g_data.minHeight = minHeight;
-	g_data.radX = asin(sqrt(2) / sqrt(3));
+	g_data.midHeight = (maxHeight + minHeight) / 2.0;
+	g_data.shrinkageRatioX = 1.0 / g_data.mapSize[X] * 2.0;
+	g_data.shrinkageRatioY = 1.0 / g_data.mapSize[Y] * 2.0;
+	g_data.radX = M_PI / 12.0 * 5.0;
 	g_data.radY = 0;
 	g_data.radZ = M_PI_4;
+	g_data.i = g_data.ts.size();
 	g_data.scaling = SCALING;
+	g_data.circleFlg = false;
+	g_data.key = 'i';
 
 	Graphic g = Graphic(argc, argv, SCREEN_SIZE_X, SCREEN_SIZE_Y);
 	g_data.gWindowID = g.gWindowID;
+	OMoveToMapCenter(g_data.ts);
+	g_data.origenTs = g_data.ts;
 	g.KeyboardFunc(keyboard);
-	g.GraphicLoop(RenderingAlgorithm);
+	glutDisplayFunc(RenderingAlgorithm);
+	glutMainLoop();
+	// g.GraphicLoop(RenderingAlgorithm);
 
 	// this->PrintSpecificPoints();
 	return true;
