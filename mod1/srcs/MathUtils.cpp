@@ -48,3 +48,21 @@ double	cos_angle(const Vec &a, const Vec &point, const Vec &b)
 	return dot_product(a, point, b) 
 			/ (magnitude(a.x, a.y, point.x, point.y) * magnitude(b.x, b.y, point.x, point.y));
 }
+
+void	z_rotation(Vec &vertex, double rad, double x, double y)
+{
+	vertex.x = x * cos(rad) - y * sin(rad);
+	vertex.y = x * sin(rad) + y * cos(rad);
+}
+
+void	x_rotation(Vec &vertex, double rad, double y, double z)
+{
+	vertex.y = y * cos(rad) - z * sin(rad);
+	vertex.z = -y * sin(rad) + z * cos(rad);
+}
+
+void	y_rotation(Vec &vertex, double rad, double x, double z)
+{
+	vertex.x = x * cos(rad) + z * sin(rad);
+	vertex.z = -x * sin(rad) + z * cos(rad);
+}

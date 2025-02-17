@@ -14,11 +14,14 @@ DT::DT()
 DT::DT(const std::deque<Vec> &specificPoints, 
 	   const uint32_t mapSize[2]): _specificPoints(specificPoints)
 {
-	this->_tempVertexB = Vec(2 * mapSize[X], 0, 0);
-	this->_tempVertexC = Vec(0, 2 * mapSize[Y], 0);
+	this->_mapSize[X] = mapSize[X];
+	this->_mapSize[Y] = mapSize[Y];
 
-	this->AddEndPoints(mapSize);
-	this->MakeSuperTriangle();
+	this->_tempVertexB = Vec(2 * this->_mapSize[X], 0, 0);
+	this->_tempVertexC = Vec(0, 2 * this->_mapSize[Y], 0);
+
+	this->_AddEndPoints();
+	this->_MakeSuperTriangle();
 }
 
 DT::~DT()
@@ -26,7 +29,7 @@ DT::~DT()
 
 }
 
-void	DT::MakeSuperTriangle()
+void	DT::_MakeSuperTriangle()
 {
 	Vec	o(Vec(0, 0, 0));
 	this->_triangles.push_back(Triangle(o, 
@@ -39,19 +42,19 @@ void	DT::MakeSuperTriangle()
 	this->_specificPoints.push_front(this->_tempVertexC);
 }
 
-void	DT::AddEndPoints(const uint32_t mapSize[2])
+void	DT::_AddEndPoints()
 {
-	for (uint32_t x = 0; x < mapSize[X]; ++x)
+	for (uint32_t x = 0; x < this->_mapSize[X]; ++x)
 	{
-		if (x == 0 || x == mapSize[X] - 1)
+		if (x == 0 || x == this->_mapSize[X] - 1)
 		{
-			for (uint32_t y = 0; y < mapSize[Y]; ++y)
+			for (uint32_t y = 0; y < this->_mapSize[Y]; ++y)
 			{
 				if (x == 0 && y == 0)
 				{
 					continue;
 				}
-				if (y % OMMIT == 0 || y + 1 ==  mapSize[Y])
+				if (y % OMMIT == 0 || y + 1 ==  this->_mapSize[Y])
 				{
 					this->_specificPoints.push_back(Vec(x, y, 0));
 				}
@@ -60,12 +63,12 @@ void	DT::AddEndPoints(const uint32_t mapSize[2])
 		else if (x % OMMIT == 0)
 		{
 			this->_specificPoints.push_back(Vec(x, 0, 0));
-			this->_specificPoints.push_back(Vec(x, mapSize[Y] - 1, 0));
+			this->_specificPoints.push_back(Vec(x, this->_mapSize[Y] - 1, 0));
 		}
 	}
 }
 
-bool	DT::HaveATempVertex(const Vec &a, const Vec &b, const Vec &c)
+bool	DT::_HaveATempVertex(const Vec &a, const Vec &b, const Vec &c)
 {
 	if (a == this->_tempVertexB || 
 		a == this->_tempVertexC)
@@ -85,13 +88,13 @@ bool	DT::HaveATempVertex(const Vec &a, const Vec &b, const Vec &c)
 	return false;
 }
 
-void	DT::AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
+void	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 {
 	if (cross_product(a, b, this->_specificPoints[idx]) == 0)
 	{
 		return ;
 	}
-	bool	tempVertexFlg = this->HaveATempVertex(a, b, this->_specificPoints[idx]);
+	bool	tempVertexFlg = this->_HaveATempVertex(a, b, this->_specificPoints[idx]);
 
 	Triangle t(a, b, this->_specificPoints[idx], tempVertexFlg);
 
@@ -113,7 +116,7 @@ void	DT::AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 	this->_triangles.push_back(t);
 }
 
-void	DT::SegmentTriangles(const size_t idx)
+void	DT::_SegmentTriangles(const size_t idx)
 {
 	size_t		triangleSize = this->_triangles.size();
 	std::deque<Triangle>::iterator itr = this->_triangles.begin();
@@ -124,9 +127,9 @@ void	DT::SegmentTriangles(const size_t idx)
 		if ((*itr).IsInsideCircumcircle(this->_specificPoints[idx].x, 
 										this->_specificPoints[idx].y))
 		{	
-			this->AddSegmentedTriangle(idx, (*itr).a, (*itr).b);
-			this->AddSegmentedTriangle(idx, (*itr).b, (*itr).c);
-			this->AddSegmentedTriangle(idx, (*itr).c, (*itr).a);
+			this->_AddSegmentedTriangle(idx, (*itr).a, (*itr).b);
+			this->_AddSegmentedTriangle(idx, (*itr).b, (*itr).c);
+			this->_AddSegmentedTriangle(idx, (*itr).c, (*itr).a);
 			itr = this->_triangles.erase(this->_triangles.begin() + j);
 		}
 		else
@@ -138,7 +141,7 @@ void	DT::SegmentTriangles(const size_t idx)
 	// std::cout << "-------------" << this->_triangles.size() << std::endl;
 }
 
-void	DT::EraseTempTriangles()
+void	DT::_EraseTempTriangles()
 {
 	std::deque<Triangle>::iterator itr = this->_triangles.begin();
 
@@ -150,27 +153,99 @@ void	DT::EraseTempTriangles()
 		}
 		else
 		{
+			(*itr).CalcNormalVector();
 			++itr;
 		}
 	}
 }
 
-std::deque<Triangle>	DT::Calculation()
+void	DT::_MakeMap(int64_t **map)
+{
+	size_t	i = 0;
+	size_t	j = 0;
+	size_t	searchedI = 0;
+	size_t	total = this->_mapSize[X] * this->_mapSize[Y];
+
+	for (size_t	x = 0; x < this->_mapSize[X]; ++x)
+	{
+		for (size_t	y = 0; y < this->_mapSize[Y]; ++y)
+		{
+			if (this->_triangles[i].InternalAndExternalJudgments(Vec(x, y, 0)))
+			{
+				map[x][y] = this->_triangles[i].FindZ(x, y);
+			}
+			else
+			{
+				searchedI = i;
+				for (i = 0; i < this->_triangles.size(); ++i)
+				{
+					if (i == searchedI)
+					{
+						continue;
+					}
+					if (this->_triangles[i].InternalAndExternalJudgments(Vec(x, y, 0)))
+					{
+						map[x][y] = this->_triangles[i].FindZ(x, y);
+						break;
+					}
+	
+				}
+			}
+
+			// for (i = 0; i < this->_triangles.size(); ++i)
+			// {
+			// 	if (this->_triangles[i].InternalAndExternalJudgments(Vec(x, y, 0)))
+			// 	{
+			// 		map[x][y] = this->_triangles[i].FindZ(x, y);
+			// 		break;
+			// 	}
+
+			// }
+
+			std::cout << std::fixed << std::setprecision(1) 
+				  << double(j) /total * 100
+				  << " %\r" << std::flush;
+			++j;
+		}
+	}
+}
+
+void	DT::Calculation(int64_t **map)
 {
 	size_t	size = this->_specificPoints.size();
-	// size_t	size = 23;
 
 	// i is 3, because (0,0,0) _tempVertexB, and _tempVertexC is top of this->_specificPoints
 	for (size_t	i = 3; i < size; ++i)
 	{
-		this->SegmentTriangles(i);
+		this->_SegmentTriangles(i);
 		std::cout << std::fixed << std::setprecision(1) 
 				  << double(i) / this->_specificPoints.size() * 100
 				  << " %\r" << std::flush;
 	}
 
-	this->EraseTempTriangles();
+	std::cout <<  std::endl << "Triangulation Done" << std::endl;
 
+	this->_EraseTempTriangles();
+
+	this->_MakeMap(map);
+}
+
+std::deque<Triangle>	DT::Calculation(void)
+{
+	size_t	size = this->_specificPoints.size();
+
+	// i is 3, because (0,0,0) _tempVertexB, and _tempVertexC is top of this->_specificPoints
+	for (size_t	i = 3; i < size; ++i)
+	{
+		this->_SegmentTriangles(i);
+		std::cout <<std::fixed << std::setprecision(1)
+				  << double(i) / this->_specificPoints.size() * 100
+				  << " %\r" << std::flush;
+	}
+
+	std::cout <<  std::endl << "Triangulation Done" << std::endl;
+
+	this->_EraseTempTriangles();
 	return this->_triangles;
 }
 
@@ -184,18 +259,18 @@ std::deque<Triangle>	DT::Calculation()
 // 	if (cosAPB <= cosBPC && cosAPB <= cosCPA) // c
 // 	{
 // 		std::cout << "side flip /" << this->_triangles.size() << std::endl;
-// 		this->AddSegmentedTriangle(idx, t.b, t.c);
-// 		this->AddSegmentedTriangle(idx, t.c, t.a);
+// 		this->_AddSegmentedTriangle(idx, t.b, t.c);
+// 		this->_AddSegmentedTriangle(idx, t.c, t.a);
 // 		std::cout << "side flip /" << this->_triangles.size() << std::endl;
 // 		return ;
 // 	}
 // 	if (cosBPC <= cosAPB && cosBPC <= cosCPA) // a
 // 	{
-// 		this->AddSegmentedTriangle(idx, t.a, t.b);
-// 		this->AddSegmentedTriangle(idx, t.c, t.a);
+// 		this->_AddSegmentedTriangle(idx, t.a, t.b);
+// 		this->_AddSegmentedTriangle(idx, t.c, t.a);
 // 		return ;
 // 	}
 // 	// b
-// 	this->AddSegmentedTriangle(idx, t.a, t.b);
-// 	this->AddSegmentedTriangle(idx, t.b, t.c);
+// 	this->_AddSegmentedTriangle(idx, t.a, t.b);
+// 	this->_AddSegmentedTriangle(idx, t.b, t.c);
 // }

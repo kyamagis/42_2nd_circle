@@ -1,16 +1,32 @@
 #include "../includes/Graphic.hpp"
 #include "../includes/Print.hpp"
 
-static int	gWindowID;
+static int	g_gWindowID;
 
 // https://tokoik.github.io/opengl/libglut.html
+
+void defaultkeyboard(unsigned char key, int x, int y)
+{
+	(void)x;
+	(void)y;
+
+	switch (key)
+	{
+		case 'q':
+		case 'Q':
+		case '\033':  // ESC
+			glutDestroyWindow(g_gWindowID);
+			std::exit(EXIT_SUCCESS);
+			return;
+		default:
+			break;
+	}
+}
 
 Graphic::Graphic()
 {
 	
 }
-
-void keyboard(unsigned char key, int x, int y);
 
 Graphic::Graphic(int argc, char** argv, int	sizeX, int	sizeY)
 {
@@ -20,10 +36,10 @@ Graphic::Graphic(int argc, char** argv, int	sizeX, int	sizeY)
 	glutInitWindowSize(sizeX, sizeY);
 	glutInitWindowPosition(300, 50);
 
-	gWindowID = glutCreateWindow("mod1");
+	g_gWindowID = glutCreateWindow("mod1");
 	glutInitDisplayMode(GLUT_RGBA);
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	glutKeyboardFunc(keyboard);
+	glutKeyboardFunc(defaultkeyboard);
 	glutWMCloseFunc(onWindowClose);
 }
 
@@ -43,26 +59,9 @@ void	Graphic::KeyboardFunc(void (*func)(unsigned char key, int x, int y))
 	glutKeyboardFunc(func);
 }
 
-void keyboard(unsigned char key, int x, int y)
-{
-	(void)x;
-	(void)y;
-
-	switch (key)
-	{
-		case 'q':
-		case 'Q':
-		case '\033':  // ESC
-			glutDestroyWindow(gWindowID);
-			std::exit(EXIT_SUCCESS);
-			return;
-		default:
-			break;
-	}
-}
 
 void	onWindowClose(void)
 {
-	glutDestroyWindow(gWindowID);
+	glutDestroyWindow(g_gWindowID);
 	std::exit(EXIT_SUCCESS);
 }

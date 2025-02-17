@@ -15,6 +15,8 @@ class Triangle
 		Vec a;
 		Vec b;
 		Vec c;
+
+		Vec	n;
 		
 		Circle	circumcircle;
 
@@ -30,6 +32,8 @@ class Triangle
 
 
 		bool	InternalAndExternalJudgments(const Vec &point);
+		void	CalcNormalVector();
+		double	FindZ(const double pX, const double pY);
 
 		bool	operator==(const Triangle &triangle) const;
 		Triangle&	operator=(const Triangle &triangle);

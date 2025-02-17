@@ -102,6 +102,21 @@ bool	Triangle::InternalAndExternalJudgments(const Vec &point)
 	return (0 <= (abp ^ cap));
 }
 
+void	Triangle::CalcNormalVector()
+{
+	this->n.x = (this->b.y - this->a.y) * (this->c.z - this->a.z) - 
+				(this->b.z - this->a.z) * (this->c.y - this->a.y);
+	this->n.y = (this->b.z - this->a.z) * (this->c.x - this->a.x) - 
+				(this->b.x - this->a.x) * (this->c.z - this->a.z);
+	this->n.z = (this->b.x - this->a.x) * (this->c.y - this->a.y) - 
+				(this->b.y - this->a.y) * (this->c.x - this->a.x);
+}
+
+double	Triangle::FindZ(const double pX, const double pY)
+{
+	return this->a.z - (this->n.x * (pX - this->a.x) + this->n.y * (pY - this->a.y)) / this->n.z;
+}
+
 bool	Triangle::operator==(const Triangle &triangle) const
 {
 	return (this->a == triangle.a) && 

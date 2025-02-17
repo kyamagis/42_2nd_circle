@@ -8,11 +8,12 @@ class Graphic
 {
 	private:
 		Graphic();
-
-	public:
+		
+		public:
 		Graphic(int argc, char** argv, int	sizeX, int	sizeY);
 		~Graphic();
-
+		
+		int	gWindowID;
 		void	GraphicLoop(void (*func)(void));
 		void	KeyboardFunc(void (*func)(unsigned char key, int x, int y));
 		// void	RenderingAlgorithm();
