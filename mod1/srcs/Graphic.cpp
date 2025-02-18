@@ -223,7 +223,6 @@ void keyboard(unsigned char key, int x, int y)
 	(void)x;
 	(void)y;
 
-	g_data.circleFlg = false;
 	g_data.key = key;
 
 	switch (key)
@@ -251,7 +250,7 @@ void keyboard(unsigned char key, int x, int y)
 			return ;
 		case 'c':
 			g_data.ts = g_data.origenTs;
-			g_data.circleFlg = true;
+			g_data.circleFlg = !g_data.circleFlg;
 			glutPostRedisplay();
 			return ;
 		case 'n':

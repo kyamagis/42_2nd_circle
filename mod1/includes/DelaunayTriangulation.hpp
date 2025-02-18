@@ -36,7 +36,6 @@ class DT
 					 const uint32_t mapSize[2]);
 		~DT();
 
-
 		void	Calculation(int64_t **map, int64_t &maxHeight, int64_t &minHeight);
 		std::deque<Triangle>	Calculation(int64_t &maxHeight, int64_t &minHeight);
 };

@@ -26,11 +26,10 @@ class Triangle
 		~Triangle();
 
 		Triangle(Vec A, Vec B, Vec C, bool TempVertexFlg);
+
 		bool	IsInsideCircumcircle(double x, double y);
 		void	CalcCircumcircle();
 		double	CalcDistanceFromCenterSQ(double x, double y);
-
-
 		bool	InternalAndExternalJudgments(const Vec &point);
 		void	CalcNormalVector();
 		double	FindZ(const double pX, const double pY);
