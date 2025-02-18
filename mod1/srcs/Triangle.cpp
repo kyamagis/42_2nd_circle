@@ -1,8 +1,6 @@
 #include "../includes/Triangle.hpp"
 #include "../includes/MathUtils.hpp"
 
-const double EPS = 1e-6;
-
 Triangle::Triangle()
 {
 

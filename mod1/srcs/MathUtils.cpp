@@ -66,3 +66,14 @@ void	y_rotation(Vec &vertex, double rad, double x, double z)
 	vertex.x =  x * cos(rad) + z * sin(rad);
 	vertex.z = -x * sin(rad) + z * cos(rad);
 }
+
+void	assign_power_of_two(uint32_t &x, uint32_t &y)
+{
+	size_t	i = 1;
+	for (; i <= y; ++i)
+	{
+		i *= 2;
+	}
+	x = i;
+	y = i;
+}

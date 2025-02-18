@@ -1,8 +1,10 @@
 #ifndef TerrestrialSimulation_HPP
 # define TerrestrialSimulation_HPP
 
+
 #include <deque>
 
+#include "../includes/Triangle.hpp"
 #include "./Vec.hpp"
 
 #define X 0
@@ -27,7 +29,7 @@ class TerrestrialSimulation
 		bool	SimulationStart(int argc, 
 								char** argv, 
 								const std::string &fileName);
-		void	DecideMapSize();						
+		void	DecideMapSize();
 		void	PrintSpecificPoints();
 
 };
