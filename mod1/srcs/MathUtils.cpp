@@ -21,32 +21,32 @@ int32_t	cross_product(const Vec &a, const Vec &b, const Vec &point)
 	return (a_to_bx * b_to_py) - (a_to_by * b_to_px);
 }
 
-int32_t	dot_product(const Vec &a, const Vec &point, const Vec &b)
+double	dot_product_2d(const Vec &a, const Vec &b)
 {
-	int32_t	a_to_px = point.x - a.x;
-	int32_t	a_to_py = point.y - a.y;
-
-	int32_t	b_to_px = point.x - b.x;
-	int32_t b_to_py = point.y - b.y;
-
-	return (a_to_px * b_to_px) + (a_to_py * b_to_py);
+	return (a.x * b.x) + (a.y * b.y);
 }
 
-double	magnitude_sq(double x0, double y0, double x1, double y1)
+
+double	dot_product_3d(const Vec &a, const Vec &b)
 {
-	return (x0 - x1) * (x0 - x1) + (y0 - y1) * (y0 - y1);
+	return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
 }
 
-double	magnitude(double x0, double y0, double x1, double y1)
+double	magnitude_sq_2d(const Vec &a)
 {
-	return sqrt(magnitude_sq(x0, y0, x1, y1));
+	return a.x * a.x + a.y * a.y;
+}
+
+double	magnitude_2d(const Vec &a)
+{
+	return sqrt(magnitude_sq_2d(a));
 }
 
 
 double	cos_angle(const Vec &a, const Vec &point, const Vec &b)
 {
-	return dot_product(a, point, b) 
-			/ (magnitude(a.x, a.y, point.x, point.y) * magnitude(b.x, b.y, point.x, point.y));
+	return dot_product_2d(a - point, b - point) 
+			/ (magnitude_2d(a - point) * magnitude_2d(b - point));
 }
 
 void	z_rotation(Vec &vertex, double rad, double x, double y)

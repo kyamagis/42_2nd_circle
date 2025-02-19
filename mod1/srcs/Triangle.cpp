@@ -19,15 +19,15 @@ Triangle::~Triangle()
 
 }
 
-double	Triangle::CalcDistanceFromCenterSQ(double x, double y)
+double	Triangle::CalcDistanceFromCenterSQ(const Vec &point)
 {
-	return magnitude_sq(x, y, this->circumcircle.x, this->circumcircle.y);
+	return magnitude_sq_2d(point - this->circumcircle.center);
 }
 
-bool	Triangle::IsInsideCircumcircle(double x, double y)
+bool	Triangle::IsInsideCircumcircle(const Vec &point)
 {
 	// return  this->CalcDistanceFromCenterSQ(x,y) < this->circumcircle.r;
-	return  this->CalcDistanceFromCenterSQ(x,y) + EPS < this->circumcircle.r;
+	return  this->CalcDistanceFromCenterSQ(point) + EPS < this->circumcircle.r;
 }
 
 
@@ -77,10 +77,9 @@ void	Triangle::CalcCircumcircle()
 		std::cout << "det is 0" << std::endl;
 	}
 
-	this->circumcircle.x = (abConstNum * acCoeff[1] - acConstNum * abCoeff[1]) / det;
-	this->circumcircle.y = (abCoeff[0] * acConstNum - acCoeff[0] * abConstNum) / det;
-	this->circumcircle.r = magnitude_sq(this->a.x, this->a.y, 
-										this->circumcircle.x, this->circumcircle.y);
+	this->circumcircle.center.x = (abConstNum * acCoeff[1] - acConstNum * abCoeff[1]) / det;
+	this->circumcircle.center.y = (abCoeff[0] * acConstNum - acCoeff[0] * abConstNum) / det;
+	this->circumcircle.r = magnitude_sq_2d(this->a - this->circumcircle.center);
 }
 
 bool	Triangle::InternalAndExternalJudgments(const Vec &point)
@@ -115,11 +114,20 @@ double	Triangle::FindZ(const double pX, const double pY)
 	return this->a.z - (this->n.x * (pX - this->a.x) + this->n.y * (pY - this->a.y)) / this->n.z;
 }
 
+// void	Triangle::CalcIntersectionWithMidHeight(const int64_t maxHeight, 
+// 												const int64_t minHeight)
+// {
+// 	double	midHeight = double(maxHeight + minHeight) / 2.0;
+
+// 	if ()
+// }
+
 bool	Triangle::operator==(const Triangle &triangle) const
 {
 	return (this->a == triangle.a) && 
 		   (this->b == triangle.b) &&
 		   (this->c == triangle.c) &&
+		   (this->intersectionWithMidHeight == this->intersectionWithMidHeight) &&
 		   (this->tempVertexFlg == triangle.tempVertexFlg);
 }
 
@@ -131,6 +139,7 @@ Triangle&	Triangle::operator=(const Triangle &triangle)
 		this->b = triangle.b;
 		this->c = triangle.c;
 		this->circumcircle = triangle.circumcircle;
+		this->intersectionWithMidHeight = this->intersectionWithMidHeight;
 		this->tempVertexFlg = triangle.tempVertexFlg;
 	}
 	return *this;

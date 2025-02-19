@@ -15,12 +15,13 @@ SRCS =	main.cpp \
 		Side.cpp \
 		Triangle.cpp \
 		Circle.cpp \
+		Particle.cpp \
 		DelaunayTriangulation.cpp \
 		ParseModFile.cpp \
 		TerrestrialSimulation.cpp \
 		Graphic.cpp \
 		MathUtils.cpp \
-		ParticleMethod.cpp\
+		# ParticleMethod.cpp\
 
 B_SRCS =	
 

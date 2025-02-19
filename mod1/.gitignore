@@ -15,6 +15,7 @@ return_debug.txt
 a.out
 
 main.c
+main.cpp
 test.c
 test.cpp
 

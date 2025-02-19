@@ -106,8 +106,7 @@ void	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 		{
 			continue;
 		}
-		if (t.IsInsideCircumcircle(this->_specificPoints[i].x, 
-								   this->_specificPoints[i].y))
+		if (t.IsInsideCircumcircle(this->_specificPoints[i]))
 		{
 			return ;
 		}
@@ -124,8 +123,7 @@ void	DT::_SegmentTriangles(const size_t idx)
 
 	for (size_t	i = 0; i < triangleSize; ++i)
 	{
-		if ((*itr).IsInsideCircumcircle(this->_specificPoints[idx].x, 
-										this->_specificPoints[idx].y))
+		if ((*itr).IsInsideCircumcircle(this->_specificPoints[idx]))
 		{	
 			this->_AddSegmentedTriangle(idx, (*itr).a, (*itr).b);
 			this->_AddSegmentedTriangle(idx, (*itr).b, (*itr).c);
@@ -141,8 +139,11 @@ void	DT::_SegmentTriangles(const size_t idx)
 	// std::cout << "-------------" << this->_triangles.size() << std::endl;
 }
 
-void	DT::_EraseTempTriangles()
+void	DT::_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight)
 {
+	(void)maxHeight;
+	(void)minHeight;
+
 	std::deque<Triangle>::iterator itr = this->_triangles.begin();
 
 	for (; itr != this->_triangles.end();)
@@ -243,7 +244,7 @@ std::deque<Triangle>	DT::Calculation(int64_t &maxHeight, int64_t &minHeight)
 
 	std::cout <<  std::endl << "Triangulation Done" << std::endl;
 
-	this->_EraseTempTriangles();
+	this->_EraseTempTriangles(maxHeight, minHeight);
 	return this->_triangles;
 }
 

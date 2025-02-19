@@ -21,3 +21,7 @@ sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
 [逆距離加重](http://library.jsce.or.jp/jsce/open/00550/2014/20-01-0027.pdf)
 
 [ドローネ三角分割] https://takashiijiri.com/study/miscs/DelaunayTriangulation.htm
+
+三角メッシュを5点のポリゴンにしグラデーション
+mapの底面に蓋をする
+三角の重心を計算

@@ -3,26 +3,30 @@
 
 #include <iostream>
 #include <string>
+#include <deque>
 #include "./Vec.hpp"
+#include "./Particle.hpp"
 
 
-class PT
+class PM
 {
 	private:
 
 	public:
-		double		x;
-		double		y;
-		double		r;
+		std::deque<Particle> ps;
 
-		PT();
-		PT(const PT &pT);
-		~PT();
+		PM();
+		~PM();
 
-		PT&	operator=(const PT &pT);
-		bool	operator==(const PT &pT) const;
+		double	W(const size_t i, const size_t oneself, bool gradientFlg);
+		void	PressureGradientTerm(Vec &p, const size_t oneself);
+		void	ViscosityTerm(Vec &vi, const size_t oneself);
+		void	NavierStokesEquations(const	Vec &g);
+		// PM(const PM &pM);
+		// PM&	operator=(const PM &pM);
+		// bool	operator==(const PM &pM) const;
 };
 
-std::ostream &operator<<(std::ostream &ostrm, const PT &pT);
+// std::ostream &operator<<(std::ostream &ostrm, const PM &pM);
 
 #endif

@@ -28,7 +28,7 @@ class DT
 		void	_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b);
 		bool	_HaveATempVertex(const Vec &a, const Vec &b, const Vec &c);
 		void	_SideFlip(const size_t idx, const Triangle &t);
-		void	_EraseTempTriangles();
+		void	_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight);
 		void	_MakeMap(int64_t **map);
 
 	public:

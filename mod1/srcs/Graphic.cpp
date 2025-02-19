@@ -61,7 +61,7 @@ void defaultkeyboard(unsigned char key, int x, int y)
 	}
 }
 
-void	Vertex(Vec &vertex)
+void	Rotation(Vec &vertex)
 {
 	switch (g_data.key)
 	{
@@ -96,6 +96,11 @@ void	Vertex(Vec &vertex)
 		default:
 			break;
 	}
+}
+
+void	Vertex(Vec &vertex)
+{
+	Rotation(vertex);
 
 	double	coordinateX = vertex.x / double(g_data.mapSize[X] - 1);
 	double	coordinateY =  - 1.0 * (vertex.y / double(g_data.mapSize[Y] - 1));
@@ -172,7 +177,7 @@ void drawCircle(double cx, double cy, double r, int num_segments) {
 
 void drawCircle(const Triangle &t, int num_segments) 
 {
-	drawCircle(t.circumcircle.x, t.circumcircle.y, t.circumcircle.r, num_segments);
+	drawCircle(t.circumcircle.center.x, t.circumcircle.center.y, t.circumcircle.r, num_segments);
 }
 
 void	RenderingAlgorithm()
@@ -280,10 +285,10 @@ void	MoveVecToMapCenter(Vec &vec)
 
 void	MoveOToMapCenter(std::deque<Triangle> &ts)
 {
-	MoveVecToMapCenter(g_data.quadA);
-	MoveVecToMapCenter(g_data.quadB);
-	MoveVecToMapCenter(g_data.quadC);
-	MoveVecToMapCenter(g_data.quadD);
+	// MoveVecToMapCenter(g_data.quadA);
+	// MoveVecToMapCenter(g_data.quadB);
+	// MoveVecToMapCenter(g_data.quadC);
+	// MoveVecToMapCenter(g_data.quadD);
 
 	for (size_t	i = 0; i < ts.size(); ++i)
 	{
@@ -291,8 +296,8 @@ void	MoveOToMapCenter(std::deque<Triangle> &ts)
 		MoveVecToMapCenter(ts[i].b);
 		MoveVecToMapCenter(ts[i].c);
 
-		ts[i].circumcircle.x -= g_data.halfMapsize[X];
-		ts[i].circumcircle.y -= g_data.halfMapsize[Y];
+		ts[i].circumcircle.center.x -= g_data.halfMapsize[X];
+		ts[i].circumcircle.center.y -= g_data.halfMapsize[Y];
 	}
 }
 

@@ -1,13 +1,18 @@
 #include "../includes/Circle.hpp"
 
-Circle::Circle():x(0), y(0), r(0)
+Circle::Circle():center(0,0,0) ,r(0)
 {
 
 }
 
-Circle::Circle(const Circle &circle)
+Circle::Circle(const double &X, const double &Y, const double &Z, const double &R):center(X,Y,Z) ,r(R)
 {
-	*this = circle;
+
+}
+
+Circle::Circle(const Circle &c)
+{
+	*this = c;
 }
 
 Circle::~Circle()
@@ -15,28 +20,31 @@ Circle::~Circle()
 
 }
 
-bool	Circle::operator==(const Circle &circle) const
+bool	Circle::operator==(const Circle &c) const
 {
-	return (this->x == circle.x) && 
-		   (this->y == circle.y) &&
-		   (this->r == circle.r);
+	return (this->center.x == c.center.x) && 
+		   (this->center.y == c.center.y) &&
+		   (this->center.z == c.center.z) &&
+		   (this->r == c.r);
 }
 
-Circle&	Circle::operator=(const Circle &circle)
+Circle&	Circle::operator=(const Circle &c)
 {
-	if (this != &circle)
+	if (this != &c)
 	{
-		this->x = circle.x;
-		this->y = circle.y;
-		this->r = circle.r;
+		this->center.x = c.center.x;
+		this->center.y = c.center.y;
+		this->center.z = c.center.z;
+		this->r = c.r;
 	}
 	return *this;
 }
 
-std::ostream &operator<<(std::ostream &ostrm, const Circle &circle)
+std::ostream &operator<<(std::ostream &ostrm, const Circle &c)
 {
-	return ostrm << '(' << circle.x << ", " 
-						<< circle.y << ", "
-						<< circle.r << ')' 
+	return ostrm << '(' << c.center.x << ", " 
+						<< c.center.y << ", "
+						<< c.center.z << ", "
+						<< c.r << ')' 
 						<< std::endl;
 }

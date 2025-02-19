@@ -24,6 +24,13 @@ class Vec
 
 		bool	operator==(const Vec &vec) const;
 		Vec&	operator=(const Vec &vec);
+		Vec		operator+(const Vec &vec);
+		void	operator+=(const Vec &vec);
+		Vec		operator-(const Vec &vec) const;
+		Vec		operator*(const Vec &vec);
+		Vec		operator*(const double a);
+		void	operator*=(const double a);
+		Vec		operator/(const Vec &vec);
 };
 
 std::ostream &operator<<(std::ostream &ostrm, const Vec &Vec);

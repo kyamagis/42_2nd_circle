@@ -9,8 +9,9 @@
 
 int32_t	cross_product(const Vec &a, const Vec &b, const Vec &point);
 
-double	magnitude_sq(double x0, double y0, double x1, double y1);
-double	magnitude(double x0, double y0, double x1, double y1);
+double	magnitude_sq_2d(const Vec &a);
+double	magnitude_2d(const Vec &a);
+
 
 double	cos_angle(const Vec &a, const Vec &point, const Vec &b);
 
