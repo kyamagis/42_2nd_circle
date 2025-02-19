@@ -71,26 +71,26 @@ void	Rotation(Vec &vertex)
 				++g_data.count;
 				break;
 			}
-			z_rotation(vertex, g_data.radZ , vertex.x, vertex.y);
-			x_rotation(vertex, g_data.radX , vertex.y, vertex.z);
+			vertex.RotationZ(g_data.radZ);
+			vertex.RotationX(g_data.radX);
 			break;
 		case 'x':
-			x_rotation(vertex, M_PI / 12.0, vertex.y, vertex.z);
+			vertex.RotationX(M_PI / 12.0);
 			break;
 		case 'X':
-			x_rotation(vertex, -M_PI / 12.0, vertex.y, vertex.z);
+			vertex.RotationX(-M_PI / 12.0);
 			break;
 		case 'y':
-			y_rotation(vertex, M_PI / 12, vertex.x, vertex.z);
+			vertex.RotationY(M_PI / 12);
 			break;
 		case 'Y':
-			y_rotation(vertex, -M_PI / 12, vertex.x, vertex.z);
+			vertex.RotationY(-M_PI / 12);
 			break;
 		case 'z':
-			z_rotation(vertex, M_PI / 12, vertex.x, vertex.y);
+			vertex.RotationZ(M_PI / 12);
 			break;
 		case 'Z':
-			z_rotation(vertex, -M_PI / 12, vertex.x, vertex.y);
+			vertex.RotationZ(-M_PI / 12);
 			break;
 		case 'c':
 		default:

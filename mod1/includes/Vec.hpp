@@ -17,10 +17,23 @@ class Vec
 		double z;
 
 		Vec();
+		Vec(double X, double Y, double Z);
+		Vec(const Vec &vec);
 		~Vec();
 
-		Vec(int32_t X, int32_t Y, int32_t Z);
-		Vec(const Vec &vec);
+		double	DotProduct2d(const Vec &p) const;
+		double	DotProduct3d(const Vec &p) const;
+
+		double	MagnitudeSQ2d(const Vec &p) const;
+		double	MagnitudeSQ2d(void) const;
+		double	Magnitude2d(const Vec &p) const;
+		double	Magnitude2d(void) const;
+		// double	cos_angle(const Vec &a, const Vec &b);
+
+		
+		void	RotationZ(double rad);
+		void	RotationX(double rad);
+		void	RotationY(double rad);
 
 		bool	operator==(const Vec &vec) const;
 		Vec&	operator=(const Vec &vec);

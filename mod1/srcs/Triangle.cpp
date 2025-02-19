@@ -21,12 +21,11 @@ Triangle::~Triangle()
 
 double	Triangle::CalcDistanceFromCenterSQ(const Vec &point)
 {
-	return magnitude_sq_2d(point - this->circumcircle.center);
+	return point.MagnitudeSQ2d(this->circumcircle.center);
 }
 
 bool	Triangle::IsInsideCircumcircle(const Vec &point)
 {
-	// return  this->CalcDistanceFromCenterSQ(x,y) < this->circumcircle.r;
 	return  this->CalcDistanceFromCenterSQ(point) + EPS < this->circumcircle.r;
 }
 
@@ -79,7 +78,7 @@ void	Triangle::CalcCircumcircle()
 
 	this->circumcircle.center.x = (abConstNum * acCoeff[1] - acConstNum * abCoeff[1]) / det;
 	this->circumcircle.center.y = (abCoeff[0] * acConstNum - acCoeff[0] * abConstNum) / det;
-	this->circumcircle.r = magnitude_sq_2d(this->a - this->circumcircle.center);
+	this->circumcircle.r = this->a.MagnitudeSQ2d(this->circumcircle.center);
 }
 
 bool	Triangle::InternalAndExternalJudgments(const Vec &point)
@@ -119,7 +118,7 @@ double	Triangle::FindZ(const double pX, const double pY)
 // {
 // 	double	midHeight = double(maxHeight + minHeight) / 2.0;
 
-// 	if ()
+// 	if (dot)
 // }
 
 bool	Triangle::operator==(const Triangle &triangle) const

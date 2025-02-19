@@ -22,9 +22,7 @@ Circle::~Circle()
 
 bool	Circle::operator==(const Circle &c) const
 {
-	return (this->center.x == c.center.x) && 
-		   (this->center.y == c.center.y) &&
-		   (this->center.z == c.center.z) &&
+	return (this->center == c.center) &&
 		   (this->r == c.r);
 }
 
@@ -32,9 +30,7 @@ Circle&	Circle::operator=(const Circle &c)
 {
 	if (this != &c)
 	{
-		this->center.x = c.center.x;
-		this->center.y = c.center.y;
-		this->center.z = c.center.z;
+		this->center = c.center;
 		this->r = c.r;
 	}
 	return *this;
@@ -42,9 +38,7 @@ Circle&	Circle::operator=(const Circle &c)
 
 std::ostream &operator<<(std::ostream &ostrm, const Circle &c)
 {
-	return ostrm << '(' << c.center.x << ", " 
-						<< c.center.y << ", "
-						<< c.center.z << ", "
+	return ostrm << '(' << c.center << ", " 
 						<< c.r << ')' 
 						<< std::endl;
 }
