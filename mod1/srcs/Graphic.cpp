@@ -31,10 +31,6 @@ typedef struct s_data
 	Vec		rotatedVertex;
 	bool	circleFlg;
 	int		gWindowID;
-	Vec		quadA;
-	Vec		quadB;
-	Vec		quadC;
-	Vec		quadD;
 
 	unsigned char key;
 } t_data;
@@ -151,10 +147,10 @@ void	drawQuad()
 	glColor3f(0.5f, 0.5f, 0.5f);
 
 	glBegin(GL_QUADS);
-	Vertex(g_data.quadA);
-	Vertex(g_data.quadB);
-	Vertex(g_data.quadC);
-	Vertex(g_data.quadD);
+	// Vertex(g_data.quadA);
+	// Vertex(g_data.quadB);
+	// Vertex(g_data.quadC);
+	// Vertex(g_data.quadD);
 	glEnd();
 }
 
@@ -205,6 +201,7 @@ void	RenderingAlgorithm()
 	// 	std::cout << x << std::endl;
 	// }
 	// drawQuad();
+
 	if (g_data.ts.size() < g_data.i)
 	{
 		g_data.i = g_data.ts.size();
@@ -285,11 +282,6 @@ void	MoveVecToMapCenter(Vec &vec)
 
 void	MoveOToMapCenter(std::deque<Triangle> &ts)
 {
-	// MoveVecToMapCenter(g_data.quadA);
-	// MoveVecToMapCenter(g_data.quadB);
-	// MoveVecToMapCenter(g_data.quadC);
-	// MoveVecToMapCenter(g_data.quadD);
-
 	for (size_t	i = 0; i < ts.size(); ++i)
 	{
 		MoveVecToMapCenter(ts[i].a);
@@ -363,15 +355,19 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.radX = M_PI / 12.0 * 5.0;
 	g_data.radY = 0;
 	g_data.radZ = M_PI_4;
+	g_data.ts.push_back({Vec(0,0,-EPS), 
+						 Vec(0,g_data.mapSize[Y] - 1,-EPS), 
+						 Vec(g_data.mapSize[X] - 1,0,-EPS), 
+						 false});
+	g_data.ts.push_back({Vec(g_data.mapSize[X] - 1,g_data.mapSize[Y] - 1,-EPS), 
+						 Vec(0,g_data.mapSize[Y] - 1,-EPS), 
+						 Vec(g_data.mapSize[X] - 1,0,-EPS), 
+						 false});
 	g_data.i = g_data.ts.size();
 	g_data.count = 0;
 	g_data.scaling = SCALING;
 	g_data.circleFlg = false;
 	g_data.key = 'i';
-	// g_data.quadA = Vec(0,0,-EPS);
-	// g_data.quadB = Vec(g_data.mapSize[X] - 1,0,-EPS);
-	// g_data.quadC = Vec(0,g_data.mapSize[Y] - 1,-EPS);
-	// g_data.quadD = Vec(g_data.mapSize[X] - 1,g_data.mapSize[Y] - 1,-EPS);
 }
 
 void	Graphic::KeyboardFunc(void (*func)(unsigned char key, int x, int y))
@@ -385,3 +381,28 @@ void	onWindowClose(void)
 	glutDestroyWindow(g_data.gWindowID);
 	std::exit(EXIT_SUCCESS);
 }
+
+
+// glShadeModel(GL_SMOOTH);
+// glBegin(GL_QUADS);
+// glColor3f(1.0f, 0.0f, 0.0f);
+// glVertex3f(-0.5, 0.5, 0);
+
+
+// glColor3f(0.0f, 1.0f, 0.0f);
+// glVertex3f(0.0, 0.0, 0);
+
+// glColor3f(0.0f, 0.0f, 1.0f);
+// glVertex3f(0.5, -0.5, 0);
+// glVertex3f(-0.5, -0.5, 0);
+// // glShadeModel(GL_SMOOTH);
+// // glBegin(GL_QUADS);
+
+
+
+
+// glColor3f(0.0f, 1.0f, 0.0f);
+// glVertex3f(0.0, 0.0, 0);
+
+
+// glEnd();

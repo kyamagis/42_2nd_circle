@@ -40,6 +40,8 @@ class Vec
 		Vec		operator+(const Vec &vec);
 		void	operator+=(const Vec &vec);
 		Vec		operator-(const Vec &vec) const;
+		void	operator-=(const double n);
+		void	operator-=(const Vec &vec);
 		Vec		operator*(const Vec &vec);
 		Vec		operator*(const double a);
 		void	operator*=(const double a);

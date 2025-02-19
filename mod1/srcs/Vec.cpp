@@ -121,6 +121,20 @@ Vec	Vec::operator-(const Vec &vec) const
 	return Vec(this->x - vec.x, this->y - vec.y, this->z - vec.z);
 }
 
+void	Vec::operator-=(const double n)
+{
+	this->x -= n;
+	this->y -= n;
+	this->z -= n;
+}
+
+void	Vec::operator-=(const Vec &vec)
+{
+	this->x -= vec.x;
+	this->y -= vec.y;
+	this->z -= vec.z;
+}
+
 Vec	Vec::operator*(const Vec &vec)
 {
 	return Vec(this->x * vec.x, this->y * vec.y, this->z * vec.z);

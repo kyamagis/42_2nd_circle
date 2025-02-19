@@ -36,12 +36,13 @@ class Triangle
 		double	CalcDistanceFromCenterSQ(const Vec &point);
 		bool	InternalAndExternalJudgments(const Vec &point);
 		void	CalcNormalVector();
-		void	CalcIntersectionWithMidHeight(const int64_t maxHeight, 
-											  const int64_t minHeight);
+		// void	CalcIntersectionWithMidHeight(const Vec &midHeight);
 		double	FindZ(const double pX, const double pY);
 
-		bool	operator==(const Triangle &triangle) const;
+		bool		operator==(const Triangle &triangle) const;
 		Triangle&	operator=(const Triangle &triangle);
+		void		operator-=(const double num);
+		void		operator-=(const Vec &vec);
 };
 
 std::ostream &operator<<(std::ostream &ostrm, const Triangle &triangle);

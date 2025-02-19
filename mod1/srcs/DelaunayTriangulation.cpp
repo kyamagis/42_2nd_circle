@@ -141,22 +141,37 @@ void	DT::_SegmentTriangles(const size_t idx)
 
 void	DT::_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight)
 {
-	(void)maxHeight;
-	(void)minHeight;
+	Vec	vecMidHeight(0,0,minHeight);
 
 	std::deque<Triangle>::iterator itr = this->_triangles.begin();
 
 	for (; itr != this->_triangles.end();)
 	{
-		if (itr->tempVertexFlg)
+		if (minHeight == 0.0 && 
+			(*itr).a.z == 0.0 && 
+			(*itr).b.z == 0.0 && 
+			(*itr).c.z == 0.0)
+		{
+			itr = this->_triangles.erase(itr);
+		}
+		else if (itr->tempVertexFlg)
 		{	
 			itr = this->_triangles.erase(itr);
 		}
 		else
 		{
+			if (minHeight < 0.0)
+			{
+				(*itr) -= vecMidHeight;
+			}
 			(*itr).CalcNormalVector();
 			++itr;
 		}
+	}
+	if (minHeight < 0.0)
+	{
+		maxHeight -= minHeight;
+		minHeight = 0;
 	}
 }
 

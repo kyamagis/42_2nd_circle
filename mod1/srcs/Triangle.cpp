@@ -113,12 +113,9 @@ double	Triangle::FindZ(const double pX, const double pY)
 	return this->a.z - (this->n.x * (pX - this->a.x) + this->n.y * (pY - this->a.y)) / this->n.z;
 }
 
-// void	Triangle::CalcIntersectionWithMidHeight(const int64_t maxHeight, 
-// 												const int64_t minHeight)
+// void	Triangle::CalcIntersectionWithMidHeight(const Vec &midHeight)
 // {
-// 	double	midHeight = double(maxHeight + minHeight) / 2.0;
-
-// 	if (dot)
+// 	if (this->a)
 // }
 
 bool	Triangle::operator==(const Triangle &triangle) const
@@ -142,6 +139,20 @@ Triangle&	Triangle::operator=(const Triangle &triangle)
 		this->tempVertexFlg = triangle.tempVertexFlg;
 	}
 	return *this;
+}
+
+void		Triangle::operator-=(const double num)
+{
+	this->a -= num;
+	this->b -= num;
+	this->c -= num;
+}
+
+void		Triangle::operator-=(const Vec &vec)
+{
+	this->a -= vec;
+	this->b -= vec;
+	this->c -= vec;
 }
 
 std::ostream &operator<<(std::ostream &ostrm, const Triangle &triangle)
