@@ -5,7 +5,7 @@ Circle::Circle():center(0,0,0) ,r(0)
 
 }
 
-Circle::Circle(const double &X, const double &Y, const double &Z, const double &R):center(X,Y,Z) ,r(R)
+Circle::Circle(const double &cX, const double &cY, const double &cZ, const double &R):center(cX,cY,cZ) ,r(R)
 {
 
 }

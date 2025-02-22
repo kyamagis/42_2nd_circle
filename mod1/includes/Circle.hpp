@@ -14,7 +14,7 @@ class Circle
 		double	r;
 
 		Circle();
-		Circle(const double &X, const double &Y, const double &Z, const double &R);
+		Circle(const double &cX, const double &cY, const double &cZ, const double &R);
 		Circle(const Circle &c);
 		virtual ~Circle();
 

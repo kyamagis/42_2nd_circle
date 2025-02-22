@@ -5,7 +5,17 @@ Particle::Particle():Circle()
 
 }
 
-Particle::Particle(const double &X, const double &Y, const double &Z, const double &R):Circle(X, Y, Z, R)
+Particle::Particle(const double &cX, 
+				   const double &cY, 
+				   const double &cZ, 
+				   const double &R):Circle(cX, cY, cZ, R)
+{
+
+}
+
+Particle::Particle(const double &cX, 
+				   const double &cY, 
+				   const double &cZ):Circle(cX, cY, cZ, RADIUS)
 {
 
 }

@@ -3,10 +3,9 @@
 
 #include <iostream>
 #include <string>
-#include "./Circle.hpp"
 
-#define I_DISTANCE 0.1 // interparticle distance
-#define E_RADIUS   2.1 * I_DISTANCE // effective radius
+#include "./Defines.hpp"
+#include "./Circle.hpp"
 
 class Particle: public Circle
 {
@@ -16,7 +15,8 @@ class Particle: public Circle
 		Vec	velocity;
 
 		Particle();
-		Particle(const double &X, const double &Y, const double &Z, const double &R);
+		Particle(const double &cX, const double &cY, const double &cZ);
+		Particle(const double &cX, const double &cY, const double &cZ, const double &R);
 		Particle(const Particle &p);
 		~Particle();
 

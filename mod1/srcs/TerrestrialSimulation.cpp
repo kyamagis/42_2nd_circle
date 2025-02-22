@@ -5,10 +5,7 @@
 #include "../includes/DelaunayTriangulation.hpp"
 #include "../includes/MathUtils.hpp"
 
-#define SCREEN_SIZE_X 1000
-#define SCREEN_SIZE_Y 1000
-
-TerrestrialSimulation::TerrestrialSimulation(): _threeDCoordinates(NULL)
+TerrestrialSimulation::TerrestrialSimulation()
 {
 
 }

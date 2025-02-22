@@ -257,7 +257,7 @@ void keyboard(unsigned char key, int x, int y)
 			return ;
 		case 'n':
 			++g_data.i;
-			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
+			std::cout << "i: " << g_data.i << g_data.ts[g_data.i];
 			glutPostRedisplay();
 			return ;
 		case 'p':
@@ -265,7 +265,7 @@ void keyboard(unsigned char key, int x, int y)
 			{
 				--g_data.i;
 			}
-			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
+			std::cout << "i: " << g_data.i << g_data.ts[g_data.i];
 			glutPostRedisplay();
 			return ;
 		default:

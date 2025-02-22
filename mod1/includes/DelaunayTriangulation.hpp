@@ -22,13 +22,14 @@ class DT
 		Vec	_tempVertexC;
 
 		DT();
-		void	_AddEndPoints();
-		void	_MakeSuperTriangle();
+		void	_AddEndPoints(void);
+		void	_MakeSuperTriangle(void);
+		bool	_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b);
 		void	_SegmentTriangles(const size_t idx);
-		void	_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b);
 		bool	_HaveATempVertex(const Vec &a, const Vec &b, const Vec &c);
 		void	_SideFlip(const size_t idx, const Triangle &t);
 		void	_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight);
+		void	_IntegrateTriangles(void);
 		void	_MakeMap(int64_t **map);
 
 	public:

@@ -5,21 +5,106 @@
 #define	D 3 // dimension number
 #define	GRADIENT  0
 #define LAPLACIAN 1
+#define	BUCKET_LENGTH  E_RADIUS
+#define	NUM_OF_BUCKETS
+#define InvisibleSpace 2.0 * BUCKET_LENGTH
+
+#define X 0
+#define Y 1
+#define Z 2
+
+void	Delete(const void *n)
+{
+	if (n != NULL)
+	{
+		delete n;
+	}
+}
 
 PM::PM()
 {
-	this->ps.resize(100);
+	this->ps.resize(NUM_OF_PARTICLES);
+}
+
+PM::PM(const uint32_t mapSize[2], const int64_t maxHeight):visibleMapSize(mapSize[X], mapSize[Y], maxHeight) ,
+															bucketFirst(NULL),
+															bucketLast(NULL),
+															bucketNext(NULL)
+{
+	this->totalMapSize.x = mapSize[X] + 2.0 * InvisibleSpace;
+	this->totalMapSize.y = mapSize[Y] + 2.0 * InvisibleSpace;
+	this->totalMapSize.z = maxHeight;
+	this->ps.resize(NUM_OF_PARTICLES);
+
+	this->bucketRow = this->totalMapSize.x / BUCKET_LENGTH;
+	this->bucketColumn = this->totalMapSize.y / BUCKET_LENGTH;
+	this->bucketDepth = size_t(this->totalMapSize.z / BUCKET_LENGTH);
+	this->numOfBuckets = this->bucketRow * this->bucketColumn * this->bucketDepth;
+
+	this->InitBuckets();
 }
 
 PM::~PM()
 {
+	Delete(this->bucketFirst);
+	Delete(this->bucketLast);
+	Delete(this->bucketNext);
+}
 
+void	PM::InitBuckets(void)
+{
+	this->bucketFirst = new int64_t[this->numOfBuckets];
+	this->bucketLast = new int64_t[this->numOfBuckets];
+	this->bucketNext = new int64_t[NUM_OF_PARTICLES];
+
+	for (size_t	i = 0; i < this->numOfBuckets; ++i)
+	{
+		this->bucketFirst[i] = -1;
+		this->bucketLast[i] = -1;
+		if (i < NUM_OF_PARTICLES)
+		{
+			this->bucketNext[i] = -1;
+		}
+	}
+
+	size_t	bucketX;
+	size_t	bucketY;
+	size_t	bucketZ;
+	size_t	bucketIdx;
+	size_t	next;	
+
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		bucketX = this->ps[i].center.x / BUCKET_LENGTH;
+		bucketY = this->ps[i].center.y / BUCKET_LENGTH;
+		bucketZ = this->ps[i].center.z / BUCKET_LENGTH;
+	
+		bucketIdx = bucketX + 
+					this->bucketColumn * bucketY + 
+					this->bucketColumn * this->bucketDepth * bucketZ;
+		next = this->bucketNext[bucketIdx];
+		this->bucketNext[bucketIdx] = i;
+		if (next == -1)
+		{
+			this->bucketFirst[bucketIdx] = i;
+		}
+		else
+		{
+			this->bucketNext[next] = i;
+		}
+	}
+}
+
+void	PM::SearchNeighborParticles(const size_t oneself)
+{
+	size_t	bucketX = this->ps[oneself].center.x / BUCKET_LENGTH;
+	size_t	bucketY = this->ps[oneself].center.y / BUCKET_LENGTH;
+	size_t	bucketZ = this->ps[oneself].center.z / BUCKET_LENGTH;
 }
 
 double	PM::W(const size_t i, const size_t oneself, bool gradientFlg) // weight
 {
-	double	rSQ = magnitude(this->ps[i].center.x, this->ps[i].center.y, 
-						    this->ps[oneself].center.x, this->ps[oneself].center.y);
+	double	rSQ = this->ps[i].center.Magnitude2d(this->ps[oneself].center);
 
 	if (gradientFlg == GRADIENT)
 	{

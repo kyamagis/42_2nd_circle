@@ -29,7 +29,7 @@ DT::~DT()
 
 }
 
-void	DT::_MakeSuperTriangle()
+void	DT::_MakeSuperTriangle(void)
 {
 	Vec	o(Vec(0, 0, 0));
 	this->_triangles.push_back(Triangle(o, 
@@ -42,7 +42,7 @@ void	DT::_MakeSuperTriangle()
 	this->_specificPoints.push_front(this->_tempVertexC);
 }
 
-void	DT::_AddEndPoints()
+void	DT::_AddEndPoints(void)
 {
 	for (uint32_t x = 0; x < this->_mapSize[X]; ++x)
 	{
@@ -88,11 +88,11 @@ bool	DT::_HaveATempVertex(const Vec &a, const Vec &b, const Vec &c)
 	return false;
 }
 
-void	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
+bool	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 {
 	if (cross_product(a, b, this->_specificPoints[idx]) == 0)
 	{
-		return ;
+		return false;
 	}
 	bool	tempVertexFlg = this->_HaveATempVertex(a, b, this->_specificPoints[idx]);
 
@@ -108,11 +108,12 @@ void	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 		}
 		if (t.IsInsideCircumcircle(this->_specificPoints[i]))
 		{
-			return ;
+			return false;
 		}
 	}
 
 	this->_triangles.push_back(t);
+	return true;
 }
 
 void	DT::_SegmentTriangles(const size_t idx)
@@ -147,20 +148,20 @@ void	DT::_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight)
 
 	for (; itr != this->_triangles.end();)
 	{
-		if (minHeight == 0.0 && 
-			(*itr).a.z == 0.0 && 
-			(*itr).b.z == 0.0 && 
-			(*itr).c.z == 0.0)
-		{
-			itr = this->_triangles.erase(itr);
-		}
-		else if (itr->tempVertexFlg)
+		// if (minHeight == 0.0 && 
+		// 	(*itr).a.z == 0.0 && 
+		// 	(*itr).b.z == 0.0 && 
+		// 	(*itr).c.z == 0.0)
+		// {
+		// 	itr = this->_triangles.erase(itr);
+		// }
+		if (itr->tempVertexFlg)
 		{	
 			itr = this->_triangles.erase(itr);
 		}
 		else
 		{
-			if (minHeight < 0.0)
+			if (minHeight < 0)
 			{
 				(*itr) -= vecMidHeight;
 			}
@@ -174,6 +175,61 @@ void	DT::_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight)
 		minHeight = 0;
 	}
 }
+
+// bool	IsTrianglesIntegration(const Triangle &current, 
+// 						  	   const Triangle &next, 
+// 							   Triangle	&integratedTriangle)
+// {
+// 	if (current.c == next.c)
+// 	{
+// 		if (current.a == next.b)
+// 		{
+// 			if (cross_product(current.b, current.c, next.a) == 0 ||
+// 				cross_product(current.b, current.a, next.a) == 0)
+// 			{
+// 				integratedTriangle = ;
+// 			}
+// 			return false;
+// 		}
+// 		else if (current.b == next.a)
+// 		{
+// 			if (cross_product(current.a, current.c, next.b) == 0 ||
+// 				cross_product(current.a, current.a, next.b) == 0)
+// 			{
+
+// 			}
+// 			return false;
+// 		}
+// 		return false;
+// 	}
+// 	return false;
+// }
+
+// void	DT::_IntegrateTriangles(void)
+// {
+// 	if (this->_triangles.size() < 2)
+// 	{
+// 		return ;
+// 	}
+// 	std::deque<Triangle>::iterator itr = this->_triangles.end() - 1;
+// 	Triangle	next(*itr);
+// 	Triangle	integratedTriangle;
+// 	--itr;
+
+// 	for (; itr != this->_triangles.begin();)
+// 	{
+// 		if (itr->tempVertexFlg)
+// 		{	
+// 			itr = this->_triangles.erase(itr);
+// 			--itr;
+// 		}
+// 		else
+// 		{
+
+// 		}
+// 		nextTriangle = (*itr);
+// 	}
+// }
 
 void	DT::_MakeMap(int64_t **map)
 {

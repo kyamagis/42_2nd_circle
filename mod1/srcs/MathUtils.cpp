@@ -1,14 +1,7 @@
-// Inverse Distance Weighting
-
 #include <iostream>
 #include <string.h>
 
 #include "../includes/MathUtils.hpp"
-
-
-#define	POINTS_NUM 20
-#define DIMENSION 3
-
 
 int32_t	cross_product(const Vec &a, const Vec &b, const Vec &point)
 {

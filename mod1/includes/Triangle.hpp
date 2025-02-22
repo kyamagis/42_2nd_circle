@@ -7,8 +7,6 @@
 #include "./Vec.hpp"
 #include "./Circle.hpp"
 
-
-
 class Triangle
 {
 	private:

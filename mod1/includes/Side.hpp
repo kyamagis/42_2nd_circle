@@ -5,7 +5,6 @@
 #include <string>
 #include "./Vec.hpp"
 
-
 class Side
 {
 	private:

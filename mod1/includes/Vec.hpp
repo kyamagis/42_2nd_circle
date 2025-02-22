@@ -4,8 +4,7 @@
 #include <iostream>
 #include <string>
 
-#define	MAX_COORDINATE 1000000
-#define	MIN_COORDINATE 0
+#include "./Defines.hpp"
 
 class Vec
 {
@@ -17,7 +16,7 @@ class Vec
 		double z;
 
 		Vec();
-		Vec(double X, double Y, double Z);
+		Vec(double cX, double cY, double cZ);
 		Vec(const Vec &vec);
 		~Vec();
 
