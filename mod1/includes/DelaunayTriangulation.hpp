@@ -6,7 +6,6 @@
 
 #include "./Vec.hpp"
 #include "./Triangle.hpp"
-#include "./Side.hpp"
 #include "./TerrestrialSimulation.hpp"
 #include "../includes/Print.hpp"
 
@@ -14,9 +13,10 @@ class DT
 {
 	private:
 		std::deque<Vec>			_specificPoints;
+		uint32_t				_mapSize[3];
+		int64_t					_maxHeight;
+		int64_t					_minHeight;
 		std::deque<Triangle>	_triangles;
-		std::deque<Side>		_sides;
-		uint32_t				_mapSize[2];
 
 		Vec	_tempVertexB;
 		Vec	_tempVertexC;
@@ -28,17 +28,19 @@ class DT
 		void	_SegmentTriangles(const size_t idx);
 		bool	_HaveATempVertex(const Vec &a, const Vec &b, const Vec &c);
 		void	_SideFlip(const size_t idx, const Triangle &t);
-		void	_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight);
+		void	_EraseTempTriangles(void);
 		void	_IntegrateTriangles(void);
 		void	_MakeMap(int64_t **map);
 
 	public:
 		DT(const std::deque<Vec> &specificPoints,
-					 const uint32_t mapSize[2]);
+		   const uint32_t mapSize[3], 
+		   const int64_t maxHeight,
+		   const int64_t minHeight);
 		~DT();
 
-		void	Calculation(int64_t **map, int64_t &maxHeight, int64_t &minHeight);
-		std::deque<Triangle>	Calculation(int64_t &maxHeight, int64_t &minHeight);
+		void	Calculation(int64_t **map);
+		std::deque<Triangle>	Calculation(void);
 };
 
 

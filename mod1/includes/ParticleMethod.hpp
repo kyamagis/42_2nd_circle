@@ -6,6 +6,14 @@
 #include <deque>
 #include "./Vec.hpp"
 #include "./Particle.hpp"
+#include "./Triangle.hpp"
+
+typedef struct s_bucket
+{
+	size_t	i;
+	double	disFromWall;
+} t_bucket;
+
 
 class PM
 {
@@ -20,16 +28,18 @@ class PM
 		size_t		bucketColumn;
 		size_t		bucketDepth;
 		size_t		numOfBuckets;
-		int64_t		*bucketFirst;
-		int64_t		*bucketLast;
-		int64_t		*bucketNext;
-
+		t_bucket	*bucketFirst;
+		int64_t		*bucketNextIdxs;
 
 		PM();
-		PM(const uint32_t mapSize[2], const int64_t maxHeight);
+		PM(const uint32_t mapSize[2], 
+		   const int64_t maxHeight, 
+		   const std::deque<Triangle>	&ts);
 		~PM();
 
 		void	InitBuckets(void);
+		void	CalcDistanceFromWall(const Triangle	&t);
+		void	CalcAllDistanceFromWall(const std::deque<Triangle>	&ts);
 		void	SearchNeighborParticles(const size_t oneself);
 		double	W(const size_t i, const size_t oneself, bool gradientFlg);
 		void	PressureGradientTerm(Vec &p, const size_t oneself);

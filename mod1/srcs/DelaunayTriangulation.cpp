@@ -4,23 +4,25 @@
 #include "../includes/MathUtils.hpp"
 #include "../includes/Graphic.hpp"
 
-#define OMMIT 1000
-
 DT::DT()
 {
 
 }
 
 DT::DT(const std::deque<Vec> &specificPoints, 
-	   const uint32_t mapSize[2]): _specificPoints(specificPoints)
+	   const uint32_t mapSize[3],
+		const int64_t maxHeight,
+		const int64_t minHeight): _specificPoints(specificPoints),
+								  _maxHeight(maxHeight),
+								  _minHeight(minHeight)
 {
 	this->_mapSize[X] = mapSize[X];
 	this->_mapSize[Y] = mapSize[Y];
+	this->_mapSize[Z] = mapSize[Z];
 
 	this->_tempVertexB = Vec(2 * this->_mapSize[X], 0, 0);
 	this->_tempVertexC = Vec(0, 2 * this->_mapSize[Y], 0);
 
-	this->_AddEndPoints();
 	this->_MakeSuperTriangle();
 }
 
@@ -40,32 +42,6 @@ void	DT::_MakeSuperTriangle(void)
 	this->_specificPoints.push_front(o);
 	this->_specificPoints.push_front(this->_tempVertexB);
 	this->_specificPoints.push_front(this->_tempVertexC);
-}
-
-void	DT::_AddEndPoints(void)
-{
-	for (uint32_t x = 0; x < this->_mapSize[X]; ++x)
-	{
-		if (x == 0 || x == this->_mapSize[X] - 1)
-		{
-			for (uint32_t y = 0; y < this->_mapSize[Y]; ++y)
-			{
-				if (x == 0 && y == 0)
-				{
-					continue;
-				}
-				if (y % OMMIT == 0 || y + 1 ==  this->_mapSize[Y])
-				{
-					this->_specificPoints.push_back(Vec(x, y, 0));
-				}
-			}
-		}
-		else if (x % OMMIT == 0)
-		{
-			this->_specificPoints.push_back(Vec(x, 0, 0));
-			this->_specificPoints.push_back(Vec(x, this->_mapSize[Y] - 1, 0));
-		}
-	}
 }
 
 bool	DT::_HaveATempVertex(const Vec &a, const Vec &b, const Vec &c)
@@ -140,10 +116,8 @@ void	DT::_SegmentTriangles(const size_t idx)
 	// std::cout << "-------------" << this->_triangles.size() << std::endl;
 }
 
-void	DT::_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight)
+void	DT::_EraseTempTriangles(void)
 {
-	Vec	vecMidHeight(0,0,minHeight);
-
 	std::deque<Triangle>::iterator itr = this->_triangles.begin();
 
 	for (; itr != this->_triangles.end();)
@@ -161,18 +135,9 @@ void	DT::_EraseTempTriangles(int64_t &maxHeight, int64_t &minHeight)
 		}
 		else
 		{
-			if (minHeight < 0)
-			{
-				(*itr) -= vecMidHeight;
-			}
 			(*itr).CalcNormalVector();
 			++itr;
 		}
-	}
-	if (minHeight < 0.0)
-	{
-		maxHeight -= minHeight;
-		minHeight = 0;
 	}
 }
 
@@ -282,31 +247,20 @@ void	DT::_MakeMap(int64_t **map)
 	}
 }
 
-void	DT::Calculation(int64_t **map, int64_t &maxHeight, int64_t &minHeight)
+void	DT::Calculation(int64_t **map)
 {
-	this->Calculation(maxHeight, minHeight);
+	this->Calculation();
 
 	this->_MakeMap(map);
 }
 
-std::deque<Triangle>	DT::Calculation(int64_t &maxHeight, int64_t &minHeight)
+std::deque<Triangle>	DT::Calculation(void)
 {
 	size_t	size = this->_specificPoints.size();
-
-	maxHeight = this->_specificPoints[0].z;
-	minHeight = maxHeight;
 
 	// i is 3, because (0,0,0) _tempVertexB, and _tempVertexC is top of this->_specificPoints
 	for (size_t	i = 3; i < size; ++i)
 	{
-		if (maxHeight < this->_specificPoints[i].z)
-		{
-			maxHeight = this->_specificPoints[i].z;
-		}
-		else if (this->_specificPoints[i].z < minHeight)
-		{
-			minHeight = this->_specificPoints[i].z;
-		}
 		this->_SegmentTriangles(i);
 		std::cout <<std::fixed << std::setprecision(1)
 				  << double(i) / this->_specificPoints.size() * 100
@@ -315,7 +269,7 @@ std::deque<Triangle>	DT::Calculation(int64_t &maxHeight, int64_t &minHeight)
 
 	std::cout <<  std::endl << "Triangulation Done" << std::endl;
 
-	this->_EraseTempTriangles(maxHeight, minHeight);
+	this->_EraseTempTriangles();
 	return this->_triangles;
 }
 

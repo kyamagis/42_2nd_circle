@@ -12,12 +12,11 @@ SRCSDIR = ./srcs
 # SRCS = *.cpp
 SRCS =	main.cpp \
 		Vec.cpp \
-		Side.cpp \
 		Triangle.cpp \
 		Circle.cpp \
 		Particle.cpp \
 		DelaunayTriangulation.cpp \
-		ParseModFile.cpp \
+		RMD.cpp \
 		TerrestrialSimulation.cpp \
 		Graphic.cpp \
 		MathUtils.cpp \

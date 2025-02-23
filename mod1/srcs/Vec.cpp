@@ -8,7 +8,7 @@ Vec::Vec():x(0), y(0), z(0)
 
 Vec::Vec(double cX, double cY, double cZ):x(cX), y(cY), z(cZ)
 {
-	
+
 }
 
 Vec::Vec(const Vec &vec)

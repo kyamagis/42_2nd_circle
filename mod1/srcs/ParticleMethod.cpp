@@ -9,10 +9,6 @@
 #define	NUM_OF_BUCKETS
 #define InvisibleSpace 2.0 * BUCKET_LENGTH
 
-#define X 0
-#define Y 1
-#define Z 2
-
 void	Delete(const void *n)
 {
 	if (n != NULL)
@@ -26,44 +22,47 @@ PM::PM()
 	this->ps.resize(NUM_OF_PARTICLES);
 }
 
-PM::PM(const uint32_t mapSize[2], const int64_t maxHeight):visibleMapSize(mapSize[X], mapSize[Y], maxHeight) ,
-															bucketFirst(NULL),
-															bucketLast(NULL),
-															bucketNext(NULL)
+PM::PM(const uint32_t	mapSize[2], 
+	   const int64_t	maxHeight,
+	   const std::deque<Triangle>	&ts):visibleMapSize(mapSize[X], mapSize[Y], maxHeight) ,
+								bucketFirst(NULL),
+								bucketNextIdxs(NULL)
 {
 	this->totalMapSize.x = mapSize[X] + 2.0 * InvisibleSpace;
 	this->totalMapSize.y = mapSize[Y] + 2.0 * InvisibleSpace;
 	this->totalMapSize.z = maxHeight;
 	this->ps.resize(NUM_OF_PARTICLES);
 
-	this->bucketRow = this->totalMapSize.x / BUCKET_LENGTH;
+	this->bucketRow    = this->totalMapSize.x / BUCKET_LENGTH;
 	this->bucketColumn = this->totalMapSize.y / BUCKET_LENGTH;
-	this->bucketDepth = size_t(this->totalMapSize.z / BUCKET_LENGTH);
+	this->bucketDepth  = size_t(this->totalMapSize.z / BUCKET_LENGTH);
 	this->numOfBuckets = this->bucketRow * this->bucketColumn * this->bucketDepth;
 
 	this->InitBuckets();
+	this->CalcAllDistanceFromWall(ts);
 }
 
 PM::~PM()
 {
 	Delete(this->bucketFirst);
-	Delete(this->bucketLast);
-	Delete(this->bucketNext);
+	Delete(this->bucketNextIdxs);
 }
 
 void	PM::InitBuckets(void)
 {
-	this->bucketFirst = new int64_t[this->numOfBuckets];
-	this->bucketLast = new int64_t[this->numOfBuckets];
-	this->bucketNext = new int64_t[NUM_OF_PARTICLES];
+	this->bucketFirst       = new t_bucket[this->numOfBuckets];
+	t_bucket	*bucketLast = new t_bucket[this->numOfBuckets];
+	this->bucketNextIdxs    = new int64_t[NUM_OF_PARTICLES];
 
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		this->bucketFirst[i] = -1;
-		this->bucketLast[i] = -1;
+		this->bucketFirst[i].i   = -1;
+		this->bucketFirst[i].disFromWall = 2.0 * BUCKET_LENGTH;
+		bucketLast[i].i   = -1;
+		bucketLast[i].disFromWall = 2.0 * BUCKET_LENGTH;
 		if (i < NUM_OF_PARTICLES)
 		{
-			this->bucketNext[i] = -1;
+			this->bucketNextIdxs[i] = -1;
 		}
 	}
 
@@ -71,7 +70,7 @@ void	PM::InitBuckets(void)
 	size_t	bucketY;
 	size_t	bucketZ;
 	size_t	bucketIdx;
-	size_t	next;	
+	size_t	nextIdx;	
 
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
@@ -82,16 +81,32 @@ void	PM::InitBuckets(void)
 		bucketIdx = bucketX + 
 					this->bucketColumn * bucketY + 
 					this->bucketColumn * this->bucketDepth * bucketZ;
-		next = this->bucketNext[bucketIdx];
-		this->bucketNext[bucketIdx] = i;
-		if (next == -1)
+		nextIdx = bucketLast[bucketIdx].i;
+		bucketLast[bucketIdx].i = i;
+		if (nextIdx == -1)
 		{
-			this->bucketFirst[bucketIdx] = i;
+			this->bucketFirst[bucketIdx].i = i;
 		}
 		else
 		{
-			this->bucketNext[next] = i;
+			this->bucketNextIdxs[nextIdx] = i;
 		}
+	}
+}
+
+
+
+
+void	PM::CalcDistanceFromWall(const Triangle	&t)
+{
+	t.a.x == 
+}
+
+void	PM::CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
+{
+	for (size_t	i = 0; i < ts.size(); ++i)
+	{
+		this->CalcDistanceFromWall(ts[i]);
 	}
 }
 

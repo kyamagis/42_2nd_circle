@@ -11,10 +11,13 @@
 
 #define X 0
 #define Y 1
+#define Z 2
 
 #define IS_SPECIFIED 1
 #define TRUE 1
 #define FALSE 0
+
+#define OMMIT 1000
 
 #define SCREEN_SIZE_X 1000
 #define SCREEN_SIZE_Y 1000

@@ -4,9 +4,6 @@
 
 #include <cmath>
 
-#define X 0
-#define Y 1
-
 #define SCALING 0.7
 #define DEPTH_SCALING 0.01f
 

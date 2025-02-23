@@ -11,7 +11,11 @@ class TerrestrialSimulation
 {
 	private:
 		std::deque<Vec> _specificPoints;
-		uint32_t		_mapSize[2];
+		uint32_t		_mapSize[3];
+		int64_t			_maxHeight;
+		int64_t			_minHeight;
+
+		bool	_ReadMapData(const std::string &fileName);
 
 	public:
 		TerrestrialSimulation();
@@ -20,8 +24,7 @@ class TerrestrialSimulation
 		bool	SimulationStart(int argc, 
 								char** argv, 
 								const std::string &fileName);
-		void	DecideMapSize();
-		void	PrintSpecificPoints();
+		void	PrintSpecificPoints(void);
 
 };
 
