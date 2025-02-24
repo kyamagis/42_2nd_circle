@@ -9,60 +9,71 @@
 #define	NUM_OF_BUCKETS
 #define InvisibleSpace 2.0 * BUCKET_LENGTH
 
-void	Delete(const void *n)
-{
-	if (n != NULL)
-	{
-		delete n;
-	}
-}
-
 PM::PM()
 {
 	this->ps.resize(NUM_OF_PARTICLES);
 }
 
-PM::PM(const uint32_t	mapSize[2], 
+PM::PM(const uint32_t	mapSize[3], 
 	   const int64_t	maxHeight,
-	   const std::deque<Triangle>	&ts):visibleMapSize(mapSize[X], mapSize[Y], maxHeight) ,
+	   const std::deque<Triangle>	&ts):visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
 								bucketFirst(NULL),
-								bucketNextIdxs(NULL)
+								particleNextIdxs(NULL)
 {
+	(void)maxHeight;
 	this->totalMapSize.x = mapSize[X] + 2.0 * InvisibleSpace;
 	this->totalMapSize.y = mapSize[Y] + 2.0 * InvisibleSpace;
-	this->totalMapSize.z = maxHeight;
+	this->totalMapSize.z = mapSize[Z] + 2.0 * InvisibleSpace;
 	this->ps.resize(NUM_OF_PARTICLES);
 
 	this->bucketRow    = this->totalMapSize.x / BUCKET_LENGTH;
 	this->bucketColumn = this->totalMapSize.y / BUCKET_LENGTH;
-	this->bucketDepth  = size_t(this->totalMapSize.z / BUCKET_LENGTH);
+	this->bucketDepth  = this->totalMapSize.z / BUCKET_LENGTH;
 	this->numOfBuckets = this->bucketRow * this->bucketColumn * this->bucketDepth;
 
-	this->InitBuckets();
-	this->CalcAllDistanceFromWall(ts);
+	this->_InitBuckets();
+	this->_CalcAllDistanceFromWall(ts);
 }
 
 PM::~PM()
 {
-	Delete(this->bucketFirst);
-	Delete(this->bucketNextIdxs);
+	if (this->bucketFirst != NULL)
+	{
+		delete this->bucketFirst;
+	}
+	if (this->particleNextIdxs != NULL)
+	{
+		delete this->particleNextIdxs;
+	}
 }
 
-void	PM::InitBuckets(void)
+size_t	PM::_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketZ)
+{
+	return bucketX + 
+			this->bucketColumn * bucketY + 
+			this->bucketColumn * this->bucketDepth * bucketZ;
+}
+
+size_t	PM::_CalcBucketIdx(const Vec &v)
+{
+	return this->_CalcBucketIdx(v.x, v.y, v.z);
+}
+
+void	PM::_InitBuckets(void)
 {
 	this->bucketFirst       = new t_bucket[this->numOfBuckets];
 	t_bucket	*bucketLast = new t_bucket[this->numOfBuckets];
-	this->bucketNextIdxs    = new int64_t[NUM_OF_PARTICLES];
+	this->particleNextIdxs  = new int64_t[NUM_OF_PARTICLES];
 
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		this->bucketFirst[i].i   = -1;
+		this->bucketFirst[i].firstPrtIdx   = -1;
 		this->bucketFirst[i].disFromWall = 2.0 * BUCKET_LENGTH;
-		bucketLast[i].i   = -1;
+		bucketLast[i].firstPrtIdx   = -1;
 		bucketLast[i].disFromWall = 2.0 * BUCKET_LENGTH;
 		if (i < NUM_OF_PARTICLES)
 		{
-			this->bucketNextIdxs[i] = -1;
+			this->particleNextIdxs[i] = -1;
 		}
 	}
 
@@ -70,7 +81,7 @@ void	PM::InitBuckets(void)
 	size_t	bucketY;
 	size_t	bucketZ;
 	size_t	bucketIdx;
-	size_t	nextIdx;	
+	int64_t	nextIdx;	
 
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
@@ -81,32 +92,188 @@ void	PM::InitBuckets(void)
 		bucketIdx = bucketX + 
 					this->bucketColumn * bucketY + 
 					this->bucketColumn * this->bucketDepth * bucketZ;
-		nextIdx = bucketLast[bucketIdx].i;
-		bucketLast[bucketIdx].i = i;
+		nextIdx = bucketLast[bucketIdx].firstPrtIdx;
+		bucketLast[bucketIdx].firstPrtIdx = i;
 		if (nextIdx == -1)
 		{
-			this->bucketFirst[bucketIdx].i = i;
+			this->bucketFirst[bucketIdx].firstPrtIdx = i;
 		}
 		else
 		{
-			this->bucketNextIdxs[nextIdx] = i;
+			this->particleNextIdxs[nextIdx] = i;
 		}
 	}
 }
 
-
-
-
-void	PM::CalcDistanceFromWall(const Triangle	&t)
+Vec	PM::_MaxEachCoordinateOfVertex(const Vec &a, 
+									const Vec &b,
+									const Vec &c)
 {
-	t.a.x == 
+	Vec maxCoordinate;
+
+	maxCoordinate.x = max_of_3_elm(a.x, b.x, c.x);
+	maxCoordinate.y = max_of_3_elm(a.y, b.y, c.y);
+	maxCoordinate.z = max_of_3_elm(a.z, b.z, c.z);
+
+	if (maxCoordinate.x + E_RADIUS < this->totalMapSize.x)
+	{
+		maxCoordinate.x += E_RADIUS;
+	}
+	if (maxCoordinate.y + E_RADIUS < this->totalMapSize.y)
+	{
+		maxCoordinate.y += E_RADIUS;
+	}
+	if (maxCoordinate.z + E_RADIUS< this->totalMapSize.z)
+	{
+		maxCoordinate.z += E_RADIUS;
+	}
+
+	return maxCoordinate;
 }
 
-void	PM::CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
+Vec	PM::_MinEachCoordinateOfVertex(const Vec &a, 
+									const Vec &b,
+									const Vec &c)
+{
+	Vec minCoordinate;
+
+	minCoordinate.x = min_of_3_elm(a.x, b.x, c.x);
+	minCoordinate.y = min_of_3_elm(a.y, b.y, c.y);
+	minCoordinate.z = min_of_3_elm(a.z, b.z, c.z);
+
+	if (E_RADIUS < minCoordinate.x)
+	{
+		minCoordinate.x -= E_RADIUS;
+	}
+	if (E_RADIUS < minCoordinate.y)
+	{
+		minCoordinate.y -= E_RADIUS;
+	}
+	if (E_RADIUS < minCoordinate.z)
+	{
+		minCoordinate.z -= E_RADIUS;
+	}
+
+	return minCoordinate;
+}
+
+Vec	PM::_CalcBucketCenterPos(const size_t i, const size_t j, const size_t k)
+{
+	return Vec(i + BUCKET_LENGTH / 2.0, 
+			   j + BUCKET_LENGTH / 2.0,
+			   k + BUCKET_LENGTH / 2.0);
+}
+
+double	PM::_CalcShortestDistanceFromVertex(const Triangle &t, 
+									const Vec &bucketCenterPos)
+{
+	double	disFromVertexA = t.a.Magnitude3d(bucketCenterPos);
+	double	disFromVertexB = t.b.Magnitude3d(bucketCenterPos);
+	double	disFromVertexC = t.c.Magnitude3d(bucketCenterPos);
+
+	return max_of_3_elm(disFromVertexA, disFromVertexB, disFromVertexC);
+}
+
+double	PM::_CalcDistanceFromSide(const Vec &a, 
+								  const Vec &b, 
+								  const Vec &bucketCenterPos)
+{
+	const Vec	abVector = b - a;
+	const Vec	aCenterVector = bucketCenterPos - a;
+
+	const double	t = abVector.DotProduct3d(aCenterVector) / 
+				abVector.MagnitudeSQ3d();
+
+	if (0.0 < t && t < 1.0)
+	{
+		const Vec	projectivePoint = a + (abVector * t);
+
+		return (bucketCenterPos - projectivePoint).Magnitude3d();
+	}
+		
+	return 2.0 * BUCKET_LENGTH;
+}
+
+double	PM::_CalcShortestDistanceFromSide(const Triangle &t,  
+								          const Vec &bucketCenterPos)
+{
+	double	disFromSideAB = this->_CalcDistanceFromSide(t.a, t.b, bucketCenterPos);
+	double	disFromSideBC = this->_CalcDistanceFromSide(t.b, t.c, bucketCenterPos);
+	double	disFromSideCA = this->_CalcDistanceFromSide(t.c, t.a, bucketCenterPos);
+
+	return max_of_3_elm(disFromSideAB, disFromSideBC, disFromSideCA);
+}
+
+double	PM::_CalcDistanceFromTriangle(const Triangle &t,  
+									  const Vec &bucketCenterPos)
+{
+	const Vec	apVec =  bucketCenterPos - t.a;
+	const double	disFromTriangle = apVec.DotProduct3d(t.n) / 
+									  t.n.MagnitudeSQ3d();
+	const Vec	projectivePoint = bucketCenterPos -
+								  t.n * disFromTriangle;
+
+	if (t.InternalAndExternalJudgments3d(projectivePoint))
+	{
+		return disFromTriangle;
+	}
+	return 2.0 * BUCKET_LENGTH;
+}
+
+double	PM::_CalcShortestDistance(const Triangle &t,
+								  const double i, 
+								  const double j, 
+							      const double k)
+{
+	Vec		bucketCenterPos = this->_CalcBucketCenterPos(i,j,k);
+
+	double	disFromVertex   = this->_CalcShortestDistanceFromVertex(t, bucketCenterPos);
+	double	disFromSide 	= this->_CalcShortestDistanceFromSide(t,bucketCenterPos);
+	double	disFromTriangle = this->_CalcDistanceFromTriangle(t, bucketCenterPos);
+
+	return max_of_3_elm(disFromVertex, disFromSide, disFromTriangle);
+}
+
+void	PM::_CalcDistanceFromWall(const Triangle &t)
+{
+	Vec	maxCrd = this->_MaxEachCoordinateOfVertex(t.a, t.b, t.c);
+	Vec minCrd = this->_MinEachCoordinateOfVertex(t.a, t.b, t.c);
+
+	size_t	bucketX = size_t(minCrd.x / BUCKET_LENGTH);
+	size_t	bucketY = size_t(minCrd.y / BUCKET_LENGTH);
+	size_t	bucketZ = size_t(minCrd.z / BUCKET_LENGTH);
+	size_t	bucketIdx;
+
+	double	shortestDistance;
+	
+	for (double	i = minCrd.x; size_t(i) <= size_t(maxCrd.x);)
+	{
+		for (size_t	j = minCrd.y; j <= maxCrd.y;)
+		{
+			for (size_t	k = minCrd.z; k <= maxCrd.z;)
+			{
+				bucketIdx = this->_CalcBucketIdx(i,j,k);
+				shortestDistance = this->_CalcShortestDistance(t, i, j, k);
+				if (shortestDistance < this->bucketFirst[bucketIdx].disFromWall)
+				{
+					this->bucketFirst[bucketIdx].disFromWall = shortestDistance;
+				}
+				k += BUCKET_LENGTH;
+				bucketZ = k / BUCKET_LENGTH;
+			}
+			j += BUCKET_LENGTH;
+			bucketY = j / BUCKET_LENGTH;
+		}
+		i += BUCKET_LENGTH;
+		bucketX = i / BUCKET_LENGTH;
+	}
+}
+
+void	PM::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 {
 	for (size_t	i = 0; i < ts.size(); ++i)
 	{
-		this->CalcDistanceFromWall(ts[i]);
+		this->_CalcDistanceFromWall(ts[i]);
 	}
 }
 

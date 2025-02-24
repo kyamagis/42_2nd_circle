@@ -81,31 +81,44 @@ void	Triangle::CalcCircumcircle()
 	this->circumcircle.r = this->a.MagnitudeSQ2d(this->circumcircle.center);
 }
 
-bool	Triangle::InternalAndExternalJudgments(const Vec &point)
+bool	Triangle::InternalAndExternalJudgments2d(const Vec &point) const
 {
 	if (this->a == this->b || 
 		this->b == this->c || 
 		this->c == this->a)
 		return false;
 
-	int32_t	abp = cross_product(this->a, this->b, point);
-	int32_t	bcp = cross_product(this->b, this->c, point);
+	int32_t	abp = cross_product_2d(this->a, this->b, point);
+	int32_t	bcp = cross_product_2d(this->b, this->c, point);
 	if ((abp ^ bcp) < 0)
 	{
 		return false ;
 	}
-	int32_t	cap = cross_product(this->c, this->a, point);
+	int32_t	cap = cross_product_2d(this->c, this->a, point);
 	return (0 <= (abp ^ cap));
+}
+
+bool	Triangle::InternalAndExternalJudgments3d(const Vec &point) const
+{
+	if (this->a == this->b || 
+		this->b == this->c || 
+		this->c == this->a)
+		return false;
+
+	Vec	abp = (this->b - this->a).CrossProduct3d(point - this->b);
+	abp /=  abp.Magnitude3d();
+	const Vec	bcp = (this->c - this->b).CrossProduct3d(point - this->c);
+	if (!abp.NearlyEqual(bcp / bcp.Magnitude3d()))
+	{
+		return false ;
+	}
+	const Vec	cap = (this->a - this->c).CrossProduct3d(point - this->a);
+	return (abp.NearlyEqual(cap / cap.Magnitude3d()));
 }
 
 void	Triangle::CalcNormalVector()
 {
-	this->n.x = (this->b.y - this->a.y) * (this->c.z - this->a.z) - 
-				(this->b.z - this->a.z) * (this->c.y - this->a.y);
-	this->n.y = (this->b.z - this->a.z) * (this->c.x - this->a.x) - 
-				(this->b.x - this->a.x) * (this->c.z - this->a.z);
-	this->n.z = (this->b.x - this->a.x) * (this->c.y - this->a.y) - 
-				(this->b.y - this->a.y) * (this->c.x - this->a.x);
+	this->n = (this->b - this->a).CrossProduct3d(this->c - this->a);
 }
 
 double	Triangle::FindZ(const double pX, const double pY)

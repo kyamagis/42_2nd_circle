@@ -28,6 +28,15 @@ bool	Vec::operator==(const Vec &vec) const
 		   (this->z == vec.z);
 }
 
+bool	Vec::NearlyEqual(const Vec &vec) const
+{
+	double	leverage  = 100000;
+
+	return (size_t(this->x * leverage) == size_t(vec.x * leverage)) && 
+		   (size_t(this->y * leverage) == size_t(vec.y * leverage)) && 
+		   (size_t(this->z * leverage) == size_t(vec.z * leverage));
+}
+
 double	Vec::DotProduct2d(const Vec &p) const
 {
 	return (this->x * p.x) + (this->y * p.y);
@@ -36,6 +45,39 @@ double	Vec::DotProduct2d(const Vec &p) const
 double	Vec::DotProduct3d(const Vec &p) const
 {
 	return (this->x * p.x) + (this->y * p.y) + (this->z * p.z);
+}
+
+Vec	Vec::CrossProduct3d(const Vec &p) const
+{
+	const double	crossX = this->y * p.z - this->z * p.y;
+	const double	crossY = this->z * p.x - this->x * p.z;
+	const double	crossZ = this->x * p.y - this->y * p.x;
+
+	return Vec(crossX, crossY, crossZ);
+}
+
+double	Vec::MagnitudeSQ3d(const Vec &p) const
+{
+	return (this->x - p.x) * (this->x - p.x) + 
+		   (this->y - p.y) * (this->y - p.y) +
+		   (this->z - p.z) * (this->z - p.z);
+}
+
+double	Vec::Magnitude3d(const Vec &p) const
+{
+	return sqrt(this->MagnitudeSQ3d(p));
+}
+
+double	Vec::MagnitudeSQ3d(void) const
+{
+	return this->x * this->x  + 
+		   this->y * this->y +
+		   this->z * this->z;
+}
+
+double	Vec::Magnitude3d(void) const
+{
+	return sqrt(this->MagnitudeSQ3d());
 }
 
 double	Vec::MagnitudeSQ2d(const Vec &p) const
@@ -51,12 +93,12 @@ double	Vec::MagnitudeSQ2d(void) const
 
 double	Vec::Magnitude2d(const Vec &p) const
 {
-	return sqrt(MagnitudeSQ2d(p));
+	return sqrt(this->MagnitudeSQ2d(p));
 }
 
 double	Vec::Magnitude2d(void) const
 {
-	return sqrt(MagnitudeSQ2d());
+	return sqrt(this->MagnitudeSQ2d());
 }
 
 void	Vec::RotationZ(double rad)
@@ -104,7 +146,7 @@ Vec&	Vec::operator=(const Vec &vec)
 	return *this;
 }
 
-Vec	Vec::operator+(const Vec &vec)
+Vec	Vec::operator+(const Vec &vec) const
 {
 	return Vec(this->x + vec.x, this->y + vec.y, this->z + vec.z);
 }
@@ -135,12 +177,12 @@ void	Vec::operator-=(const Vec &vec)
 	this->z -= vec.z;
 }
 
-Vec	Vec::operator*(const Vec &vec)
+Vec	Vec::operator*(const Vec &vec) const
 {
 	return Vec(this->x * vec.x, this->y * vec.y, this->z * vec.z);
 }
 
-Vec	Vec::operator*(const double a)
+Vec	Vec::operator*(const double a) const
 {
 	return Vec(this->x * a, this->y * a, this->z * a);
 }
@@ -152,9 +194,28 @@ void	Vec::operator*=(const double a)
 	this->z *= a;
 }
 
-Vec	Vec::operator/(const Vec &vec)
+Vec	Vec::operator/(const Vec &vec) const
 {
 	return Vec(this->x / vec.x, this->y / vec.y, this->z / vec.z);
+}
+
+Vec	Vec::operator/(const double a) const
+{
+	return Vec(this->x / a, this->y / a, this->z / a);
+}
+
+void	Vec::operator/=(const Vec &vec)
+{
+	this->x /= vec.x;
+	this->y /= vec.y;
+	this->z /= vec.z;
+}
+
+void	Vec::operator/=(const double num)
+{
+	this->x /= num;
+	this->y /= num;
+	this->z /= num;
 }
 
 std::ostream &operator<<(std::ostream &ostrm, const Vec &Vec)

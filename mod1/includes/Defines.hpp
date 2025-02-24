@@ -17,7 +17,7 @@
 #define TRUE 1
 #define FALSE 0
 
-#define OMMIT 1000
+#define OMMIT 1000000
 
 #define SCREEN_SIZE_X 1000
 #define SCREEN_SIZE_Y 1000

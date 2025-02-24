@@ -20,9 +20,17 @@ class Vec
 		Vec(const Vec &vec);
 		~Vec();
 
+		bool	NearlyEqual(const Vec &vec) const;
+
 		double	DotProduct2d(const Vec &p) const;
 		double	DotProduct3d(const Vec &p) const;
 
+		Vec		CrossProduct3d(const Vec &p) const;
+
+		double	MagnitudeSQ3d(const Vec &p) const;
+		double	Magnitude3d(const Vec &p) const;
+		double	MagnitudeSQ3d(void) const;
+		double	Magnitude3d(void) const;
 		double	MagnitudeSQ2d(const Vec &p) const;
 		double	MagnitudeSQ2d(void) const;
 		double	Magnitude2d(const Vec &p) const;
@@ -36,15 +44,18 @@ class Vec
 
 		bool	operator==(const Vec &vec) const;
 		Vec&	operator=(const Vec &vec);
-		Vec		operator+(const Vec &vec);
+		Vec		operator+(const Vec &vec) const;
 		void	operator+=(const Vec &vec);
 		Vec		operator-(const Vec &vec) const;
 		void	operator-=(const double n);
 		void	operator-=(const Vec &vec);
-		Vec		operator*(const Vec &vec);
-		Vec		operator*(const double a);
+		Vec		operator*(const Vec &vec) const;
+		Vec		operator*(const double a) const;
 		void	operator*=(const double a);
-		Vec		operator/(const Vec &vec);
+		Vec		operator/(const Vec &vec) const;
+		Vec		operator/(const double a) const;
+		void	operator/=(const Vec &vec);
+		void	operator/=(const double num);
 };
 
 std::ostream &operator<<(std::ostream &ostrm, const Vec &Vec);

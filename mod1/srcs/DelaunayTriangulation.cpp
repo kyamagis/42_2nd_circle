@@ -66,7 +66,7 @@ bool	DT::_HaveATempVertex(const Vec &a, const Vec &b, const Vec &c)
 
 bool	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 {
-	if (cross_product(a, b, this->_specificPoints[idx]) == 0)
+	if (cross_product_2d(a, b, this->_specificPoints[idx]) == 0)
 	{
 		return false;
 	}
@@ -113,7 +113,6 @@ void	DT::_SegmentTriangles(const size_t idx)
 			++itr;
 		}
 	}
-	// std::cout << "-------------" << this->_triangles.size() << std::endl;
 }
 
 void	DT::_EraseTempTriangles(void)
@@ -141,61 +140,6 @@ void	DT::_EraseTempTriangles(void)
 	}
 }
 
-// bool	IsTrianglesIntegration(const Triangle &current, 
-// 						  	   const Triangle &next, 
-// 							   Triangle	&integratedTriangle)
-// {
-// 	if (current.c == next.c)
-// 	{
-// 		if (current.a == next.b)
-// 		{
-// 			if (cross_product(current.b, current.c, next.a) == 0 ||
-// 				cross_product(current.b, current.a, next.a) == 0)
-// 			{
-// 				integratedTriangle = ;
-// 			}
-// 			return false;
-// 		}
-// 		else if (current.b == next.a)
-// 		{
-// 			if (cross_product(current.a, current.c, next.b) == 0 ||
-// 				cross_product(current.a, current.a, next.b) == 0)
-// 			{
-
-// 			}
-// 			return false;
-// 		}
-// 		return false;
-// 	}
-// 	return false;
-// }
-
-// void	DT::_IntegrateTriangles(void)
-// {
-// 	if (this->_triangles.size() < 2)
-// 	{
-// 		return ;
-// 	}
-// 	std::deque<Triangle>::iterator itr = this->_triangles.end() - 1;
-// 	Triangle	next(*itr);
-// 	Triangle	integratedTriangle;
-// 	--itr;
-
-// 	for (; itr != this->_triangles.begin();)
-// 	{
-// 		if (itr->tempVertexFlg)
-// 		{	
-// 			itr = this->_triangles.erase(itr);
-// 			--itr;
-// 		}
-// 		else
-// 		{
-
-// 		}
-// 		nextTriangle = (*itr);
-// 	}
-// }
-
 void	DT::_MakeMap(int64_t **map)
 {
 	size_t	i = 0;
@@ -207,7 +151,7 @@ void	DT::_MakeMap(int64_t **map)
 	{
 		for (size_t	y = 0; y < this->_mapSize[Y]; ++y)
 		{
-			if (this->_triangles[i].InternalAndExternalJudgments(Vec(x, y, 0)))
+			if (this->_triangles[i].InternalAndExternalJudgments2d(Vec(x, y, 0)))
 			{
 				map[x][y] = this->_triangles[i].FindZ(x, y);
 			}
@@ -220,7 +164,7 @@ void	DT::_MakeMap(int64_t **map)
 					{
 						continue;
 					}
-					if (this->_triangles[i].InternalAndExternalJudgments(Vec(x, y, 0)))
+					if (this->_triangles[i].InternalAndExternalJudgments2d(Vec(x, y, 0)))
 					{
 						map[x][y] = this->_triangles[i].FindZ(x, y);
 						break;

@@ -32,7 +32,8 @@ class Triangle
 		bool	IsInsideCircumcircle(const Vec &point);
 		void	CalcCircumcircle();
 		double	CalcDistanceFromCenterSQ(const Vec &point);
-		bool	InternalAndExternalJudgments(const Vec &point);
+		bool	InternalAndExternalJudgments2d(const Vec &point) const;
+		bool	InternalAndExternalJudgments3d(const Vec &point) const;
 		void	CalcNormalVector();
 		// void	CalcIntersectionWithMidHeight(const Vec &midHeight);
 		double	FindZ(const double pX, const double pY);

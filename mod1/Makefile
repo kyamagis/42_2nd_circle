@@ -20,7 +20,7 @@ SRCS =	main.cpp \
 		TerrestrialSimulation.cpp \
 		Graphic.cpp \
 		MathUtils.cpp \
-		# ParticleMethod.cpp\
+		ParticleMethod.cpp\
 
 B_SRCS =	
 

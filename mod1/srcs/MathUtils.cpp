@@ -3,7 +3,7 @@
 
 #include "../includes/MathUtils.hpp"
 
-int32_t	cross_product(const Vec &a, const Vec &b, const Vec &point)
+int32_t	cross_product_2d(const Vec &a, const Vec &b, const Vec &point)
 {
 	int32_t	a_to_bx = b.x - a.x;
 	int32_t	a_to_by = b.y - a.y;
@@ -35,7 +35,7 @@ uint32_t	max(uint32_t	aX, uint32_t bX)
 	return aX;
 }
 
-double	Max(double	aX, double bX)
+double	max(double	aX, double bX)
 {
 	if (aX < bX)
 	{
@@ -44,9 +44,9 @@ double	Max(double	aX, double bX)
 	return aX;
 }
 
-double MaxOf3Elm(double	aX, double bX, double cX)
+double	max_of_3_elm(double	aX, double bX, double cX)
 {
-	double	biggerX = Max(aX, bX);
+	double	biggerX = max(aX, bX);
 
 	if (biggerX < cX)
 	{
@@ -55,18 +55,27 @@ double MaxOf3Elm(double	aX, double bX, double cX)
 	return biggerX;
 }
 
-Vec	MaxEachCoordinateOfVertex(const Vec &a, 
-							  const Vec &b, 
-							  const Vec &c)
+double	min(double	aX, double bX)
 {
-	Vec maxCoordinate;
-
-	maxCoordinate.x = MaxOf3Elm(a.x, b.x, c.x) + E_RADIUS;
-	maxCoordinate.y = MaxOf3Elm(a.y, b.y, c.y) + E_RADIUS;
-	maxCoordinate.z = MaxOf3Elm(a.z, b.z, c.z) + E_RADIUS;
-
-	return maxCoordinate;
+	if (aX < bX)
+	{
+		return aX;
+	}
+	return bX;
 }
+
+double	min_of_3_elm(double	aX, double bX, double cX)
+{
+	double	smallerX = min(aX, bX);
+
+	if (smallerX < cX)
+	{
+		return smallerX;
+	}
+	return smallerX;
+}
+
+
 
 // Vec	Min(const Vec &a, const Vec &b, const Vec &c)
 // {
