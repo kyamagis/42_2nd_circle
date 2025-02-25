@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string.h>
 
-#include "../includes/MathUtils.hpp"
+#include "../includes/Utils.hpp"
 
 int32_t	cross_product_2d(const Vec &a, const Vec &b, const Vec &point)
 {
@@ -75,9 +75,12 @@ double	min_of_3_elm(double	aX, double bX, double cX)
 	return smallerX;
 }
 
+double	extend_map(const uint32_t mapSize)
+{
+	return mapSize + 2.0 * InvisibleSpace;
+}
 
-
-// Vec	Min(const Vec &a, const Vec &b, const Vec &c)
-// {
-	
-// }
+size_t	to_bucket_coor(const double coordinate)
+{
+	return size_t(coordinate / BUCKET_LENGTH);
+}

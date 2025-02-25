@@ -1,7 +1,7 @@
 #include "../includes/Print.hpp"
 #include "../includes/Vec.hpp"
 #include "../includes/ReadMapData.hpp"
-#include "../includes/MathUtils.hpp"
+#include "../includes/Utils.hpp"
 
 #include <fstream>
 #include <string>

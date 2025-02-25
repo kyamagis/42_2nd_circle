@@ -18,31 +18,35 @@ class BC
 {
 	private:
 		BC();
+		
 		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
 		size_t	_CalcBucketIdx(const Vec &v);
-		void	_InitBuckets(const std::deque<Particle> &ps);
 		Vec		_MaxEachCoordinateOfVertex(const Vec &a, 
-										const Vec &b,
-										const Vec &c);
+											const Vec &b,
+											const Vec &c);
 		Vec		_MinEachCoordinateOfVertex(const Vec &a, 
-										const Vec &b,
-										const Vec &c);
-		
+											const Vec &b,
+											const Vec &c);
+
 		Vec		_CalcBucketCenterPos(const size_t i, const size_t j, const size_t k);
 		double	_CalcShortestDistanceFromVertex(const Triangle &t, 
 												const Vec &bucketCenterPos);
 		double	_CalcShortestDistance(const Triangle &t,
-									  const double i, 
-									  const double j, 
-									  const double k);
+										const double i, 
+										const double j, 
+										const double k);
 		double	_CalcDistanceFromSide(const Vec &a, 
-									  const Vec &b, 
-									  const Vec &bucketCenterPos);							  
+										const Vec &b, 
+										const Vec &bucketCenterPos);							  
 		double	_CalcShortestDistanceFromSide(const Triangle &t, 
-											  const Vec &bucketCenterPos);
+												const Vec &bucketCenterPos);
 		double  _CalcDistanceFromTriangle(const Triangle &t, 
-												  const Vec &bucketCenterPos);
+											const Vec &bucketCenterPos);
 		void	_CalcDistanceFromWall(const Triangle &t);
+
+	protected:
+		void	_MakeBuckets(const std::deque<Particle> &ps);
+		
 		void	_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts);
 		void	_SearchNeighborParticle(const size_t i);
 		void	_SearchNeighborParticles(const size_t oneself);
@@ -60,18 +64,10 @@ class BC
 		int64_t		*particleNextIdxs;
 
 	
-		BC(const uint32_t mapSize[3], 
-		   const std::deque<Triangle> &ts, 
-		   const std::deque<Particle> &ps);
+		BC(const Vec &visibleMapSize_,
+		   const Vec &totalMapSize_);
 	    virtual ~BC();
 
-		
-
-		
-		double	W(const size_t i, const size_t oneself, bool gradientFlg);
-		void	PressureGradientTerm(Vec &p, const size_t oneself);
-		void	ViscosityTerm(Vec &vi, const size_t oneself);
-		void	NavierStokesEquations(const	Vec &g);
 		// BC(const BC &BC);
 		// BC&	operator=(const BC &BC);
 		// bool	operator==(const BC &BC) const;

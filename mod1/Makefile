@@ -19,7 +19,7 @@ SRCS =	main.cpp \
 		RMD.cpp \
 		TerrestrialSimulation.cpp \
 		Graphic.cpp \
-		MathUtils.cpp \
+		Utils.cpp \
 		MPS.cpp\
 
 B_SRCS =	

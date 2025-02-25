@@ -1,5 +1,5 @@
 #include "../includes/Triangle.hpp"
-#include "../includes/MathUtils.hpp"
+#include "../includes/Utils.hpp"
 
 Triangle::Triangle()
 {

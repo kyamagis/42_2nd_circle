@@ -44,6 +44,7 @@ class Vec
 
 		bool	operator==(const Vec &vec) const;
 		Vec&	operator=(const Vec &vec);
+		void	operator=(const double num);
 		Vec		operator+(const Vec &vec) const;
 		void	operator+=(const Vec &vec);
 		Vec		operator-(const Vec &vec) const;

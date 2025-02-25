@@ -146,6 +146,13 @@ Vec&	Vec::operator=(const Vec &vec)
 	return *this;
 }
 
+void	Vec::operator=(const double num)
+{
+	this->x = num;
+	this->y = num;
+	this->z = num;
+}
+
 Vec	Vec::operator+(const Vec &vec) const
 {
 	return Vec(this->x + vec.x, this->y + vec.y, this->z + vec.z);

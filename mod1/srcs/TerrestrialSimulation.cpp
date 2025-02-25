@@ -3,7 +3,7 @@
 #include "../includes/Graphic.hpp"
 #include "../includes/Print.hpp"
 #include "../includes/DelaunayTriangulation.hpp"
-#include "../includes/MathUtils.hpp"
+#include "../includes/Utils.hpp"
 
 TerrestrialSimulation::TerrestrialSimulation()
 {

@@ -1,5 +1,5 @@
-#ifndef MATHUTILS_HPP
-# define MATHUTILS_HPP
+#ifndef UTILS_HPP
+# define UTILS_HPP
 
 
 #include "./Vec.hpp"
@@ -13,4 +13,7 @@ uint32_t	max(uint32_t	aX, uint32_t bX);
 double  max_of_3_elm(double	aX, double bX, double cX);
 double	min_of_3_elm(double	aX, double bX, double cX);
 void	assign_power_of_two(uint32_t &x, uint32_t &y, uint32_t &z);
+
+double	extend_map(const uint32_t mapSize);
+size_t	to_bucket_coor(const double coordinate);
 #endif

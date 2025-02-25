@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include "../includes/DelaunayTriangulation.hpp"
-#include "../includes/MathUtils.hpp"
+#include "../includes/Utils.hpp"
 #include "../includes/Graphic.hpp"
 
 DT::DT()

@@ -1,5 +1,5 @@
 #include "../includes/BucketsController.hpp"
-#include "../includes/MathUtils.hpp"
+#include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
 
 // BC::BC()
@@ -7,30 +7,18 @@
 	
 // }
 
-double	ExtendMap(const uint32_t mapSize)
-{
-	return mapSize + 2.0 * InvisibleSpace;
-}
-
-size_t	ToBucketCoor(const double coordinate)
-{
-	return size_t(coordinate / BUCKET_LENGTH);
-}
-
-BC::BC(const uint32_t mapSize[3], 
-	   const std::deque<Triangle> &ts,
-	   const std::deque<Particle> &ps)
-	   :visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
-	    totalMapSize(ExtendMap(mapSize[X]), ExtendMap(mapSize[Y]), ExtendMap(mapSize[Z])),
-		bucketRow(ToBucketCoor(this->totalMapSize.x)),
-		bucketColumn(ToBucketCoor(this->totalMapSize.y)),
-		bucketDepth(ToBucketCoor(this->totalMapSize.z)),
+BC::BC(const Vec &visibleMapSize_,
+	   const Vec &totalMapSize_)
+	   :visibleMapSize(visibleMapSize_) ,
+	    totalMapSize(totalMapSize_),
+		bucketRow(to_bucket_coor(this->totalMapSize.x)),
+		bucketColumn(to_bucket_coor(this->totalMapSize.y)),
+		bucketDepth(to_bucket_coor(this->totalMapSize.z)),
 		numOfBuckets(this->bucketRow * this->bucketColumn * this->bucketDepth),
 		bucketFirst(NULL),
 		particleNextIdxs(NULL)
 {
-	this->_InitBuckets(ps);
-	this->_CalcAllDistanceFromWall(ts);
+
 }
 
 BC::~BC()
@@ -57,7 +45,7 @@ size_t	BC::_CalcBucketIdx(const Vec &v)
 	return this->_CalcBucketIdx(v.x, v.y, v.z);
 }
 
-void	BC::_InitBuckets(const std::deque<Particle> &ps)
+void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 {
 	this->bucketFirst       = new t_bucket[this->numOfBuckets];
 	t_bucket	*bucketLast = new t_bucket[this->numOfBuckets];
@@ -293,56 +281,56 @@ size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 	return coor;
 }
 
-void	BC::_SearchNeighborParticle(const size_t i)
-{
-	size_t	currentBX = size_t(ToBucketCoor(this->ps[i].center.x));
-	size_t	currentBY = size_t(ToBucketCoor(this->ps[i].center.y));
-	size_t	currentBZ = size_t(ToBucketCoor(this->ps[i].center.z));
+// void	BC::_SearchNeighborParticle(const size_t i)
+// {
+// 	size_t	currentBX = size_t(ToBucketCoor(this->ps[i].center.x));
+// 	size_t	currentBY = size_t(ToBucketCoor(this->ps[i].center.y));
+// 	size_t	currentBZ = size_t(ToBucketCoor(this->ps[i].center.z));
 
-	size_t	otherBX = _InitOtherBucketCoor(currentBX);
-	size_t	otherBY = _InitOtherBucketCoor(currentBY);
-	size_t	otherBZ = _InitOtherBucketCoor(currentBZ);
+// 	size_t	otherBX = _InitOtherBucketCoor(currentBX);
+// 	size_t	otherBY = _InitOtherBucketCoor(currentBY);
+// 	size_t	otherBZ = _InitOtherBucketCoor(currentBZ);
 
-	size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
-	size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
-	size_t	maxBZ = _InitMaxOtherBucketCoor(this->bucketDepth,  currentBZ);
+// 	size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
+// 	size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
+// 	size_t	maxBZ = _InitMaxOtherBucketCoor(this->bucketDepth,  currentBZ);
 
-	size_t	bucketIdx;
-	size_t	particleIdx;
+// 	size_t	bucketIdx;
+// 	size_t	particleIdx;
 
-	for (; otherBX <= maxBX ; ++otherBX){
-	for (; otherBY <= maxBY ; ++otherBY){
-	for (; otherBZ <= maxBZ ; ++otherBZ){
-		bucketIdx = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
-		particleIdx = this->bucketFirst[bucketIdx].firstPrtIdx;
-		if (particleIdx == -1)
-		{
-			continue;
-		}
-		for (;;)
-		{
+// 	for (; otherBX <= maxBX ; ++otherBX){
+// 	for (; otherBY <= maxBY ; ++otherBY){
+// 	for (; otherBZ <= maxBZ ; ++otherBZ){
+// 		bucketIdx = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
+// 		particleIdx = this->bucketFirst[bucketIdx].firstPrtIdx;
+// 		if (particleIdx == -1)
+// 		{
+// 			continue;
+// 		}
+// 		for (;;)
+// 		{
 
-			particleIdx = this->particleNextIdxs[particleIdx];
-			if (particleIdx == -1)
-			{
-				break;
-			}
-		}
-	}}}
-}
+// 			particleIdx = this->particleNextIdxs[particleIdx];
+// 			if (particleIdx == -1)
+// 			{
+// 				break;
+// 			}
+// 		}
+// 	}}}
+// }
 
-void	BC::_SearchNeighborParticles(const size_t oneself)
-{
-	// size_t	bucketX = this->ps[oneself].center.x / BUCKET_LENGTH;
-	// size_t	bucketY = this->ps[oneself].center.y / BUCKET_LENGTH;
-	// size_t	bucketZ = this->ps[oneself].center.z / BUCKET_LENGTH;
+// void	BC::_SearchNeighborParticles(const size_t oneself)
+// {
+// 	// size_t	bucketX = this->ps[oneself].center.x / BUCKET_LENGTH;
+// 	// size_t	bucketY = this->ps[oneself].center.y / BUCKET_LENGTH;
+// 	// size_t	bucketZ = this->ps[oneself].center.z / BUCKET_LENGTH;
 
-	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-	{
-		this->_SearchNeighborParticle(i);
+// 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+// 	{
+// 		this->_SearchNeighborParticle(i);
 
-	}
-}
+// 	}
+// }
 
 // BC::BC(const BC &BC)
 // {

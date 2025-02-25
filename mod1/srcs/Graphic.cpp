@@ -1,6 +1,6 @@
 #include "../includes/Graphic.hpp"
 #include "../includes/Print.hpp"
-#include "../includes/MathUtils.hpp"
+#include "../includes/Utils.hpp"
 
 #include <cmath>
 
