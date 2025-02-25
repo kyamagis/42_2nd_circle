@@ -1,20 +1,13 @@
-#include "../includes/ParticleMethod.hpp"
+#include "../includes/MPS.hpp"
 #include "../includes/MathUtils.hpp"
+#include "../includes/Defines.hpp"
 
-#define NUM_OF_PARTICLES 100
-#define	D 3 // dimension number
-#define	GRADIENT  0
-#define LAPLACIAN 1
-#define	BUCKET_LENGTH  E_RADIUS
-#define	NUM_OF_BUCKETS
-#define InvisibleSpace 2.0 * BUCKET_LENGTH
-
-PM::PM()
+MPS::MPS()
 {
 	this->ps.resize(NUM_OF_PARTICLES);
 }
 
-PM::PM(const uint32_t	mapSize[3], 
+MPS::MPS(const uint32_t	mapSize[3], 
 	   const int64_t	maxHeight,
 	   const std::deque<Triangle>	&ts):visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
 								bucketFirst(NULL),
@@ -35,7 +28,7 @@ PM::PM(const uint32_t	mapSize[3],
 	this->_CalcAllDistanceFromWall(ts);
 }
 
-PM::~PM()
+MPS::~MPS()
 {
 	if (this->bucketFirst != NULL)
 	{
@@ -47,19 +40,19 @@ PM::~PM()
 	}
 }
 
-size_t	PM::_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketZ)
+size_t	MPS::_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketZ)
 {
 	return bucketX + 
 			this->bucketColumn * bucketY + 
 			this->bucketColumn * this->bucketDepth * bucketZ;
 }
 
-size_t	PM::_CalcBucketIdx(const Vec &v)
+size_t	MPS::_CalcBucketIdx(const Vec &v)
 {
 	return this->_CalcBucketIdx(v.x, v.y, v.z);
 }
 
-void	PM::_InitBuckets(void)
+void	MPS::_InitBuckets(void)
 {
 	this->bucketFirst       = new t_bucket[this->numOfBuckets];
 	t_bucket	*bucketLast = new t_bucket[this->numOfBuckets];
@@ -105,7 +98,7 @@ void	PM::_InitBuckets(void)
 	}
 }
 
-Vec	PM::_MaxEachCoordinateOfVertex(const Vec &a, 
+Vec	MPS::_MaxEachCoordinateOfVertex(const Vec &a, 
 									const Vec &b,
 									const Vec &c)
 {
@@ -131,7 +124,7 @@ Vec	PM::_MaxEachCoordinateOfVertex(const Vec &a,
 	return maxCoordinate;
 }
 
-Vec	PM::_MinEachCoordinateOfVertex(const Vec &a, 
+Vec	MPS::_MinEachCoordinateOfVertex(const Vec &a, 
 									const Vec &b,
 									const Vec &c)
 {
@@ -157,14 +150,14 @@ Vec	PM::_MinEachCoordinateOfVertex(const Vec &a,
 	return minCoordinate;
 }
 
-Vec	PM::_CalcBucketCenterPos(const size_t i, const size_t j, const size_t k)
+Vec	MPS::_CalcBucketCenterPos(const size_t i, const size_t j, const size_t k)
 {
 	return Vec(i + BUCKET_LENGTH / 2.0, 
 			   j + BUCKET_LENGTH / 2.0,
 			   k + BUCKET_LENGTH / 2.0);
 }
 
-double	PM::_CalcShortestDistanceFromVertex(const Triangle &t, 
+double	MPS::_CalcShortestDistanceFromVertex(const Triangle &t, 
 									const Vec &bucketCenterPos)
 {
 	double	disFromVertexA = t.a.Magnitude3d(bucketCenterPos);
@@ -174,7 +167,7 @@ double	PM::_CalcShortestDistanceFromVertex(const Triangle &t,
 	return max_of_3_elm(disFromVertexA, disFromVertexB, disFromVertexC);
 }
 
-double	PM::_CalcDistanceFromSide(const Vec &a, 
+double	MPS::_CalcDistanceFromSide(const Vec &a, 
 								  const Vec &b, 
 								  const Vec &bucketCenterPos)
 {
@@ -194,7 +187,7 @@ double	PM::_CalcDistanceFromSide(const Vec &a,
 	return 2.0 * BUCKET_LENGTH;
 }
 
-double	PM::_CalcShortestDistanceFromSide(const Triangle &t,  
+double	MPS::_CalcShortestDistanceFromSide(const Triangle &t,  
 								          const Vec &bucketCenterPos)
 {
 	double	disFromSideAB = this->_CalcDistanceFromSide(t.a, t.b, bucketCenterPos);
@@ -204,7 +197,7 @@ double	PM::_CalcShortestDistanceFromSide(const Triangle &t,
 	return max_of_3_elm(disFromSideAB, disFromSideBC, disFromSideCA);
 }
 
-double	PM::_CalcDistanceFromTriangle(const Triangle &t,  
+double	MPS::_CalcDistanceFromTriangle(const Triangle &t,  
 									  const Vec &bucketCenterPos)
 {
 	const Vec	apVec =  bucketCenterPos - t.a;
@@ -220,7 +213,7 @@ double	PM::_CalcDistanceFromTriangle(const Triangle &t,
 	return 2.0 * BUCKET_LENGTH;
 }
 
-double	PM::_CalcShortestDistance(const Triangle &t,
+double	MPS::_CalcShortestDistance(const Triangle &t,
 								  const double i, 
 								  const double j, 
 							      const double k)
@@ -234,7 +227,7 @@ double	PM::_CalcShortestDistance(const Triangle &t,
 	return max_of_3_elm(disFromVertex, disFromSide, disFromTriangle);
 }
 
-void	PM::_CalcDistanceFromWall(const Triangle &t)
+void	MPS::_CalcDistanceFromWall(const Triangle &t)
 {
 	Vec	maxCrd = this->_MaxEachCoordinateOfVertex(t.a, t.b, t.c);
 	Vec minCrd = this->_MinEachCoordinateOfVertex(t.a, t.b, t.c);
@@ -248,11 +241,11 @@ void	PM::_CalcDistanceFromWall(const Triangle &t)
 	
 	for (double	i = minCrd.x; size_t(i) <= size_t(maxCrd.x);)
 	{
-		for (size_t	j = minCrd.y; j <= maxCrd.y;)
+		for (double	j = minCrd.y; size_t(j) <= maxCrd.y;)
 		{
-			for (size_t	k = minCrd.z; k <= maxCrd.z;)
+			for (double	k = minCrd.z; size_t(k) <= maxCrd.z;)
 			{
-				bucketIdx = this->_CalcBucketIdx(i,j,k);
+				bucketIdx = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
 				shortestDistance = this->_CalcShortestDistance(t, i, j, k);
 				if (shortestDistance < this->bucketFirst[bucketIdx].disFromWall)
 				{
@@ -269,7 +262,7 @@ void	PM::_CalcDistanceFromWall(const Triangle &t)
 	}
 }
 
-void	PM::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
+void	MPS::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 {
 	for (size_t	i = 0; i < ts.size(); ++i)
 	{
@@ -277,14 +270,76 @@ void	PM::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 	}
 }
 
-void	PM::SearchNeighborParticles(const size_t oneself)
+size_t	_InitOtherBucketCoor(const size_t coor)
 {
-	size_t	bucketX = this->ps[oneself].center.x / BUCKET_LENGTH;
-	size_t	bucketY = this->ps[oneself].center.y / BUCKET_LENGTH;
-	size_t	bucketZ = this->ps[oneself].center.z / BUCKET_LENGTH;
+	if (0 < coor)
+	{
+		return  coor - 1;
+	}
+	return coor;
 }
 
-double	PM::W(const size_t i, const size_t oneself, bool gradientFlg) // weight
+size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
+{
+	if (coor < max)
+	{
+		return  coor + 1;
+	}
+	return coor;
+}
+
+void	MPS::_SearchNeighborParticle(const size_t i)
+{
+	size_t	currentBX = size_t(this->ps[i].center.x / BUCKET_LENGTH);
+	size_t	currentBY = size_t(this->ps[i].center.y / BUCKET_LENGTH);
+	size_t	currentBZ = size_t(this->ps[i].center.z / BUCKET_LENGTH);
+
+	size_t	otherBX = _InitOtherBucketCoor(currentBX);
+	size_t	otherBY = _InitOtherBucketCoor(currentBY);
+	size_t	otherBZ = _InitOtherBucketCoor(currentBZ);
+
+	size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
+	size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
+	size_t	maxBZ = _InitMaxOtherBucketCoor(this->bucketDepth,  currentBZ);
+
+	size_t	bucketIdx;
+	size_t	particleIdx;
+
+	for (; otherBX <= maxBX ; ++otherBX){
+	for (; otherBY <= maxBY ; ++otherBY){
+	for (; otherBZ <= maxBZ ; ++otherBZ){
+		bucketIdx = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
+		particleIdx = this->bucketFirst[bucketIdx].firstPrtIdx;
+		if (particleIdx == -1)
+		{
+			continue;
+		}
+		for (;;)
+		{
+
+			particleIdx = this->particleNextIdxs[particleIdx];
+			if (particleIdx == -1)
+			{
+				break;
+			}
+		}
+	}}}
+}
+
+void	MPS::_SearchNeighborParticles(const size_t oneself)
+{
+	// size_t	bucketX = this->ps[oneself].center.x / BUCKET_LENGTH;
+	// size_t	bucketY = this->ps[oneself].center.y / BUCKET_LENGTH;
+	// size_t	bucketZ = this->ps[oneself].center.z / BUCKET_LENGTH;
+
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		this->_SearchNeighborParticle(i);
+
+	}
+}
+
+double	MPS::W(const size_t i, const size_t oneself, bool gradientFlg) // weight
 {
 	double	rSQ = this->ps[i].center.Magnitude2d(this->ps[oneself].center);
 
@@ -296,12 +351,12 @@ double	PM::W(const size_t i, const size_t oneself, bool gradientFlg) // weight
 	return E_RADIUS / rSQ + rSQ / E_RADIUS - 2;
 }
 
-void	PM::PressureGradientTerm(Vec &p, const size_t oneself)
+void	MPS::PressureGradientTerm(Vec &p, const size_t oneself)
 {
 
 }
 
-void	PM::ViscosityTerm(Vec &vi, const size_t oneself)
+void	MPS::ViscosityTerm(Vec &vi, const size_t oneself)
 {
 	double	kv; // Kinematic viscosity coefficient
 	double	lambda;
@@ -320,38 +375,38 @@ void	PM::ViscosityTerm(Vec &vi, const size_t oneself)
 	vi *= kv * (2 * D / lambda * n0); 
 }
 
-void	PM::NavierStokesEquations(const	Vec &g)
+void	MPS::NavierStokesEquations(const	Vec &g)
 {
 	//PressureGradientTerm + ViscosityTerm + g
 }
 
-// PM::PM(const PM &PM)
+// MPS::MPS(const MPS &MPS)
 // {
-// 	*this = PM;
+// 	*this = MPS;
 // }
 
-// bool	PM::operator==(const PM &PM) const
+// bool	MPS::operator==(const MPS &MPS) const
 // {
-// 	return (this->x == PM.x) && 
-// 		   (this->y == PM.y) &&
-// 		   (this->r == PM.r);
+// 	return (this->x == MPS.x) && 
+// 		   (this->y == MPS.y) &&
+// 		   (this->r == MPS.r);
 // }
 
-// PM&	PM::operator=(const PM &PM)
+// MPS&	MPS::operator=(const MPS &MPS)
 // {
-// 	if (this != &PM)
+// 	if (this != &MPS)
 // 	{
-// 		this->x = PM.x;
-// 		this->y = PM.y;
-// 		this->r = PM.r;
+// 		this->x = MPS.x;
+// 		this->y = MPS.y;
+// 		this->r = MPS.r;
 // 	}
 // 	return *this;
 // }
 
-// std::ostream &operator<<(std::ostream &ostrm, const PM &PM)
+// std::ostream &operator<<(std::ostream &ostrm, const MPS &MPS)
 // {
-// 	return ostrm << '(' << PM.x << ", " 
-// 						<< PM.y << ", "
-// 						<< PM.r << ')' 
+// 	return ostrm << '(' << MPS.x << ", " 
+// 						<< MPS.y << ", "
+// 						<< MPS.r << ')' 
 // 						<< std::endl;
 // }

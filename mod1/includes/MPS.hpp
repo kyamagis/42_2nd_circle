@@ -1,5 +1,5 @@
-#ifndef ParticleMethod_HPP
-# define ParticleMethod_HPP
+#ifndef MPS_HPP
+# define MPS_HPP
 
 #include <iostream>
 #include <string>
@@ -14,7 +14,7 @@ typedef struct s_bucket
 	double	disFromWall;
 } t_bucket;
 
-class PM
+class MPS
 {
 	private:
 		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
@@ -43,6 +43,8 @@ class PM
 												  const Vec &bucketCenterPos);
 		void	_CalcDistanceFromWall(const Triangle &t);
 		void	_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts);
+		void	_SearchNeighborParticle(const size_t i);
+		void	_SearchNeighborParticles(const size_t oneself);
 
 	public:
 		std::deque<Particle> ps;
@@ -56,24 +58,24 @@ class PM
 		t_bucket	*bucketFirst;
 		int64_t		*particleNextIdxs;
 
-		PM();
-		PM(const uint32_t mapSize[3], 
+		MPS();
+		MPS(const uint32_t mapSize[3], 
 		   const int64_t maxHeight, 
 		   const std::deque<Triangle>	&ts);
-		~PM();
+		~MPS();
 
 		
 
-		void	SearchNeighborParticles(const size_t oneself);
+		
 		double	W(const size_t i, const size_t oneself, bool gradientFlg);
 		void	PressureGradientTerm(Vec &p, const size_t oneself);
 		void	ViscosityTerm(Vec &vi, const size_t oneself);
 		void	NavierStokesEquations(const	Vec &g);
-		// PM(const PM &pM);
-		// PM&	operator=(const PM &pM);
-		// bool	operator==(const PM &pM) const;
+		// MPS(const MPS &mps);
+		// MPS&	operator=(const MPS &mps);
+		// bool	operator==(const MPS &mps) const;
 };
 
-// std::ostream &operator<<(std::ostream &ostrm, const PM &pM);
+// std::ostream &operator<<(std::ostream &ostrm, const MPS &mps);
 
 #endif

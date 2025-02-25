@@ -9,6 +9,14 @@
 #define	DIAMETER	E_RADIUS / 2.0
 #define	RADIUS		DIAMETER / 2.0
 
+#define NUM_OF_PARTICLES 100
+#define	D 3 // dimension number
+#define	GRADIENT  0
+#define LAPLACIAN 1
+#define	BUCKET_LENGTH  E_RADIUS
+#define	NUM_OF_BUCKETS
+#define InvisibleSpace 2.0 * BUCKET_LENGTH
+
 #define X 0
 #define Y 1
 #define Z 2
