@@ -128,18 +128,18 @@ bool	RMD::_StorePosition(const std::string &getLine,
 	{
 		return false;
 	}
-	if (x == 0)
-	{
-		return true;
-	}
+	// if (x == 0)
+	// {
+	// 	return true;
+	// }
 	if (ExtractNumber(getLine, line, i, y, ',') == false)
 	{
 		return false;
 	}
-	if (y == 0)
-	{
-		return true;
-	}
+	// if (y == 0)
+	// {
+	// 	return true;
+	// }
 	if (ExtractNumber(getLine, line, i, z, ')') == false)
 	{
 		return false;

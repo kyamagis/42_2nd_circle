@@ -9,11 +9,11 @@
 
 BC::BC(const Vec &visibleMapSize_,
 	   const Vec &totalMapSize_)
-	   :visibleMapSize(visibleMapSize_) ,
-	    totalMapSize(totalMapSize_),
-		bucketRow(to_bucket_coor(this->totalMapSize.x)),
-		bucketColumn(to_bucket_coor(this->totalMapSize.y)),
-		bucketDepth(to_bucket_coor(this->totalMapSize.z)),
+	   :_visibleMapSize(visibleMapSize_) ,
+	    _totalMapSize(totalMapSize_),
+		bucketRow(to_bucket_coor(this->_totalMapSize.x)),
+		bucketColumn(to_bucket_coor(this->_totalMapSize.y)),
+		bucketDepth(to_bucket_coor(this->_totalMapSize.z)),
 		numOfBuckets(this->bucketRow * this->bucketColumn * this->bucketDepth),
 		bucketFirst(NULL),
 		particleNextIdxs(NULL)
@@ -101,15 +101,15 @@ Vec	BC::_MaxEachCoordinateOfVertex(const Vec &a,
 	maxCoordinate.y = max_of_3_elm(a.y, b.y, c.y);
 	maxCoordinate.z = max_of_3_elm(a.z, b.z, c.z);
 
-	if (maxCoordinate.x + E_RADIUS < this->totalMapSize.x)
+	if (maxCoordinate.x + E_RADIUS < this->_totalMapSize.x)
 	{
 		maxCoordinate.x += E_RADIUS;
 	}
-	if (maxCoordinate.y + E_RADIUS < this->totalMapSize.y)
+	if (maxCoordinate.y + E_RADIUS < this->_totalMapSize.y)
 	{
 		maxCoordinate.y += E_RADIUS;
 	}
-	if (maxCoordinate.z + E_RADIUS< this->totalMapSize.z)
+	if (maxCoordinate.z + E_RADIUS< this->_totalMapSize.z)
 	{
 		maxCoordinate.z += E_RADIUS;
 	}

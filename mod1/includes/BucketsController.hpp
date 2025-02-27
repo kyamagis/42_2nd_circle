@@ -18,6 +18,9 @@ class BC
 {
 	private:
 		BC();
+
+		const Vec	_visibleMapSize;
+		const Vec	_totalMapSize;
 		
 		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
 		size_t	_CalcBucketIdx(const Vec &v);
@@ -53,8 +56,7 @@ class BC
 
 	public:
 		// std::deque<Particle> ps;
-		const Vec	visibleMapSize;
-		const Vec	totalMapSize;
+
 	
 		const size_t		bucketRow;
 		const size_t		bucketColumn;

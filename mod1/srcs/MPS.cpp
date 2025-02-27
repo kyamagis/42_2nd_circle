@@ -12,9 +12,10 @@
 MPS::MPS(const uint32_t	mapSize[3], 
 	     const int64_t	maxHeight,
 	     const std::deque<Triangle> &ts)
-	   :visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
-	   	totalMapSize(this->visibleMapSize),
-	    BC(this->visibleMapSize, this->totalMapSize) 
+		:BC(Vec(mapSize[X], mapSize[Y], mapSize[Z]), 
+			Vec(mapSize[X], mapSize[Y], mapSize[Z])), 
+		visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
+	   	totalMapSize(this->visibleMapSize)
 {
 	(void)maxHeight;
 	this->_InitParticlesWaterColumnCollapse();
@@ -111,46 +112,46 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 // 	}
 // }
 
-double	MPS::W(const size_t i, const size_t oneself, bool gradientFlg) // weight
-{
-	double	rSQ = this->ps[i].center.Magnitude2d(this->ps[oneself].center);
+// double	MPS::W(const size_t i, const size_t oneself, bool gradientFlg) // weight
+// {
+// 	double	rSQ = this->ps[i].center.Magnitude2d(this->ps[oneself].center);
 
-	if (gradientFlg == GRADIENT)
-	{
-		return E_RADIUS / rSQ - rSQ / E_RADIUS;
-	}
+// 	if (gradientFlg == GRADIENT)
+// 	{
+// 		return E_RADIUS / rSQ - rSQ / E_RADIUS;
+// 	}
 
-	return E_RADIUS / rSQ + rSQ / E_RADIUS - 2;
-}
+// 	return E_RADIUS / rSQ + rSQ / E_RADIUS - 2;
+// }
 
-void	MPS::PressureGradientTerm(Vec &p, const size_t oneself)
-{
+// void	MPS::PressureGradientTerm(Vec &p, const size_t oneself)
+// {
 
-}
+// }
 
-void	MPS::ViscosityTerm(Vec &vi, const size_t oneself)
-{
-	double	kv; // Kinematic viscosity coefficient
-	double	lambda;
-	double	n0;
+// void	MPS::ViscosityTerm(Vec &vi, const size_t oneself)
+// {
+// 	double	kv; // Kinematic viscosity coefficient
+// 	double	lambda;
+// 	double	n0;
 
-	for (size_t	i = 0; i < this->ps.size(); ++i)
-	{
-		if (i == oneself)
-		{
-			continue;
-		}
-		vi += (this->ps[i].velocity - this->ps[oneself].velocity) * 
-			   this->W(i, oneself, GRADIENT);
-	}
+// 	for (size_t	i = 0; i < this->ps.size(); ++i)
+// 	{
+// 		if (i == oneself)
+// 		{
+// 			continue;
+// 		}
+// 		vi += (this->ps[i].velocity - this->ps[oneself].velocity) * 
+// 			   this->W(i, oneself, GRADIENT);
+// 	}
 
-	vi *= kv * (2 * D / lambda * n0); 
-}
+// 	vi *= kv * (2 * D / lambda * n0); 
+// }
 
-void	MPS::NavierStokesEquations(const	Vec &g)
-{
-	//PressureGradientTerm + ViscosityTerm + g
-}
+// void	MPS::NavierStokesEquations(const	Vec &g)
+// {
+// 	//PressureGradientTerm + ViscosityTerm + g
+// }
 
 // MPS::MPS(const MPS &MPS)
 // {

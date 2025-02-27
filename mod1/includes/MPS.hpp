@@ -9,12 +9,6 @@
 #include "./Triangle.hpp"
 #include "./BucketsController.hpp"
 
-typedef struct s_bucket
-{
-	size_t	firstPrtIdx; // first particle index
-	double	disFromWall;
-} t_bucket;
-
 class MPS: public BC
 {
 	private:

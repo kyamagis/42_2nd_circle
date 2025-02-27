@@ -20,7 +20,8 @@ SRCS =	main.cpp \
 		TerrestrialSimulation.cpp \
 		Graphic.cpp \
 		Utils.cpp \
-		MPS.cpp\
+		MPS.cpp \
+		BucketsController.cpp \
 
 B_SRCS =	
 
