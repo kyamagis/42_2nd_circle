@@ -1,9 +1,10 @@
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
-
-#include "./Vec.hpp"
 #include <cmath>
+
+#include "./Graphic.hpp"
+#include "./Vec.hpp"
 
 #define EPS 1e-6
 
@@ -16,4 +17,9 @@ void	assign_power_of_two(uint32_t &x, uint32_t &y, uint32_t &z);
 
 double	extend_map(const uint32_t mapSize);
 size_t	to_bucket_coor(const double coordinate);
+
+void	line_gradation(const int64_t	maxHeight,
+						const int64_t	minHeight,
+						const double	midHeight,  
+						const int64_t height);
 #endif

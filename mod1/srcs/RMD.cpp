@@ -128,18 +128,18 @@ bool	RMD::_StorePosition(const std::string &getLine,
 	{
 		return false;
 	}
-	// if (x == 0)
-	// {
-	// 	return true;
-	// }
+	if (x == 0)
+	{
+		return true;
+	}
 	if (ExtractNumber(getLine, line, i, y, ',') == false)
 	{
 		return false;
 	}
-	// if (y == 0)
-	// {
-	// 	return true;
-	// }
+	if (y == 0)
+	{
+		return true;
+	}
 	if (ExtractNumber(getLine, line, i, z, ')') == false)
 	{
 		return false;
@@ -216,10 +216,10 @@ bool	RMD::_ParseModFile(void)
 	}
 	errorFlg = this->_ParseLines(ifs);
 	ifs.close();
-	for (size_t i = 0; i < this->_specificPoints.size(); ++i)
-	{
-		std::cout << this->_specificPoints[i] << std::endl;
-	}
+	// for (size_t i = 0; i < this->_specificPoints.size(); ++i)
+	// {
+	// 	std::cout << this->_specificPoints[i] << std::endl;
+	// }
 	return errorFlg;
 }
 

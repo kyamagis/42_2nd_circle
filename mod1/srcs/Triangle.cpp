@@ -6,7 +6,7 @@ Triangle::Triangle()
 
 }
 
-Triangle::Triangle(Vec A, Vec B, Vec C, bool TempVertexFlg):a(A), b(B), c(C), tempVertexFlg(TempVertexFlg)
+Triangle::Triangle(const Vec &A, const Vec &B,const Vec &C, bool TempVertexFlg):a(A), b(B), c(C), tempVertexFlg(TempVertexFlg)
 {
 	this->CalcCircumcircle();
 
@@ -126,10 +126,35 @@ double	Triangle::FindZ(const double pX, const double pY)
 	return this->a.z - (this->n.x * (pX - this->a.x) + this->n.y * (pY - this->a.y)) / this->n.z;
 }
 
-// void	Triangle::CalcIntersectionWithMidHeight(const Vec &midHeight)
-// {
-// 	if (this->a)
-// }
+
+
+void	Triangle::DrawTriangle(const int64_t	maxHeight,
+							const int64_t	minHeight,
+							const double	midHeight,
+							const bool	lineFlg, 
+							const int64_t heightA, 
+					 		const int64_t heightB, 
+					 		const int64_t heightC)
+{
+	if (lineFlg)
+	{
+		glBegin(GL_LINE_LOOP);
+	}
+	else
+	{
+		glShadeModel(GL_SMOOTH);
+	}
+
+	glBegin(GL_TRIANGLES);
+
+	line_gradation(maxHeight, minHeight, midHeight, heightA);
+	drawVertex(this->a);
+	line_gradation(maxHeight, minHeight, midHeight, heightB);
+	drawVertex(this->b);
+	line_gradation(maxHeight, minHeight, midHeight, heightC);
+	drawVertex(this->c);
+	glEnd();
+}
 
 bool	Triangle::operator==(const Triangle &triangle) const
 {

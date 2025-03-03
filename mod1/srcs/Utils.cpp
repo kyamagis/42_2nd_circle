@@ -84,3 +84,23 @@ size_t	to_bucket_coor(const double coordinate)
 {
 	return size_t(coordinate / BUCKET_LENGTH);
 }
+
+void	line_gradation(const int64_t	maxHeight,
+						const int64_t	minHeight,
+						const double	midHeight, 
+						const int64_t height)
+{
+	// double	ratio, ratio2;
+	double	ratio;
+
+	if (height <= midHeight)
+	{
+		ratio = height - minHeight / (midHeight - minHeight);
+		glColor3f(0.0, ratio, 1 - ratio);
+	}
+	else
+	{
+		ratio = height - midHeight / (maxHeight - midHeight);
+		glColor3f(ratio, 1 - ratio, 0.0);
+	}
+}

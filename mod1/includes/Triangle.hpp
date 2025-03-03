@@ -1,5 +1,5 @@
-#ifndef Triangle_HPP
-# define Triangle_HPP
+#ifndef TRIANGLE_HPP
+# define TRIANGLE_HPP
 
 #include <deque>
 #include <iostream>
@@ -27,7 +27,7 @@ class Triangle
 		Triangle();
 		~Triangle();
 
-		Triangle(Vec A, Vec B, Vec C, bool TempVertexFlg);
+		Triangle(const Vec &A, const Vec &B,const Vec &C, bool TempVertexFlg);
 
 		bool	IsInsideCircumcircle(const Vec &point);
 		void	CalcCircumcircle();
@@ -37,6 +37,14 @@ class Triangle
 		void	CalcNormalVector();
 		// void	CalcIntersectionWithMidHeight(const Vec &midHeight);
 		double	FindZ(const double pX, const double pY);
+
+		void	DrawTriangle(const int64_t	maxHeight,
+							const int64_t	minHeight,
+							const double	midHeight,
+							const bool	lineFlg, 
+							const int64_t heightA, 
+							const int64_t heightB, 
+							const int64_t heightC);
 
 		bool		operator==(const Triangle &triangle) const;
 		Triangle&	operator=(const Triangle &triangle);

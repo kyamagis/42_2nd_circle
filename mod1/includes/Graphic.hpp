@@ -3,9 +3,10 @@
 
 #include <GL/glut.h>
 #include <GL/freeglut.h>
-#include <deque>
 
-#include "../includes/Triangle.hpp"
+// #include <deque>
+#include "./Triangle.hpp"
+#include "./MPS.hpp"
 
 class Graphic
 {
@@ -13,19 +14,19 @@ class Graphic
 		Graphic();
 		
 		public:
-		Graphic(int argc, char** argv, int	sizeX, int	sizeY);
+		Graphic(const int argc, const char** argv, int	sizeX, int	sizeY);
 		~Graphic();
 
 		void	GraphicLoop(void (*func)(void));
 		void	GraphicLoop(void);
 		void	KeyboardFunc(void (*func)(unsigned char key, int x, int y));
 		void	InitGraphicData(const std::deque<Triangle> &ts, 
-								const uint32_t mapSize[2],
+								const uint32_t mapSize[3],
 								const int64_t maxHeight,
 								const int64_t minHeight);
 		// void	RenderingAlgorithm();
 };
-
+void	drawVertex(Vec &vertex);
 void	onWindowClose(void);
 
 #endif

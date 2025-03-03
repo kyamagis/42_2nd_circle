@@ -12,6 +12,7 @@ SRCSDIR = ./srcs
 # SRCS = *.cpp
 SRCS =	main.cpp \
 		Vec.cpp \
+		Quadrangle.cpp \
 		Triangle.cpp \
 		Circle.cpp \
 		Particle.cpp \

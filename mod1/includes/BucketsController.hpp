@@ -12,6 +12,7 @@ typedef struct s_bucket
 {
 	size_t	firstPrtIdx; // first particle index
 	double	disFromWall;
+	Vec		position;
 } t_bucket;
 
 class BC
@@ -19,8 +20,12 @@ class BC
 	private:
 		BC();
 
-		const Vec	_visibleMapSize;
-		const Vec	_totalMapSize;
+		const Vec		_visibleMapSize;
+		const Vec		_totalMapSize;
+		const size_t	bucketRow;
+		const size_t	bucketColumn;
+		const size_t	bucketDepth;
+		const size_t	_columnMultiplDepth;
 		
 		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
 		size_t	_CalcBucketIdx(const Vec &v);
@@ -58,18 +63,18 @@ class BC
 		// std::deque<Particle> ps;
 
 	
-		const size_t		bucketRow;
-		const size_t		bucketColumn;
-		const size_t		bucketDepth;
-		const size_t		numOfBuckets;
-		t_bucket	*bucketFirst;
-		int64_t		*particleNextIdxs;
-
 	
-		BC(const Vec &visibleMapSize_,
-		   const Vec &totalMapSize_);
-	    virtual ~BC();
+		const size_t		numOfBuckets;
 
+		t_bucket			*buckets;
+		int64_t				*particleNextIdxs;
+
+		
+		BC(const Vec &visibleMapSize_,
+			const Vec &totalMapSize_);
+			virtual ~BC();
+			
+		void	DrawDisFromWall(void);
 		// BC(const BC &BC);
 		// BC&	operator=(const BC &BC);
 		// bool	operator==(const BC &BC) const;

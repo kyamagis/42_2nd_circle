@@ -1,6 +1,8 @@
 #include "../includes/MPS.hpp"
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
+#include <iostream>
+#include <fstream>
 
 // MPS::MPS()
 // {
@@ -9,15 +11,61 @@
 
 // totalMapSize(extend_map(mapSize[X]), extend_map(mapSize[Y]), extend_map(mapSize[Z]))
 
+void	_InitWallWeight(void)
+{
+	std::deque<Particle>	ps;
+	Particle				point(0,RADIUS,0);
+
+	double	x;
+	double	y;
+	double	z;
+	double	distance;
+	double	distanceSQ;
+
+	for (int32_t idxX = -4; idxX <= 0; ++idxX) {
+	for (int32_t idxY = -4; idxY <= 0; ++idxY) {
+	for (int32_t idxZ = -4; idxZ <= 0; ++idxZ) {
+		x =  I_DISTANCE * double(idxX);
+		y =  I_DISTANCE * double(idxY);
+		z =  I_DISTANCE * double(idxZ);
+		ps.push_back(Particle(x, y, z));
+	}}}
+
+	std::ofstream outputfile("./WallWeight");
+	std::deque<Particle>::iterator	it;
+	const double	diff = 0.1;
+	double			weight;
+
+	while (0 < ps.size())
+	{
+		it = ps.begin();
+		weight = 0.0;
+		while (it != ps.end())
+		{
+			distanceSQ = (it)->center.MagnitudeSQ3d(point.center);
+			if (distanceSQ <= E_RADIUS_SQ)
+			{
+				distance = sqrt(distanceSQ);
+				weight += WEIGHT(distance);
+			}
+			else
+			{
+				it = ps.erase(it);
+			}
+		}
+		outputfile << point.center.y - RADIUS << ", " << weight << std::endl;
+		point.center.y += diff;
+	}
+	outputfile.close();
+}
+
 MPS::MPS(const uint32_t	mapSize[3], 
-	     const int64_t	maxHeight,
-	     const std::deque<Triangle> &ts)
+		const std::deque<Triangle> &ts)
 		:BC(Vec(mapSize[X], mapSize[Y], mapSize[Z]), 
 			Vec(mapSize[X], mapSize[Y], mapSize[Z])), 
 		visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
-	   	totalMapSize(this->visibleMapSize)
+		totalMapSize(this->visibleMapSize)
 {
-	(void)maxHeight;
 	this->_InitParticlesWaterColumnCollapse();
 	this->_InitBuckets(ts);
 }
@@ -60,6 +108,45 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 }
 
 
+
+void	MPS::_IniDensityAndLambda(void)
+{
+	this->_n0 = 0;
+	// this->_lambda = 0;
+
+	double	tempLambda = 0;
+	double	x;
+	double	y;
+	double	z;
+	double	distance;
+	double	distanceSQ;
+
+	for (int32_t idxX = -4; idxX < 5; ++idxX) {
+	for (int32_t idxY = -4; idxY < 5; ++idxY) {
+	for (int32_t idxZ = -4; idxZ < 5; ++idxZ) {
+		x =  I_DISTANCE * double(idxX);
+		y =  I_DISTANCE * double(idxY);
+		z =  I_DISTANCE * double(idxZ);
+		distanceSQ = x*x + y*y + z*z;
+		if (distanceSQ == 0.0)
+		{
+			continue;
+		}
+		if (distanceSQ <= E_RADIUS_SQ)
+		{
+			distance = sqrt(distanceSQ);
+			this->_n0 += WEIGHT(distance);
+			tempLambda += distance;
+		}
+	}}}
+
+	this->_lambda = this->_n0 / tempLambda;
+}
+
+void	SetParameter(void)
+{
+	
+}
 
 // void	MPS::_SearchNeighborParticle(const size_t i)
 // {
@@ -153,7 +240,7 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 // 	//PressureGradientTerm + ViscosityTerm + g
 // }
 
-// MPS::MPS(const MPS &MPS)
+// MPS::MPS(const MPS &mps): MPS
 // {
 // 	*this = MPS;
 // }
@@ -165,13 +252,13 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 // 		   (this->r == MPS.r);
 // }
 
-// MPS&	MPS::operator=(const MPS &MPS)
+// MPS&	MPS::operator=(const MPS &mps)
 // {
-// 	if (this != &MPS)
+// 	if (this != &mps)
 // 	{
-// 		this->x = MPS.x;
-// 		this->y = MPS.y;
-// 		this->r = MPS.r;
+// 		this->ps = mps.ps;
+// 		this->visibleMapSize.x = mps.visibleMapSize.x;
+// 		this->totalMapSize;
 // 	}
 // 	return *this;
 // }

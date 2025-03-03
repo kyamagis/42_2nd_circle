@@ -1,19 +1,20 @@
 #include "../includes/Graphic.hpp"
 #include "../includes/Print.hpp"
 #include "../includes/Utils.hpp"
+#include "../includes/Defines.hpp"
 
 #include <cmath>
-
-#define SCALING 0.7
-#define DEPTH_SCALING 0.01f
 
 typedef struct s_data
 {
 	int64_t 				**map;
-	uint32_t				mapSize[2];
+	uint32_t				mapSize[3];
 	double					halfMapsize[2];
 	std::deque<Triangle>	ts;
 	std::deque<Triangle>	origenTs;
+	t_bucket				*bs;
+	size_t	numOfBuckets;
+
 	int64_t	maxHeight;
 	int64_t	minHeight;
 	double	midHeight;
@@ -27,6 +28,7 @@ typedef struct s_data
 	size_t	count;
 	Vec		rotatedVertex;
 	bool	circleFlg;
+	bool	lineFlg;
 	int		gWindowID;
 
 	unsigned char key;
@@ -91,86 +93,17 @@ void	Rotation(Vec &vertex)
 	}
 }
 
-void	Vertex(Vec &vertex)
+void	drawVertex(Vec &vertex)
 {
 	Rotation(vertex);
 
-	double	coordinateX = vertex.x / double(g_data.mapSize[X] - 1);
-	double	coordinateY =  - 1.0 * (vertex.y / double(g_data.mapSize[Y] - 1));
+	double	coordinateX = vertex.x / double(g_data.mapSize[X]);
+	double	coordinateY =  - 1.0 * (vertex.y / double(g_data.mapSize[Y]));
 	double	coordinateZ = vertex.z / double(g_data.midHeight);
 
 	glVertex3f(coordinateX * g_data.scaling, 
 			   coordinateY * g_data.scaling, 
 			   -coordinateZ * DEPTH_SCALING);
-}
-
-void	triangleGradation(const int64_t height)
-{
-	// double	ratio, ratio2;
-	double	ratio;
-
-	if (height <= g_data.midHeight)
-	{
-		ratio = height - g_data.minHeight / (g_data.midHeight - g_data.minHeight);
-		glColor3f(0.0, ratio, 1 - ratio);
-	}
-	else
-	{
-		ratio = height - g_data.midHeight / (g_data.maxHeight - g_data.midHeight);
-		glColor3f(ratio, 1 - ratio, 0.0);
-	}
-}
-
-void	drawTriangle(Triangle &t, 
-					const int64_t heightA, 
-					const int64_t heightB, 
-					const int64_t heightC)
-{
-	// glBegin(GL_LINE_LOOP);
-	glShadeModel(GL_SMOOTH);
-	glBegin(GL_TRIANGLES);
-
-	triangleGradation(heightA);
-	Vertex(t.a);
-	triangleGradation(heightB);
-	Vertex(t.b);
-	triangleGradation(heightC);
-	Vertex(t.c);
-	glEnd();
-}
-
-void	drawQuad()
-{
-	glColor3f(0.5f, 0.5f, 0.5f);
-
-	glBegin(GL_QUADS);
-	// Vertex(g_data.quadA);
-	// Vertex(g_data.quadB);
-	// Vertex(g_data.quadC);
-	// Vertex(g_data.quadD);
-	glEnd();
-}
-
-void drawCircle(double cx, double cy, double r, int num_segments) {
-	glBegin(GL_LINE_LOOP); // 円を線で描く
-	glColor3f(0.0, 1.0, 0.0);
-
-	cx = double(cx) / g_data.mapSize[X];
-	cy = - 1.0 * (double(cy) / g_data.mapSize[Y]);
-	r = sqrt(r) / g_data.mapSize[X];
-
-	for (int i = 0; i < num_segments; i++) {
-		double theta = 2.0 * M_PI * double(i) / double(num_segments); // 角度
-		double x = r * cos(theta); // X座標
-		double y = r * sin(theta); // Y座標
-		glVertex2d((cx + x) * g_data.scaling, (cy + y) * g_data.scaling);
-	}
-	glEnd();
-}
-
-void drawCircle(const Triangle &t, int num_segments) 
-{
-	drawCircle(t.circumcircle.center.x, t.circumcircle.center.y, t.circumcircle.r, num_segments);
 }
 
 void	RenderingAlgorithm()
@@ -183,21 +116,8 @@ void	RenderingAlgorithm()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
 	
-	// glPointSize(5.0f);
-	// glBegin(GL_POINTS);
-	// for (size_t	x = 0; x < g_data.mapSize[X]; ++x)
-	// {
-	// 	for (size_t	y = 0; y < g_data.mapSize[Y]; ++y)
-	// 	{
-	// 		glColor3f(1.0, 0.0, 0.0);
-	// 		// glVertex2d(double(x) / 10 * 2.0 - 1.0, double(y) / 10 * 2.0 - 1.0);
-	// 		glVertex3f(g_data.mapSize[x] * g_data.scaling, 
-	// 			g_data.mapSize[y] * g_data.scaling, 
-	// 			0);
-	// 	}
-	// 	std::cout << x << std::endl;
-	// }
-	// drawQuad();
+	
+
 
 	if (g_data.ts.size() < g_data.i)
 	{
@@ -205,14 +125,19 @@ void	RenderingAlgorithm()
 	}
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
-		drawTriangle(g_data.ts[i], 
-					g_data.origenTs[i].a.z,
-					g_data.origenTs[i].b.z,
-					g_data.origenTs[i].c.z);
 		if (g_data.circleFlg == true)
 		{
-			drawCircle(g_data.ts[i], 100);
+			g_data.ts[i].circumcircle.DrawCircle2d(g_data.mapSize, 
+													g_data.scaling, 100);
 		}
+		g_data.ts[i].DrawTriangle(g_data.maxHeight,
+									g_data.minHeight,
+									g_data.midHeight,
+									g_data.lineFlg,
+									g_data.origenTs[i].a.z,
+									g_data.origenTs[i].b.z,
+									g_data.origenTs[i].c.z);
+	
 	}
 	glFlush();
 }
@@ -265,6 +190,9 @@ void keyboard(unsigned char key, int x, int y)
 			std::cout << "i: " << g_data.i << g_data.ts[g_data.i];
 			glutPostRedisplay();
 			return ;
+		case 'l':
+			g_data.lineFlg = !g_data.lineFlg;
+			glutPostRedisplay();
 		default:
 			break;
 	}
@@ -296,9 +224,9 @@ Graphic::Graphic()
 	
 }
 
-Graphic::Graphic(int argc, char** argv, int	sizeX, int	sizeY)
+Graphic::Graphic(const int argc, const char** argv, int	sizeX, int	sizeY)
 {
-	glutInit(&argc, argv);
+	glutInit(const_cast<int*>(&argc), const_cast<char**>(argv));
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
 	// glutInitDisplayMode(GLUT_SINGLE);
@@ -335,13 +263,17 @@ void	Graphic::GraphicLoop(void)
 }
 
 void	Graphic::InitGraphicData(const std::deque<Triangle> &ts, 
-								 const uint32_t mapSize[2],
+								 const uint32_t mapSize[3],
 								 const int64_t maxHeight,
 								 const int64_t minHeight)
 {
+	g_data.bs = NULL;
+	g_data.numOfBuckets = 0;
+
 	g_data.ts = ts;
 	g_data.mapSize[X] = mapSize[X];
 	g_data.mapSize[Y] = mapSize[Y];
+	g_data.mapSize[Z] = mapSize[Z];
 	g_data.halfMapsize[X] = mapSize[X] / 2.0;
 	g_data.halfMapsize[Y] = mapSize[Y] / 2.0;
 	g_data.maxHeight = maxHeight;
@@ -364,6 +296,7 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.count = 0;
 	g_data.scaling = SCALING;
 	g_data.circleFlg = false;
+	g_data.lineFlg = false;
 	g_data.key = 'i';
 }
 
@@ -403,3 +336,26 @@ void	onWindowClose(void)
 
 
 // glEnd();
+
+
+// void drawCircle(double cx, double cy, double r, int num_segments) {
+// 	glBegin(GL_LINE_LOOP); // 円を線で描く
+// 	glColor3f(0.0, 1.0, 0.0);
+
+// 	cx = double(cx) / g_data.mapSize[X];
+// 	cy = - 1.0 * (double(cy) / g_data.mapSize[Y]);
+// 	r = sqrt(r) / g_data.mapSize[X];
+
+// 	for (int i = 0; i < num_segments; i++) {
+// 		double theta = 2.0 * M_PI * double(i) / double(num_segments); // 角度
+// 		double x = r * cos(theta); // X座標
+// 		double y = r * sin(theta); // Y座標
+// 		glVertex2d((cx + x) * g_data.scaling, (cy + y) * g_data.scaling);
+// 	}
+// 	glEnd();
+// }
+
+// void drawCircle(const Triangle &t, int num_segments) 
+// {
+// 	drawCircle(t.circumcircle.center.x, t.circumcircle.center.y, t.circumcircle.r, num_segments);
+// }

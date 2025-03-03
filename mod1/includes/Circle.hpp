@@ -18,6 +18,12 @@ class Circle
 		Circle(const Circle &c);
 		virtual ~Circle();
 
+		void DrawCircle2d(const uint32_t mapSize[3], 
+							const double scaling, 
+							const int num_segments);
+		void DrawCircle3d(const uint32_t mapSize[3], 
+							const double scaling,
+							const int num_segments);
 		Circle&	operator=(const Circle &c);
 		bool	operator==(const Circle &c) const;
 };
