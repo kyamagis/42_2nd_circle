@@ -12,10 +12,11 @@ BC::BC(const Vec &visibleMapSize_,
 	   const Vec &totalMapSize_)
 	   :_visibleMapSize(visibleMapSize_) ,
 	    _totalMapSize(totalMapSize_),
-		bucketRow(to_bucket_coor(this->_totalMapSize.x)),
-		bucketColumn(to_bucket_coor(this->_totalMapSize.y)),
-		bucketDepth(to_bucket_coor(this->_totalMapSize.z)),
+		bucketRow(to_bucket_coor(this->_totalMapSize.x + 1)),
+		bucketColumn(to_bucket_coor(this->_totalMapSize.y + 1)),
+		bucketDepth(to_bucket_coor(this->_totalMapSize.z + 1)),
 		_columnMultiplDepth(this->bucketColumn * this->bucketDepth),
+		_bucketLast(NULL),
 		numOfBuckets(this->bucketRow * this->bucketColumn * this->bucketDepth),
 		buckets(NULL),
 		particleNextIdxs(NULL)
@@ -28,6 +29,10 @@ BC::~BC()
 	if (this->buckets != NULL)
 	{
 		delete [] this->buckets;
+	}
+	if (this->_bucketLast != NULL)
+	{
+		delete [] this->_bucketLast;
 	}
 	if (this->particleNextIdxs != NULL)
 	{
@@ -47,10 +52,38 @@ size_t	BC::_CalcBucketIdx(const Vec &v)
 	return this->_CalcBucketIdx(v.x, v.y, v.z);
 }
 
+void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
+{
+	size_t	bucketX;
+	size_t	bucketY;
+	size_t	bucketZ;
+	size_t	bucketIdx;
+	int64_t	nextIdx;
+
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		bucketX = size_t(ps[i].center.x / BUCKET_LENGTH);
+		bucketY = size_t(ps[i].center.y / BUCKET_LENGTH);
+		bucketZ = size_t(ps[i].center.z / BUCKET_LENGTH);
+
+		bucketIdx = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
+		nextIdx = this->_bucketLast[bucketIdx].firstPrtIdx;
+		this->_bucketLast[bucketIdx].firstPrtIdx = i;
+		if (nextIdx == -1)
+		{
+			this->buckets[bucketIdx].firstPrtIdx = i;
+		}
+		else
+		{
+			this->particleNextIdxs[nextIdx] = i;
+		}
+	}
+}
+
 void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 {
 	this->buckets           = new t_bucket[this->numOfBuckets];
-	t_bucket	*bucketLast = new t_bucket[this->numOfBuckets];
+	this->_bucketLast       = new t_bucket[this->numOfBuckets];
 	this->particleNextIdxs  = new int64_t[NUM_OF_PARTICLES];
 
 	size_t	bucketX;
@@ -61,10 +94,9 @@ void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		this->buckets[i].firstPrtIdx   = -1;
+		this->buckets[i].firstPrtIdx = -1;
 		this->buckets[i].disFromWall = 2.0 * BUCKET_LENGTH;
-		bucketLast[i].firstPrtIdx   = -1;
-		bucketLast[i].disFromWall = 2.0 * BUCKET_LENGTH;
+		this->_bucketLast[i].firstPrtIdx    = -1;
 
 		bucketZ = i / this->_columnMultiplDepth;
 		this->buckets[i].position.z = BUCKET_LENGTH * bucketZ;
@@ -86,29 +118,21 @@ void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 		}
 	}
 
-	size_t	bucketIdx;
-	int64_t	nextIdx;	
+	this->_UpdateParticlesInBuckets(ps);
+}
 
-	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+void	BC::_UpdateBuckets(const std::deque<Particle> &ps)
+{
+	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		bucketX = size_t(ps[i].center.x / BUCKET_LENGTH);
-		bucketY = size_t(ps[i].center.y / BUCKET_LENGTH);
-		bucketZ = size_t(ps[i].center.z / BUCKET_LENGTH);
-
-		bucketIdx = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
-		nextIdx = bucketLast[bucketIdx].firstPrtIdx;
-		bucketLast[bucketIdx].firstPrtIdx = i;
-		if (nextIdx == -1)
+		this->buckets[i].firstPrtIdx     = -1;
+		this->_bucketLast[i].firstPrtIdx = -1;		
+		if (i < NUM_OF_PARTICLES)
 		{
-			this->buckets[bucketIdx].firstPrtIdx = i;
+			this->particleNextIdxs[i] = -1;
 		}
-		else
-		{
-			this->particleNextIdxs[nextIdx] = i;
-		}
-		// std::cout << ps[i].center << " " << this->buckets[bucketIdx].position << std::endl;
 	}
-	delete [] bucketLast;
+	this->_UpdateParticlesInBuckets(ps);
 }
 
 Vec	BC::_MaxEachCoordinateOfVertex(const Vec &a, 
@@ -181,12 +205,7 @@ double	BC::_CalcDistanceFromSideSQ(const Vec &a,
 	const Vec	aCenterVector = this->buckets[bucketIdx].position - a;
 
 	const double	t = abVector.DotProduct3d(aCenterVector) / 
-				abVector.MagnitudeSQ3d();
-
-	// const Vec	projectivePoint = a + (abVector * t);
-
-
-	// return (this->buckets[bucketIdx].position - projectivePoint).MagnitudeSQ3d();
+						abVector.MagnitudeSQ3d();
 
 	if (0.0 < t && t < 1.0)
 	{
@@ -215,11 +234,6 @@ double	BC::_CalcDistanceFromTriangle(const Triangle &t, const size_t bucketIdx)
 	const Vec 		orientVec = t.n * coefficient;
 	const Vec		projectivePoint = this->buckets[bucketIdx].position - orientVec;
 	
-	// if (t.b == Vec(0,0,0))
-	// {
-	// 	std::cout << t.n << std::endl;
-	// }
-
 	if (t.InternalAndExternalJudgments3d(projectivePoint))
 	{
 		// std::cout << apVec.DotProduct3d(t.n) << " " << t.n.MagnitudeSQ3d() << std::endl;
@@ -265,15 +279,7 @@ void	BC::_CalcDistanceFromWall(const Triangle &t)
 				if (shortestDistance < this->buckets[bucketIdx].disFromWall)
 				{
 					this->buckets[bucketIdx].disFromWall = shortestDistance;
-
-					
 				}
-				// if (t.a == Vec(0,0,0) && this->buckets[bucketIdx].position.x == 210.0 && this->buckets[bucketIdx].position.z == 210.0)
-				// {
-				// 	std::cout << this->buckets[bucketIdx].position << std::endl;
-				// 	std::cout << this->buckets[bucketIdx].disFromWall << std::endl;
-				// }
-
 				k += BUCKET_LENGTH;
 				bucketZ = k / BUCKET_LENGTH;
 			}
@@ -291,28 +297,12 @@ void	BC::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 {
 	for (size_t	i = 0; i < ts.size(); ++i)
 	{
-		std::cout << i << " " << ts[i] << std::endl << std::endl;
+		// std::cout << i << " " << ts[i] << std::endl << std::endl;
 		this->_CalcDistanceFromWall(ts[i]);
 	}
 }
 
-size_t	_InitOtherBucketCoor(const size_t coor)
-{
-	if (0 < coor)
-	{
-		return  coor - 1;
-	}
-	return coor;
-}
 
-size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
-{
-	if (coor < max)
-	{
-		return  coor + 1;
-	}
-	return coor;
-}
 
 void	BC::DrawDisFromWall(void)
 {
@@ -322,7 +312,7 @@ void	BC::DrawDisFromWall(void)
 	{
 		if (this->buckets[i].disFromWall < BUCKET_LENGTH + EPS)
 		{
-			if (this->buckets[i].disFromWall < BUCKET_LENGTH / 2.0)
+			if (this->buckets[i].disFromWall < (BUCKET_LENGTH / 2.0) + EPS)
 			{
 				glColor3f(0, this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0), 1 - this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0));
 			}

@@ -20,7 +20,7 @@ class Vec
 		Vec(const Vec &vec);
 		~Vec();
 
-		bool	NearlyEqual(const Vec &vec) const;
+		double	Interpolate2d(const Vec &p, const double dis) const;
 
 		double	DotProduct2d(const Vec &p) const;
 		double	DotProduct3d(const Vec &p) const;

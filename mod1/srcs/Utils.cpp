@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string.h>
+#include <fstream>
+#include <cstdlib>
 
+#include "../includes/Print.hpp"
 #include "../includes/Utils.hpp"
 
 int32_t	cross_product_2d(const Vec &a, const Vec &b, const Vec &point)
@@ -102,5 +105,78 @@ void	line_gradation(const int64_t	maxHeight,
 	{
 		ratio = height - midHeight / (maxHeight - midHeight);
 		glColor3f(ratio, 1 - ratio, 0.0);
+	}
+}
+
+static void	init_ps(std::deque<Particle> &ps)
+{
+	double	x;
+	double	y;
+	double	z;
+
+	for (int32_t idxX = -4; idxX <= 0; ++idxX) {
+	for (int32_t idxY = -4; idxY <= 0; ++idxY) {
+	for (int32_t idxZ = -4; idxZ <= 0; ++idxZ) {
+		x =  I_DISTANCE * double(idxX);
+		y =  I_DISTANCE * double(idxY);
+		z =  I_DISTANCE * double(idxZ);
+		ps.push_back(Particle(x, y, z));
+	}}}
+}
+
+static void	calc_wall_weight(std::deque<Vec> &weights, std::deque<Particle> &ps)
+{
+	Particle	point(0,RADIUS,0);
+	double		distance;
+	double		distanceSQ;
+	std::ofstream outputfile("WallWeight.csv");
+	if (outputfile.fail())
+	{
+		Print::Err("_InitWallWeight");
+		std::exit(EXIT_FAILURE);
+	}
+	std::deque<Particle>::iterator	it;
+	const double	diff = BUCKET_LENGTH / 40;
+	double			weight;
+
+	while (0 < ps.size())
+	{
+		it = ps.begin();
+		weight = 0.0;
+		while (it != ps.end())
+		{
+			distanceSQ = (it)->center.MagnitudeSQ3d(point.center);
+			if (distanceSQ <= E_RADIUS_SQ)
+			{
+				distance = sqrt(distanceSQ);
+				weight += WEIGHT(distance);
+				++it;
+			}
+			else
+			{
+				it = ps.erase(it);
+			}
+		}
+		// std::cout <<  ps.size() << std::endl;
+		outputfile << point.center.y - RADIUS << ", " << weight << std::endl;
+		weights.push_back(Vec(distance, weight, 0));
+		point.center.y += diff;
+	}
+	outputfile.close();
+}
+
+void	init_wall_weight(std::deque<Vec> &weights)
+{
+	std::deque<Particle>	ps;
+
+	init_ps(ps);
+	calc_wall_weight(weights, ps);
+
+	const char* script = "python3 ./srcs/WallWeight.py";
+
+    // Pythonスクリプトを実行
+	if (std::system(script) != 0)
+	{
+		Print::Err("std::system");
 	}
 }

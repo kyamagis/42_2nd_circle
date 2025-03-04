@@ -6,12 +6,16 @@
 
 // #define I_DISTANCE	0.02 // interparticle distance
 // #define E_RADIUS	(2.1 * I_DISTANCE) // effective radius
-#define I_DISTANCE	0.2 // interparticle distance
-#define E_RADIUS	(2100.0 * I_DISTANCE) // effective radius
+#define I_DISTANCE	10 // interparticle distance
+#define E_RADIUS	(2.1 * I_DISTANCE) // effective radius
 #define E_RADIUS_SQ (E_RADIUS * E_RADIUS)
 #define	DIAMETER	(E_RADIUS / 2.0)
 #define	RADIUS		(DIAMETER / 2.0)
-#define WEIGHT(distance) ((E_RADIUS/distance) - 1.0);
+#define WEIGHT(distance) ((E_RADIUS/distance) - 1.0)
+#define KINEMATIC_VISCOSITY 0.000001
+#define SPEED_OF_SOUND 22.0
+#define DENSITY_OF_PARTICLES 1000
+#define DISTANCE_LIMIT (I_DISTANCE * 0.9)
 
 #define NUM_OF_PARTICLES 100
 #define	D 3 // dimension number

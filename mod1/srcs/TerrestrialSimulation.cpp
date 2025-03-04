@@ -190,8 +190,8 @@ bool	TerrestrialSimulation::SimulationStart(const int argc,
 	std::deque<Triangle>	ts = dT.Calculation();
 
 	
-	this->_DrawBuckets(argc, argv, ts);
-	// this->_DrawSimulation(argc, argv, ts);
+	// this->_DrawBuckets(argc, argv, ts);
+	this->_DrawSimulation(argc, argv, ts);
 
 	// this->PrintSpecificPoints();
 	return true;

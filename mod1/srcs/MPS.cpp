@@ -1,8 +1,7 @@
 #include "../includes/MPS.hpp"
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
-#include <iostream>
-#include <fstream>
+
 
 // MPS::MPS()
 // {
@@ -11,61 +10,17 @@
 
 // totalMapSize(extend_map(mapSize[X]), extend_map(mapSize[Y]), extend_map(mapSize[Z]))
 
-void	_InitWallWeight(void)
-{
-	std::deque<Particle>	ps;
-	Particle				point(0,RADIUS,0);
 
-	double	x;
-	double	y;
-	double	z;
-	double	distance;
-	double	distanceSQ;
-
-	for (int32_t idxX = -4; idxX <= 0; ++idxX) {
-	for (int32_t idxY = -4; idxY <= 0; ++idxY) {
-	for (int32_t idxZ = -4; idxZ <= 0; ++idxZ) {
-		x =  I_DISTANCE * double(idxX);
-		y =  I_DISTANCE * double(idxY);
-		z =  I_DISTANCE * double(idxZ);
-		ps.push_back(Particle(x, y, z));
-	}}}
-
-	std::ofstream outputfile("./WallWeight");
-	std::deque<Particle>::iterator	it;
-	const double	diff = 0.1;
-	double			weight;
-
-	while (0 < ps.size())
-	{
-		it = ps.begin();
-		weight = 0.0;
-		while (it != ps.end())
-		{
-			distanceSQ = (it)->center.MagnitudeSQ3d(point.center);
-			if (distanceSQ <= E_RADIUS_SQ)
-			{
-				distance = sqrt(distanceSQ);
-				weight += WEIGHT(distance);
-			}
-			else
-			{
-				it = ps.erase(it);
-			}
-		}
-		outputfile << point.center.y - RADIUS << ", " << weight << std::endl;
-		point.center.y += diff;
-	}
-	outputfile.close();
-}
 
 MPS::MPS(const uint32_t	mapSize[3], 
 		const std::deque<Triangle> &ts)
 		:BC(Vec(mapSize[X], mapSize[Y], mapSize[Z]), 
 			Vec(mapSize[X], mapSize[Y], mapSize[Z])), 
 		visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
-		totalMapSize(this->visibleMapSize)
+		totalMapSize(this->visibleMapSize),
+		g(0, 9.8, 0)
 {
+	init_wall_weight(this->_weights);
 	this->_InitParticlesWaterColumnCollapse();
 	this->_InitBuckets(ts);
 }
@@ -107,12 +62,10 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 	}
 }
 
-
-
-void	MPS::_IniDensityAndLambda(void)
+void	MPS::_InitTermCoefficient(void)
 {
-	this->_n0 = 0;
-	// this->_lambda = 0;
+	double	n0 = 0;
+	double	lambda = 0;
 
 	double	tempLambda = 0;
 	double	x;
@@ -135,56 +88,21 @@ void	MPS::_IniDensityAndLambda(void)
 		if (distanceSQ <= E_RADIUS_SQ)
 		{
 			distance = sqrt(distanceSQ);
-			this->_n0 += WEIGHT(distance);
-			tempLambda += distance;
+			n0 += WEIGHT(distance);
+			tempLambda += distanceSQ * WEIGHT(distance);
 		}
 	}}}
 
-	this->_lambda = this->_n0 / tempLambda;
+	lambda =  tempLambda / n0;
+	this->_cffVTerm  = 2.0 * KINEMATIC_VISCOSITY * D / n0 / lambda;
+	this->_cffPress  = SPEED_OF_SOUND * SPEED_OF_SOUND / n0;
+	this->_cffPGTerm = - D / n0;
 }
 
-void	SetParameter(void)
+void	MPS::_SetParameter(void)
 {
-	
+	this->_InitTermCoefficient();
 }
-
-// void	MPS::_SearchNeighborParticle(const size_t i)
-// {
-// 	size_t	currentBX = size_t(this->ps[i].center.x / BUCKET_LENGTH);
-// 	size_t	currentBY = size_t(this->ps[i].center.y / BUCKET_LENGTH);
-// 	size_t	currentBZ = size_t(this->ps[i].center.z / BUCKET_LENGTH);
-
-// 	size_t	otherBX = _InitOtherBucketCoor(currentBX);
-// 	size_t	otherBY = _InitOtherBucketCoor(currentBY);
-// 	size_t	otherBZ = _InitOtherBucketCoor(currentBZ);
-
-// 	size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
-// 	size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
-// 	size_t	maxBZ = _InitMaxOtherBucketCoor(this->bucketDepth,  currentBZ);
-
-// 	size_t	bucketIdx;
-// 	size_t	particleIdx;
-
-// 	for (; otherBX <= maxBX ; ++otherBX){
-// 	for (; otherBY <= maxBY ; ++otherBY){
-// 	for (; otherBZ <= maxBZ ; ++otherBZ){
-// 		bucketIdx = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
-// 		particleIdx = this->bucketFirst[bucketIdx].firstPrtIdx;
-// 		if (particleIdx == -1)
-// 		{
-// 			continue;
-// 		}
-// 		for (;;)
-// 		{
-
-// 			particleIdx = this->particleNextIdxs[particleIdx];
-// 			if (particleIdx == -1)
-// 			{
-// 				break;
-// 			}
-// 		}
-// 	}}}
-// }
 
 // void	MPS::_SearchNeighborParticles(const size_t oneself)
 // {
@@ -216,24 +134,69 @@ void	SetParameter(void)
 
 // }
 
-// void	MPS::ViscosityTerm(Vec &vi, const size_t oneself)
-// {
-// 	double	kv; // Kinematic viscosity coefficient
-// 	double	lambda;
-// 	double	n0;
+size_t	_InitOtherBucketCoor(const size_t coor)
+{
+	if (0 < coor)
+	{
+		return  coor - 1;
+	}
+	return coor;
+}
 
-// 	for (size_t	i = 0; i < this->ps.size(); ++i)
-// 	{
-// 		if (i == oneself)
-// 		{
-// 			continue;
-// 		}
-// 		vi += (this->ps[i].velocity - this->ps[oneself].velocity) * 
-// 			   this->W(i, oneself, GRADIENT);
-// 	}
+size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
+{
+	if (coor < max)
+	{
+		return  coor + 1;
+	}
+	return coor;
+}
 
-// 	vi *= kv * (2 * D / lambda * n0); 
-// }
+void	MPS::_CalcEachViscosity(const size_t oneself)
+{
+	size_t	currentBX = size_t(this->ps[oneself].center.x / BUCKET_LENGTH);
+	size_t	currentBY = size_t(this->ps[oneself].center.y / BUCKET_LENGTH);
+	size_t	currentBZ = size_t(this->ps[oneself].center.z / BUCKET_LENGTH);
+
+	size_t	otherBX = _InitOtherBucketCoor(currentBX);
+	size_t	otherBY = _InitOtherBucketCoor(currentBY);
+	size_t	otherBZ = _InitOtherBucketCoor(currentBZ);
+
+	size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
+	size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
+	size_t	maxBZ = _InitMaxOtherBucketCoor(this->bucketDepth,  currentBZ);
+
+	size_t	bucketIdx;
+	size_t	particleIdx;
+
+	for (; otherBX <= maxBX ; ++otherBX){
+	for (; otherBY <= maxBY ; ++otherBY){
+	for (; otherBZ <= maxBZ ; ++otherBZ){
+		bucketIdx = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
+		particleIdx = this->bucketFirst[bucketIdx].firstPrtIdx;
+		if (particleIdx == -1)
+		{
+			continue;
+		}
+		for (;;)
+		{
+
+			particleIdx = this->particleNextIdxs[particleIdx];
+			if (particleIdx == -1)
+			{
+				break;
+			}
+		}
+	}}}
+}
+
+void	MPS::ViscosityTerm(void)
+{
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		this->_CalcEachViscosity(i);
+	}
+}
 
 // void	MPS::NavierStokesEquations(const	Vec &g)
 // {

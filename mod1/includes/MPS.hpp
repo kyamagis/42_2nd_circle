@@ -12,20 +12,28 @@
 class MPS: public BC
 {
 	private:
-		double	_n0;
-		double	_lambda;
+
+		double	_cffVTerm;
+		double	_cffPress;
+		double	_cffPGTerm;
+
+		std::deque<Vec>	_weights;
 
 		MPS();
 		void	_InitBuckets(const std::deque<Triangle> &ts);
 		void	_InitParticlesWaterColumnCollapse(void);
-		void	_IniDensityAndLambda(void);
-		void	_SearchNeighborParticle(const size_t i);
+		void	_InitTermCoefficient(void);
+		void	_SetParameter(void);
 		void	_SearchNeighborParticles(const size_t oneself);
+		
+		void	_CalcEachViscosity(const size_t oneself);
+
 
 	public:
 		std::deque<Particle> ps;
 		const Vec	visibleMapSize;
 		const Vec	totalMapSize;
+		Vec			g;
 
 		MPS(const uint32_t mapSize[3], 
 		   const std::deque<Triangle>	&ts);
@@ -33,7 +41,7 @@ class MPS: public BC
 
 		double	W(const size_t i, const size_t oneself, bool gradientFlg);
 		void	PressureGradientTerm(Vec &p, const size_t oneself);
-		void	ViscosityTerm(Vec &vi, const size_t oneself);
+		void	ViscosityTerm(void);
 		void	NavierStokesEquations(const	Vec &g);
 		MPS(const MPS &mps);
 		MPS&	operator=(const MPS &mps);
