@@ -35,21 +35,17 @@ class BC
 		Vec		_MinEachCoordinateOfVertex(const Vec &a, 
 											const Vec &b,
 											const Vec &c);
+		double	_CalcShortestDistanceFromVertexSQ(const Triangle &t, 
+												const size_t bucketIdx);
 
-		Vec		_CalcBucketCenterPos(const size_t i, const size_t j, const size_t k);
-		double	_CalcShortestDistanceFromVertex(const Triangle &t, 
-												const Vec &bucketCenterPos);
-		double	_CalcShortestDistance(const Triangle &t,
-										const double i, 
-										const double j, 
-										const double k);
-		double	_CalcDistanceFromSide(const Vec &a, 
+		double	_CalcDistanceFromSideSQ(const Vec &a, 
 										const Vec &b, 
-										const Vec &bucketCenterPos);							  
-		double	_CalcShortestDistanceFromSide(const Triangle &t, 
-												const Vec &bucketCenterPos);
-		double  _CalcDistanceFromTriangle(const Triangle &t, 
-											const Vec &bucketCenterPos);
+										const size_t bucketIdx);							  
+		double	_CalcShortestDistanceFromSideSQ(const Triangle &t, const size_t bucketIdx);
+		
+		double  _CalcDistanceFromTriangle(const Triangle &t, const size_t bucketIdx);
+		
+		double	_CalcShortestDistance(const Triangle &t, const size_t bucketIdx);
 		void	_CalcDistanceFromWall(const Triangle &t);
 
 	protected:

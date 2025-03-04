@@ -30,11 +30,51 @@ bool	Vec::operator==(const Vec &vec) const
 
 bool	Vec::NearlyEqual(const Vec &vec) const
 {
-	double	leverage  = 100000;
+	// double	leverage = 100000;
 
-	return (size_t(this->x * leverage) == size_t(vec.x * leverage)) && 
-		   (size_t(this->y * leverage) == size_t(vec.y * leverage)) && 
-		   (size_t(this->z * leverage) == size_t(vec.z * leverage));
+	// return (size_t(this->x * leverage) == size_t(vec.x * leverage)) && 
+	// 	   (size_t(this->y * leverage) == size_t(vec.y * leverage)) && 
+	// 	   (size_t(this->z * leverage) == size_t(vec.z * leverage));
+
+	// if (this->x * vec.x < 0.0)
+	// {
+	// 	return false ;
+	// }
+	// if (this->y * vec.y < 0.0)
+	// {
+	// 	return false ;
+	// }
+	// if (this->z * vec.z < 0.0)
+	// {
+	// 	return false ;
+	// }
+	// return true;
+
+	// if (std::signbit(this->x) != std::signbit(vec.x))
+	// {
+	// 	return false ;
+	// }
+	// if (std::signbit(this->y) != std::signbit(vec.y))
+	// {
+	// 	return false ;
+	// }
+	// if (std::signbit(this->z) != std::signbit(vec.z))
+	// {
+	// 	return false ;
+	// }
+	if (std::signbit(this->x) != std::signbit(vec.x))
+	{
+		return false ;
+	}
+	if (std::signbit(this->y) != std::signbit(vec.y))
+	{
+		return false ;
+	}
+	if (std::signbit(this->z) != std::signbit(vec.z))
+	{
+		return false ;
+	}
+	return true;
 }
 
 double	Vec::DotProduct2d(const Vec &p) const

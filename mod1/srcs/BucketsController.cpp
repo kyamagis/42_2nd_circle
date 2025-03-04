@@ -49,7 +49,6 @@ size_t	BC::_CalcBucketIdx(const Vec &v)
 
 void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 {
-	std::cout << this->numOfBuckets << std::endl;
 	this->buckets           = new t_bucket[this->numOfBuckets];
 	t_bucket	*bucketLast = new t_bucket[this->numOfBuckets];
 	this->particleNextIdxs  = new int64_t[NUM_OF_PARTICLES];
@@ -76,6 +75,10 @@ void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 		
 		bucketX = bucketXY % this->bucketColumn;
 		this->buckets[i].position.x = BUCKET_LENGTH * bucketX;
+	
+		this->buckets[i].position.x += BUCKET_LENGTH / 2.0;
+		this->buckets[i].position.y += BUCKET_LENGTH / 2.0;
+		this->buckets[i].position.z += BUCKET_LENGTH / 2.0;
 		
 		if (i < NUM_OF_PARTICLES)
 		{
@@ -160,90 +163,92 @@ Vec	BC::_MinEachCoordinateOfVertex(const Vec &a,
 	return minCoordinate;
 }
 
-Vec	BC::_CalcBucketCenterPos(const size_t i, const size_t j, const size_t k)
+double	BC::_CalcShortestDistanceFromVertexSQ(const Triangle &t, 
+											const size_t bucketIdx)
 {
-	return Vec(i + BUCKET_LENGTH / 2.0, 
-			   j + BUCKET_LENGTH / 2.0,
-			   k + BUCKET_LENGTH / 2.0);
+	double	disFromVertexA = t.a.MagnitudeSQ3d(this->buckets[bucketIdx].position);
+	double	disFromVertexB = t.b.MagnitudeSQ3d(this->buckets[bucketIdx].position);
+	double	disFromVertexC = t.c.MagnitudeSQ3d(this->buckets[bucketIdx].position);
+
+	return min_of_3_elm(disFromVertexA, disFromVertexB, disFromVertexC);
 }
 
-double	BC::_CalcShortestDistanceFromVertex(const Triangle &t, 
-									const Vec &bucketCenterPos)
-{
-	double	disFromVertexA = t.a.Magnitude3d(bucketCenterPos);
-	double	disFromVertexB = t.b.Magnitude3d(bucketCenterPos);
-	double	disFromVertexC = t.c.Magnitude3d(bucketCenterPos);
-
-	return max_of_3_elm(disFromVertexA, disFromVertexB, disFromVertexC);
-}
-
-double	BC::_CalcDistanceFromSide(const Vec &a, 
+double	BC::_CalcDistanceFromSideSQ(const Vec &a, 
 								  const Vec &b, 
-								  const Vec &bucketCenterPos)
+								  const size_t bucketIdx)
 {
 	const Vec	abVector = b - a;
-	const Vec	aCenterVector = bucketCenterPos - a;
+	const Vec	aCenterVector = this->buckets[bucketIdx].position - a;
 
 	const double	t = abVector.DotProduct3d(aCenterVector) / 
 				abVector.MagnitudeSQ3d();
+
+	// const Vec	projectivePoint = a + (abVector * t);
+
+
+	// return (this->buckets[bucketIdx].position - projectivePoint).MagnitudeSQ3d();
 
 	if (0.0 < t && t < 1.0)
 	{
 		const Vec	projectivePoint = a + (abVector * t);
 
-		return (bucketCenterPos - projectivePoint).Magnitude3d();
+	
+		return (this->buckets[bucketIdx].position - projectivePoint).MagnitudeSQ3d();
 	}
 		
-	return 2.0 * BUCKET_LENGTH;
+	return 2.0 * BUCKET_LENGTH * 2.0 * BUCKET_LENGTH;
 }
 
-double	BC::_CalcShortestDistanceFromSide(const Triangle &t,  
-								          const Vec &bucketCenterPos)
+double	BC::_CalcShortestDistanceFromSideSQ(const Triangle &t, const size_t bucketIdx)
 {
-	double	disFromSideAB = this->_CalcDistanceFromSide(t.a, t.b, bucketCenterPos);
-	double	disFromSideBC = this->_CalcDistanceFromSide(t.b, t.c, bucketCenterPos);
-	double	disFromSideCA = this->_CalcDistanceFromSide(t.c, t.a, bucketCenterPos);
+	const double	disFromSideAB = this->_CalcDistanceFromSideSQ(t.a, t.b, bucketIdx);
+	const double	disFromSideBC = this->_CalcDistanceFromSideSQ(t.b, t.c, bucketIdx);
+	const double	disFromSideCA = this->_CalcDistanceFromSideSQ(t.c, t.a, bucketIdx);
 
-	return max_of_3_elm(disFromSideAB, disFromSideBC, disFromSideCA);
+	return min_of_3_elm(disFromSideAB, disFromSideBC, disFromSideCA);
 }
 
-double	BC::_CalcDistanceFromTriangle(const Triangle &t,  
-									  const Vec &bucketCenterPos)
+double	BC::_CalcDistanceFromTriangle(const Triangle &t, const size_t bucketIdx)
 {
-	const Vec		apVec =  bucketCenterPos - t.a;
-	const double	disFromTriangle = apVec.DotProduct3d(t.n) / 
-									  t.n.MagnitudeSQ3d();
-	const Vec		projectivePoint = bucketCenterPos -
-								  t.n * disFromTriangle;
-								  
+	const Vec		apVec =  this->buckets[bucketIdx].position - t.a;
+	const double	coefficient = apVec.DotProduct3d(t.n) / t.n.MagnitudeSQ3d();
+	const Vec 		orientVec = t.n * coefficient;
+	const Vec		projectivePoint = this->buckets[bucketIdx].position - orientVec;
+	
+	// if (t.b == Vec(0,0,0))
+	// {
+	// 	std::cout << t.n << std::endl;
+	// }
+
 	if (t.InternalAndExternalJudgments3d(projectivePoint))
 	{
 		// std::cout << apVec.DotProduct3d(t.n) << " " << t.n.MagnitudeSQ3d() << std::endl;
-		return disFromTriangle;
+		
+		return orientVec.Magnitude3d();
 	}
 	return 2.0 * BUCKET_LENGTH;
 }
 
-double	BC::_CalcShortestDistance(const Triangle &t,
-								  const double i, 
-								  const double j, 
-							      const double k)
+double	BC::_CalcShortestDistance(const Triangle &t, const size_t bucketIdx)
 {
-	Vec		bucketCenterPos = this->_CalcBucketCenterPos(i,j,k);
-
-	double	disFromVertex   = this->_CalcShortestDistanceFromVertex(t, bucketCenterPos);
-	double	disFromSide 	= this->_CalcShortestDistanceFromSide(t,bucketCenterPos);
-	double	disFromTriangle = this->_CalcDistanceFromTriangle(t, bucketCenterPos);
-
+	// const double	disFromVertex   = sqrt(this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx));
 	// return disFromVertex;
 
-	return max_of_3_elm(disFromVertex, disFromSide, disFromTriangle);
+	// const double	disFromVertex   = sqrt(this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx));
+	// const double	disFromSide 	= sqrt(this->_CalcShortestDistanceFromSideSQ(t,bucketIdx));
+	// return min(disFromVertex, disFromSide);
+
+	const double	disFromVertex   = sqrt(this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx));
+	const double	disFromSide 	= sqrt(this->_CalcShortestDistanceFromSideSQ(t,bucketIdx));
+	const double	disFromTriangle = this->_CalcDistanceFromTriangle(t, bucketIdx);
+
+	return min_of_3_elm(disFromVertex, disFromSide, disFromTriangle);
 }
 
 void	BC::_CalcDistanceFromWall(const Triangle &t)
 {
-	Vec	maxCrd = this->_MaxEachCoordinateOfVertex(t.a, t.b, t.c);
-	Vec minCrd = this->_MinEachCoordinateOfVertex(t.a, t.b, t.c);
+	const Vec	maxCrd = this->_MaxEachCoordinateOfVertex(t.a, t.b, t.c);
+	const Vec	minCrd = this->_MinEachCoordinateOfVertex(t.a, t.b, t.c);
 
 	size_t	bucketX = size_t(minCrd.x / BUCKET_LENGTH);
 	size_t	bucketY = size_t(minCrd.y / BUCKET_LENGTH);
@@ -256,20 +261,29 @@ void	BC::_CalcDistanceFromWall(const Triangle &t)
 	for (double	j = minCrd.y; size_t(j) <= size_t(maxCrd.y);) {
 	for (double	k = minCrd.z; size_t(k) <= size_t(maxCrd.z);) {
 				bucketIdx = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
-				shortestDistance = this->_CalcShortestDistance(t, i, j, k);
+				shortestDistance = this->_CalcShortestDistance(t, bucketIdx);
 				if (shortestDistance < this->buckets[bucketIdx].disFromWall)
 				{
 					this->buckets[bucketIdx].disFromWall = shortestDistance;
+
+					
 				}
+				// if (t.a == Vec(0,0,0) && this->buckets[bucketIdx].position.x == 210.0 && this->buckets[bucketIdx].position.z == 210.0)
+				// {
+				// 	std::cout << this->buckets[bucketIdx].position << std::endl;
+				// 	std::cout << this->buckets[bucketIdx].disFromWall << std::endl;
+				// }
+
 				k += BUCKET_LENGTH;
 				bucketZ = k / BUCKET_LENGTH;
 			}
+			bucketZ = size_t(minCrd.z / BUCKET_LENGTH);
 			j += BUCKET_LENGTH;
 			bucketY = j / BUCKET_LENGTH;
 		}
+		bucketY = size_t(minCrd.y / BUCKET_LENGTH);
 		i += BUCKET_LENGTH;
 		bucketX = i / BUCKET_LENGTH;
-		// std::cout << i << std::endl;
 	}
 }
 
@@ -277,7 +291,7 @@ void	BC::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 {
 	for (size_t	i = 0; i < ts.size(); ++i)
 	{
-		std::cout << i << " " << ts[i] << std::endl;
+		std::cout << i << " " << ts[i] << std::endl << std::endl;
 		this->_CalcDistanceFromWall(ts[i]);
 	}
 }
@@ -300,22 +314,28 @@ size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 	return coor;
 }
 
-
 void	BC::DrawDisFromWall(void)
 {
-	glPointSize(1.0f);
+	glPointSize(2.0f);
 	glBegin(GL_POINTS);
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		// if (this->buckets[i].disFromWall < 2 *  BUCKET_LENGTH)
-		// {
-		// 	std::cout << this->buckets[i].disFromWall << std::endl;
-		// 	glColor3f(1.0, 1.0, 1.0);
-		// 	drawVertex(this->buckets[i].position);
-		// }
-		// std::cout << this->buckets[i].disFromWall << std::endl;
-		glColor3f(0, 1.0 - double(i / double(this->numOfBuckets)), double(i / double(this->numOfBuckets)));
-		drawVertex(this->buckets[i].position);
+		if (this->buckets[i].disFromWall < BUCKET_LENGTH + EPS)
+		{
+			if (this->buckets[i].disFromWall < BUCKET_LENGTH / 2.0)
+			{
+				glColor3f(0, this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0), 1 - this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0));
+			}
+			else
+			{
+				// std::cout << this->buckets[i].disFromWall << std::endl;
+				glColor3f(this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0), 1 - this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0), 0);
+			}
+			
+			drawVertex(this->buckets[i].position);
+		}
+		// glColor3f(0, 1.0 - double(i / double(this->numOfBuckets)), double(i / double(this->numOfBuckets)));
+		// drawVertex(this->buckets[i].position);
 	}
 	glEnd();
 }

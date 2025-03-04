@@ -35,7 +35,7 @@ uint32_t	max(uint32_t	aX, uint32_t bX)
 	return aX;
 }
 
-double	max(double	aX, double bX)
+double	max(const double aX, const double bX)
 {
 	if (aX < bX)
 	{
@@ -44,7 +44,7 @@ double	max(double	aX, double bX)
 	return aX;
 }
 
-double	max_of_3_elm(double	aX, double bX, double cX)
+double	max_of_3_elm(const double aX, const double bX, const double cX)
 {
 	double	biggerX = max(aX, bX);
 
@@ -55,7 +55,7 @@ double	max_of_3_elm(double	aX, double bX, double cX)
 	return biggerX;
 }
 
-double	min(double	aX, double bX)
+double	min(const double aX, const double bX)
 {
 	if (aX < bX)
 	{
@@ -64,7 +64,7 @@ double	min(double	aX, double bX)
 	return bX;
 }
 
-double	min_of_3_elm(double	aX, double bX, double cX)
+double	min_of_3_elm(const double aX, const double bX, const double cX)
 {
 	double	smallerX = min(aX, bX);
 
@@ -72,7 +72,7 @@ double	min_of_3_elm(double	aX, double bX, double cX)
 	{
 		return smallerX;
 	}
-	return smallerX;
+	return cX;
 }
 
 double	extend_map(const uint32_t mapSize)

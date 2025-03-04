@@ -72,7 +72,7 @@ bool	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 	}
 	bool	tempVertexFlg = this->_HaveATempVertex(a, b, this->_specificPoints[idx]);
 
-	Triangle t(a, b, this->_specificPoints[idx], tempVertexFlg);
+	const Triangle t(a, b, this->_specificPoints[idx], tempVertexFlg);
 
 	for (size_t i = 0; i <= idx; ++i)
 	{
@@ -94,7 +94,7 @@ bool	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 
 void	DT::_SegmentTriangles(const size_t idx)
 {
-	size_t		triangleSize = this->_triangles.size();
+	const size_t	triangleSize = this->_triangles.size();
 	std::deque<Triangle>::iterator itr = this->_triangles.begin();
 	size_t	j = 0;
 
@@ -200,7 +200,7 @@ void	DT::Calculation(int64_t **map)
 
 std::deque<Triangle>	DT::Calculation(void)
 {
-	size_t	size = this->_specificPoints.size();
+	const size_t	size = this->_specificPoints.size();
 
 	// i is 3, because (0,0,0) _tempVertexB, and _tempVertexC is top of this->_specificPoints
 	for (size_t	i = 3; i < size; ++i)

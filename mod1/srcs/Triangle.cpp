@@ -19,12 +19,12 @@ Triangle::~Triangle()
 
 }
 
-double	Triangle::CalcDistanceFromCenterSQ(const Vec &point)
+double	Triangle::CalcDistanceFromCenterSQ(const Vec &point) const
 {
 	return point.MagnitudeSQ2d(this->circumcircle.center);
 }
 
-bool	Triangle::IsInsideCircumcircle(const Vec &point)
+bool	Triangle::IsInsideCircumcircle(const Vec &point) const
 {
 	return  this->CalcDistanceFromCenterSQ(point) + EPS < this->circumcircle.r;
 }
@@ -105,15 +105,52 @@ bool	Triangle::InternalAndExternalJudgments3d(const Vec &point) const
 		this->c == this->a)
 		return false;
 
-	Vec	abp = (this->b - this->a).CrossProduct3d(point - this->b);
-	abp /=  abp.Magnitude3d();
-	const Vec	bcp = (this->c - this->b).CrossProduct3d(point - this->c);
-	if (!abp.NearlyEqual(bcp / bcp.Magnitude3d()))
+	// Vec	abp = (this->b - this->a).CrossProduct3d(point - this->b);
+	// abp /=  abp.Magnitude3d();
+	// const Vec	bcp = (this->c - this->b).CrossProduct3d(point - this->c);
+	// if (!abp.NearlyEqual(bcp / bcp.Magnitude3d()))
+	// {
+	// 	return false ;
+	// }
+	// const Vec	cap = (this->a - this->c).CrossProduct3d(point - this->a);
+	// return (abp.NearlyEqual(cap / cap.Magnitude3d()));
+
+	// const Vec	abp = (this->b - this->a).CrossProduct3d(point - this->b);
+	// const Vec	bcp = (this->c - this->b).CrossProduct3d(point - this->c);
+	// if (!abp.NearlyEqual(bcp))
+	// {
+	// 	return false ;
+	// }
+	// const Vec	cap = (this->a - this->c).CrossProduct3d(point - this->a);
+	// return (abp.NearlyEqual(cap));
+
+	// const Vec	abp = (this->a - this->b).CrossProduct3d(point - this->b);
+	// const Vec	bcp = (this->b - this->c).CrossProduct3d(point - this->c);
+	// const Vec	cap = (this->c - this->a).CrossProduct3d(point - this->a);
+
+	// if (!abp.NearlyEqual(bcp))
+	// {
+	// 	return false ;
+	// }
+	// return (abp.NearlyEqual(cap));
+
+	const Vec	abp = (this->a - this->b).CrossProduct3d(point - this->b);
+	const Vec	bcp = (this->b - this->c).CrossProduct3d(point - this->c);
+	const Vec	cap = (this->c - this->a).CrossProduct3d(point - this->a);
+
+	double	adot = abp.DotProduct3d(this->n);
+	double	bdot = bcp.DotProduct3d(this->n);
+	double	cdot = cap.DotProduct3d(this->n);
+
+	if (0.0 <= adot && 0.0 <= bdot && 0.0 <= cdot)
 	{
-		return false ;
+		return true ;
 	}
-	const Vec	cap = (this->a - this->c).CrossProduct3d(point - this->a);
-	return (abp.NearlyEqual(cap / cap.Magnitude3d()));
+	else if (adot < 0.0 && bdot < 0.0 && cdot < 0.0)
+	{
+		return true;
+	}
+	return false;
 }
 
 void	Triangle::CalcNormalVector()
@@ -172,6 +209,7 @@ Triangle&	Triangle::operator=(const Triangle &triangle)
 		this->a = triangle.a;
 		this->b = triangle.b;
 		this->c = triangle.c;
+		this->n = triangle.n;
 		this->circumcircle = triangle.circumcircle;
 		this->intersectionWithMidHeight = this->intersectionWithMidHeight;
 		this->tempVertexFlg = triangle.tempVertexFlg;
@@ -197,6 +235,5 @@ std::ostream &operator<<(std::ostream &ostrm, const Triangle &triangle)
 {
 	return ostrm << '(' << triangle.a << ", " 
 						<< triangle.b << ", "
-						<< triangle.c << ')' 
-						<< std::endl;
+						<< triangle.c << ')';
 }

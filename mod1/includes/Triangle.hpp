@@ -29,9 +29,9 @@ class Triangle
 
 		Triangle(const Vec &A, const Vec &B,const Vec &C, bool TempVertexFlg);
 
-		bool	IsInsideCircumcircle(const Vec &point);
+		bool	IsInsideCircumcircle(const Vec &point) const;
 		void	CalcCircumcircle();
-		double	CalcDistanceFromCenterSQ(const Vec &point);
+		double	CalcDistanceFromCenterSQ(const Vec &point) const;
 		bool	InternalAndExternalJudgments2d(const Vec &point) const;
 		bool	InternalAndExternalJudgments3d(const Vec &point) const;
 		void	CalcNormalVector();
