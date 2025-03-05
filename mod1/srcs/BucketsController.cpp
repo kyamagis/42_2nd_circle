@@ -2,6 +2,7 @@
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
 #include "../includes/Graphic.hpp"
+#include "../includes/Print.hpp"
 
 // BC::BC()
 // {
@@ -12,11 +13,12 @@ BC::BC(const Vec &visibleMapSize_,
 	   const Vec &totalMapSize_)
 	   :_visibleMapSize(visibleMapSize_) ,
 	    _totalMapSize(totalMapSize_),
-		bucketRow(to_bucket_coor(this->_totalMapSize.x + 1)),
-		bucketColumn(to_bucket_coor(this->_totalMapSize.y + 1)),
-		bucketDepth(to_bucket_coor(this->_totalMapSize.z + 1)),
-		_columnMultiplDepth(this->bucketColumn * this->bucketDepth),
+		_weights(init_wall_weight()),
 		_bucketLast(NULL),
+		bucketRow(to_bucket_coor(this->_totalMapSize.x)),
+		bucketColumn(to_bucket_coor(this->_totalMapSize.y)),
+		bucketDepth(to_bucket_coor(this->_totalMapSize.z)),
+		_columnMultiplDepth(this->bucketColumn * this->bucketDepth),
 		numOfBuckets(this->bucketRow * this->bucketColumn * this->bucketDepth),
 		buckets(NULL),
 		particleNextIdxs(NULL)
@@ -43,8 +45,8 @@ BC::~BC()
 size_t	BC::_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketZ)
 {
 	return bucketX + 
-			this->bucketColumn * bucketY + 
-			this->_columnMultiplDepth * bucketZ;
+		   this->bucketColumn * bucketY + 
+		   this->_columnMultiplDepth * bucketZ;
 }
 
 size_t	BC::_CalcBucketIdx(const Vec &v)
@@ -58,7 +60,7 @@ void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 	size_t	bucketY;
 	size_t	bucketZ;
 	size_t	bucketIdx;
-	int64_t	nextIdx;
+	size_t	nextIdx;
 
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
@@ -69,7 +71,7 @@ void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 		bucketIdx = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
 		nextIdx = this->_bucketLast[bucketIdx].firstPrtIdx;
 		this->_bucketLast[bucketIdx].firstPrtIdx = i;
-		if (nextIdx == -1)
+		if (nextIdx == UINT64_MAX)
 		{
 			this->buckets[bucketIdx].firstPrtIdx = i;
 		}
@@ -77,6 +79,7 @@ void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 		{
 			this->particleNextIdxs[nextIdx] = i;
 		}
+		
 	}
 }
 
@@ -84,19 +87,18 @@ void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 {
 	this->buckets           = new t_bucket[this->numOfBuckets];
 	this->_bucketLast       = new t_bucket[this->numOfBuckets];
-	this->particleNextIdxs  = new int64_t[NUM_OF_PARTICLES];
+	this->particleNextIdxs  = new size_t[NUM_OF_PARTICLES];
 
 	size_t	bucketX;
 	size_t	bucketY;
 	size_t	bucketZ;
-
 	size_t	bucketXY;
 
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		this->buckets[i].firstPrtIdx = -1;
-		this->buckets[i].disFromWall = 2.0 * BUCKET_LENGTH;
-		this->_bucketLast[i].firstPrtIdx    = -1;
+		this->buckets[i].firstPrtIdx     = UINT64_MAX;
+		this->buckets[i].wallWeight      = 0.0;
+		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
 
 		bucketZ = i / this->_columnMultiplDepth;
 		this->buckets[i].position.z = BUCKET_LENGTH * bucketZ;
@@ -114,7 +116,7 @@ void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 		
 		if (i < NUM_OF_PARTICLES)
 		{
-			this->particleNextIdxs[i] = -1;
+			this->particleNextIdxs[i] = UINT64_MAX;
 		}
 	}
 
@@ -125,11 +127,11 @@ void	BC::_UpdateBuckets(const std::deque<Particle> &ps)
 {
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		this->buckets[i].firstPrtIdx     = -1;
-		this->_bucketLast[i].firstPrtIdx = -1;		
+		this->buckets[i].firstPrtIdx     = UINT64_MAX;
+		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;		
 		if (i < NUM_OF_PARTICLES)
 		{
-			this->particleNextIdxs[i] = -1;
+			this->particleNextIdxs[i] = UINT64_MAX;
 		}
 	}
 	this->_UpdateParticlesInBuckets(ps);
@@ -238,25 +240,48 @@ double	BC::_CalcDistanceFromTriangle(const Triangle &t, const size_t bucketIdx)
 	{
 		// std::cout << apVec.DotProduct3d(t.n) << " " << t.n.MagnitudeSQ3d() << std::endl;
 		
-		return orientVec.Magnitude3d();
+		return orientVec.MagnitudeSQ3d();
 	}
-	return 2.0 * BUCKET_LENGTH;
+	return 2.0 * BUCKET_LENGTH * 2.0 * BUCKET_LENGTH;
 }
 
-double	BC::_CalcShortestDistance(const Triangle &t, const size_t bucketIdx)
+double	BC::_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx)
 {
-	// const double	disFromVertex   = sqrt(this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx));
+	// const double	disFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
 	// return disFromVertex;
 
-	// const double	disFromVertex   = sqrt(this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx));
-	// const double	disFromSide 	= sqrt(this->_CalcShortestDistanceFromSideSQ(t,bucketIdx));
+	// const double	disFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
+	// const double	disFromSide 	= this->_CalcShortestDistanceFromSideSQ(t,bucketIdx);
 	// return min(disFromVertex, disFromSide);
 
-	const double	disFromVertex   = sqrt(this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx));
-	const double	disFromSide 	= sqrt(this->_CalcShortestDistanceFromSideSQ(t,bucketIdx));
+	const double	disFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
+	const double	disFromSide 	= this->_CalcShortestDistanceFromSideSQ(t,bucketIdx);
 	const double	disFromTriangle = this->_CalcDistanceFromTriangle(t, bucketIdx);
 
 	return min_of_3_elm(disFromVertex, disFromSide, disFromTriangle);
+}
+
+double	BC::_CalcWallWeight(const double disFromWall)
+{
+	if (disFromWall < 0.0)
+	{
+		Print::Err("_CalcWallWeight: disFromWall");
+	}
+	if (this->_weights.back().x < disFromWall + EPS)
+	{
+		return 0.0;
+	}
+	Vec nextWeight;
+	for (size_t	i = 0; i + 1 < this->_weights.size(); ++i)
+	{
+		nextWeight = this->_weights[i + 1];
+		if (disFromWall <= nextWeight.x)
+		{
+			return	this->_weights[i].Interpolate2d(nextWeight, disFromWall);
+		}
+	}
+	Print::Err("_CalcWallWeight: weight");
+	return 0.0;
 }
 
 void	BC::_CalcDistanceFromWall(const Triangle &t)
@@ -270,15 +295,17 @@ void	BC::_CalcDistanceFromWall(const Triangle &t)
 	size_t	bucketIdx;
 
 	double	shortestDistance;
+	double	wallWeight;
 	
 	for (double	i = minCrd.x; size_t(i) <= size_t(maxCrd.x);) {
 	for (double	j = minCrd.y; size_t(j) <= size_t(maxCrd.y);) {
 	for (double	k = minCrd.z; size_t(k) <= size_t(maxCrd.z);) {
-				bucketIdx = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
-				shortestDistance = this->_CalcShortestDistance(t, bucketIdx);
-				if (shortestDistance < this->buckets[bucketIdx].disFromWall)
+				bucketIdx        = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
+				shortestDistance = sqrt(this->_CalcShortestDistanceSQ(t, bucketIdx));
+				wallWeight 	     = this->_CalcWallWeight(shortestDistance);
+				if (this->buckets[bucketIdx].wallWeight < wallWeight)
 				{
-					this->buckets[bucketIdx].disFromWall = shortestDistance;
+					this->buckets[bucketIdx].wallWeight = wallWeight;
 				}
 				k += BUCKET_LENGTH;
 				bucketZ = k / BUCKET_LENGTH;
@@ -302,30 +329,26 @@ void	BC::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 	}
 }
 
-
-
 void	BC::DrawDisFromWall(void)
 {
 	glPointSize(2.0f);
 	glBegin(GL_POINTS);
+	double	maxWeight = this->_weights[0].y;
+	double	midWeight = maxWeight / 2.0;
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		if (this->buckets[i].disFromWall < BUCKET_LENGTH + EPS)
+		if (0.0 < this->buckets[i].wallWeight)
 		{
-			if (this->buckets[i].disFromWall < (BUCKET_LENGTH / 2.0) + EPS)
+			if (this->buckets[i].wallWeight < midWeight)
 			{
-				glColor3f(0, this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0), 1 - this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0));
+				glColor3f(0, this->buckets[i].wallWeight / midWeight, 1 - this->buckets[i].wallWeight / midWeight);
 			}
 			else
 			{
-				// std::cout << this->buckets[i].disFromWall << std::endl;
-				glColor3f(this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0), 1 - this->buckets[i].disFromWall / (BUCKET_LENGTH / 2.0), 0);
+				glColor3f(this->buckets[i].wallWeight / midWeight, 1 - this->buckets[i].wallWeight / midWeight, 0);
 			}
-			
 			drawVertex(this->buckets[i].position);
 		}
-		// glColor3f(0, 1.0 - double(i / double(this->numOfBuckets)), double(i / double(this->numOfBuckets)));
-		// drawVertex(this->buckets[i].position);
 	}
 	glEnd();
 }
@@ -353,7 +376,7 @@ void	BC::DrawDisFromWall(void)
 // 	for (; otherBZ <= maxBZ ; ++otherBZ){
 // 		bucketIdx = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
 // 		particleIdx = this->buckets[bucketIdx].firstPrtIdx;
-// 		if (particleIdx == -1)
+// 		if (particleIdx == UINT64_MAX)
 // 		{
 // 			continue;
 // 		}
@@ -361,7 +384,7 @@ void	BC::DrawDisFromWall(void)
 // 		{
 
 // 			particleIdx = this->particleNextIdxs[particleIdx];
-// 			if (particleIdx == -1)
+// 			if (particleIdx == UINT64_MAX)
 // 			{
 // 				break;
 // 			}

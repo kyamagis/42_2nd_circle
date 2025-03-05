@@ -151,13 +151,14 @@ void	TerrestrialSimulation::_DrawBuckets(const int argc,
 {
 
 	// MPS	mps(this->_mapSize, ts);
-
 	g_testdata.mps = new MPS(this->_mapSize, ts);
 
 	Graphic g = Graphic(argc, argv, SCREEN_SIZE_X, SCREEN_SIZE_Y);
 
 	// g_testdata.bs = mps.bucketFirst;
 	// g_testdata.numOfBuckets = mps.numOfBuckets;
+
+	
 
 	g.InitGraphicData(ts, this->_mapSize, this->_maxHeight, this->_minHeight);
 	g.GraphicLoop(RenderingAlgorithm3);
@@ -190,8 +191,8 @@ bool	TerrestrialSimulation::SimulationStart(const int argc,
 	std::deque<Triangle>	ts = dT.Calculation();
 
 	
-	// this->_DrawBuckets(argc, argv, ts);
-	this->_DrawSimulation(argc, argv, ts);
+	this->_DrawBuckets(argc, argv, ts);
+	// this->_DrawSimulation(argc, argv, ts);
 
 	// this->PrintSpecificPoints();
 	return true;

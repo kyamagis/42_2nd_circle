@@ -24,5 +24,6 @@ void	line_gradation(const int64_t	maxHeight,
 						const double	midHeight,  
 						const int64_t height);
 
-void	init_wall_weight(std::deque<Vec> &weights);
+std::deque<Vec>	init_wall_weight(void);
+
 #endif

@@ -159,15 +159,16 @@ static void	calc_wall_weight(std::deque<Vec> &weights, std::deque<Particle> &ps)
 		}
 		// std::cout <<  ps.size() << std::endl;
 		outputfile << point.center.y - RADIUS << ", " << weight << std::endl;
-		weights.push_back(Vec(distance, weight, 0));
+		weights.push_back(Vec(point.center.y - RADIUS, weight, 0));
 		point.center.y += diff;
 	}
 	outputfile.close();
 }
 
-void	init_wall_weight(std::deque<Vec> &weights)
+std::deque<Vec>	init_wall_weight(void)
 {
 	std::deque<Particle>	ps;
+	std::deque<Vec>			weights;
 
 	init_ps(ps);
 	calc_wall_weight(weights, ps);
@@ -179,4 +180,5 @@ void	init_wall_weight(std::deque<Vec> &weights)
 	{
 		Print::Err("std::system");
 	}
+	return weights;
 }

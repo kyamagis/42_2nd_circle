@@ -13,6 +13,7 @@ class Particle: public Circle
 
 	public:
 		Vec	velocity;
+		Vec	acceleration;
 
 		Particle();
 		Particle(const double &cX, const double &cY, const double &cZ);

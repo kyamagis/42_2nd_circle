@@ -6,7 +6,7 @@
 
 // #define I_DISTANCE	0.02 // interparticle distance
 // #define E_RADIUS	(2.1 * I_DISTANCE) // effective radius
-#define I_DISTANCE	10 // interparticle distance
+#define I_DISTANCE	100 // interparticle distance
 #define E_RADIUS	(2.1 * I_DISTANCE) // effective radius
 #define E_RADIUS_SQ (E_RADIUS * E_RADIUS)
 #define	DIAMETER	(E_RADIUS / 2.0)
@@ -34,7 +34,6 @@
 #define FALSE 0
 
 #define OMMIT 10000
-
 
 #define SCALING 0.7
 #define DEPTH_SCALING 0.01f

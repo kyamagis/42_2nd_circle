@@ -1,6 +1,7 @@
 #include "../includes/MPS.hpp"
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
+#include "../includes/Print.hpp"
 
 
 // MPS::MPS()
@@ -18,11 +19,11 @@ MPS::MPS(const uint32_t	mapSize[3],
 			Vec(mapSize[X], mapSize[Y], mapSize[Z])), 
 		visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
 		totalMapSize(this->visibleMapSize),
-		g(0, 9.8, 0)
+		g(0, 0, 9.8)
 {
-	init_wall_weight(this->_weights);
 	this->_InitParticlesWaterColumnCollapse();
 	this->_InitBuckets(ts);
+
 }
 
 MPS::~MPS()
@@ -66,21 +67,19 @@ void	MPS::_InitTermCoefficient(void)
 {
 	double	n0 = 0;
 	double	lambda = 0;
-
 	double	tempLambda = 0;
-	double	x;
-	double	y;
-	double	z;
+
+	Vec	r;
 	double	distance;
 	double	distanceSQ;
 
 	for (int32_t idxX = -4; idxX < 5; ++idxX) {
 	for (int32_t idxY = -4; idxY < 5; ++idxY) {
 	for (int32_t idxZ = -4; idxZ < 5; ++idxZ) {
-		x =  I_DISTANCE * double(idxX);
-		y =  I_DISTANCE * double(idxY);
-		z =  I_DISTANCE * double(idxZ);
-		distanceSQ = x*x + y*y + z*z;
+		r.x =  I_DISTANCE * double(idxX);
+		r.y =  I_DISTANCE * double(idxY);
+		r.z =  I_DISTANCE * double(idxZ);
+		distanceSQ = r.MagnitudeSQ3d();
 		if (distanceSQ == 0.0)
 		{
 			continue;
@@ -103,19 +102,6 @@ void	MPS::_SetParameter(void)
 {
 	this->_InitTermCoefficient();
 }
-
-// void	MPS::_SearchNeighborParticles(const size_t oneself)
-// {
-// 	// size_t	bucketX = this->ps[oneself].center.x / BUCKET_LENGTH;
-// 	// size_t	bucketY = this->ps[oneself].center.y / BUCKET_LENGTH;
-// 	// size_t	bucketZ = this->ps[oneself].center.z / BUCKET_LENGTH;
-
-// 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-// 	{
-// 		this->_SearchNeighborParticle(i);
-
-// 	}
-// }
 
 // double	MPS::W(const size_t i, const size_t oneself, bool gradientFlg) // weight
 // {
@@ -152,49 +138,88 @@ size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 	return coor;
 }
 
+
+
 void	MPS::_CalcEachViscosity(const size_t oneself)
 {
-	size_t	currentBX = size_t(this->ps[oneself].center.x / BUCKET_LENGTH);
-	size_t	currentBY = size_t(this->ps[oneself].center.y / BUCKET_LENGTH);
-	size_t	currentBZ = size_t(this->ps[oneself].center.z / BUCKET_LENGTH);
+	const size_t	currentBX = size_t(this->ps[oneself].center.x / BUCKET_LENGTH);
+	const size_t	currentBY = size_t(this->ps[oneself].center.y / BUCKET_LENGTH);
+	const size_t	currentBZ = size_t(this->ps[oneself].center.z / BUCKET_LENGTH);
 
-	size_t	otherBX = _InitOtherBucketCoor(currentBX);
-	size_t	otherBY = _InitOtherBucketCoor(currentBY);
-	size_t	otherBZ = _InitOtherBucketCoor(currentBZ);
+	const Vec	oneselfPos(this->ps[oneself].center.x, this->ps[oneself].center.y, this->ps[oneself].center.z);
+	const Vec	oneselfV(this->ps[oneself].velocity.x, this->ps[oneself].velocity.y, this->ps[oneself].velocity.z);
+	const Vec	oneselfA(this->ps[oneself].acceleration.x, this->ps[oneself].acceleration.y, this->ps[oneself].acceleration.z);
+	Vec	acceleration;
 
-	size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
-	size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
-	size_t	maxBZ = _InitMaxOtherBucketCoor(this->bucketDepth,  currentBZ);
+	size_t	otherBEdgeX = _InitOtherBucketCoor(currentBX);
+	size_t	otherBEdgeY = _InitOtherBucketCoor(currentBY);
+	size_t	otherBEdgeZ = _InitOtherBucketCoor(currentBZ);
+
+	const size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
+	const size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
+	const size_t	maxBZ = _InitMaxOtherBucketCoor(this->bucketDepth,  currentBZ);
 
 	size_t	bucketIdx;
 	size_t	particleIdx;
 
-	for (; otherBX <= maxBX ; ++otherBX){
-	for (; otherBY <= maxBY ; ++otherBY){
-	for (; otherBZ <= maxBZ ; ++otherBZ){
-		bucketIdx = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
-		particleIdx = this->bucketFirst[bucketIdx].firstPrtIdx;
-		if (particleIdx == -1)
+	Vec		dr;
+	double	distancePSQ;
+	double	distanceP;
+	double	wallWeight;
+	double	w;
+
+	for (size_t	otherBX = otherBEdgeX; otherBX <= maxBX ; ++otherBX){
+	for (size_t	otherBY = otherBEdgeY; otherBY <= maxBY ; ++otherBY){
+	for (size_t	otherBZ = otherBEdgeZ; otherBZ <= maxBZ ; ++otherBZ){
+		bucketIdx   = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
+		particleIdx = this->buckets[bucketIdx].firstPrtIdx;
+		if (particleIdx == UINT64_MAX)
 		{
 			continue;
 		}
 		for (;;)
 		{
-
+			dr.x = this->ps[particleIdx].center.x - oneselfPos.x;
+			dr.y = this->ps[particleIdx].center.y - oneselfPos.y;
+			dr.z = this->ps[particleIdx].center.z - oneselfPos.z;
+			distancePSQ = dr.MagnitudeSQ3d();
+			wallWeight  = this->buckets[bucketIdx].wallWeight;
+			w = 0.0;
+			if (particleIdx != oneself) 
+			{
+				if (distancePSQ < E_RADIUS_SQ) 
+				{
+					if (distancePSQ <= 0.0)
+					{
+						std::cout << distanceP << std::endl;
+					}
+					distanceP = sqrt(distancePSQ);
+					w = WEIGHT(distanceP);
+				}
+				if (0.0 < wallWeight)
+				{
+					w += wallWeight;
+				}
+				acceleration.x += (this->ps[particleIdx].velocity.x - oneselfV.x) * w;
+				acceleration.y += (this->ps[particleIdx].velocity.y - oneselfV.y) * w;
+				acceleration.z += (this->ps[particleIdx].velocity.z - oneselfV.z) * w;
+			}
 			particleIdx = this->particleNextIdxs[particleIdx];
-			if (particleIdx == -1)
+			if (particleIdx == UINT64_MAX)
 			{
 				break;
 			}
 		}
 	}}}
+	this->ps[oneself].acceleration = acceleration;
 }
 
-void	MPS::ViscosityTerm(void)
+void	MPS::ViscosityAndGravityTerm(void)
 {
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		this->_CalcEachViscosity(i);
+		this->ps[i].acceleration += this->g;
 	}
 }
 

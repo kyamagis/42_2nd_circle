@@ -11,7 +11,7 @@
 typedef struct s_bucket
 {
 	size_t	firstPrtIdx; // first particle index
-	double	disFromWall;
+	double	wallWeight;
 	Vec		position;
 } t_bucket;
 
@@ -20,16 +20,11 @@ class BC
 	private:
 		BC();
 
-		const Vec		_visibleMapSize;
-		const Vec		_totalMapSize;
-		const size_t	bucketRow;
-		const size_t	bucketColumn;
-		const size_t	bucketDepth;
-		const size_t	_columnMultiplDepth;
-		t_bucket		*_bucketLast;
-		
-		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
-		size_t	_CalcBucketIdx(const Vec &v);
+		const Vec				_visibleMapSize;
+		const Vec				_totalMapSize;
+		const std::deque<Vec>	_weights;
+		t_bucket				*_bucketLast;
+	
 		void	_UpdateParticlesInBuckets(const std::deque<Particle> &ps);
 		Vec		_MaxEachCoordinateOfVertex(const Vec &a, 
 											const Vec &b,
@@ -47,10 +42,13 @@ class BC
 		
 		double  _CalcDistanceFromTriangle(const Triangle &t, const size_t bucketIdx);
 		
-		double	_CalcShortestDistance(const Triangle &t, const size_t bucketIdx);
+		double	_CalcWallWeight(const double disFromWall);
+		double	_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx);
 		void	_CalcDistanceFromWall(const Triangle &t);
 
 	protected:
+		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
+		size_t	_CalcBucketIdx(const Vec &v);
 		void	_MakeBuckets(const std::deque<Particle> &ps);
 		void	_UpdateBuckets(const std::deque<Particle> &ps);
 
@@ -60,10 +58,16 @@ class BC
 
 	public:
 
-		const size_t		numOfBuckets;
+		const size_t	bucketRow;
+		const size_t	bucketColumn;
+		const size_t	bucketDepth;
+		const size_t	_columnMultiplDepth;
+		const size_t	numOfBuckets;
 
 		t_bucket			*buckets;
-		int64_t				*particleNextIdxs;
+		size_t				*particleNextIdxs;
+
+
 
 		
 		BC(const Vec &visibleMapSize_,
