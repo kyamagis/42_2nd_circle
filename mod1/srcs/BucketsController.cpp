@@ -329,6 +329,22 @@ void	BC::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 	}
 }
 
+void	BC::MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight)
+{
+	for (size_t	i = 0; i < this->numOfBuckets; ++i)
+	{
+		move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight);
+	}
+}
+
+void	BC::Rotation(void)
+{
+	for (size_t	i = 0; i < this->numOfBuckets; ++i)
+	{
+		rotation(this->buckets[i].position);
+	}
+}
+
 void	BC::DrawDisFromWall(void)
 {
 	glPointSize(2.0f);

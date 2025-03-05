@@ -22,7 +22,7 @@ class Quadrangle
 
 		Quadrangle(const Vec &a, const Vec &b, const Vec &c, const Vec &d);
 
-		void	DrawQuad(void);
+		void	DrawQuad(void) const;
 
 		bool		operator==(const Quadrangle &q) const;
 		Quadrangle&	operator=(const Quadrangle &q);

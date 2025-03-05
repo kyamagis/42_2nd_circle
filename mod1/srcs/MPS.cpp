@@ -11,8 +11,6 @@
 
 // totalMapSize(extend_map(mapSize[X]), extend_map(mapSize[Y]), extend_map(mapSize[Z]))
 
-
-
 MPS::MPS(const uint32_t	mapSize[3], 
 		const std::deque<Triangle> &ts)
 		:BC(Vec(mapSize[X], mapSize[Y], mapSize[Z]), 
@@ -163,7 +161,7 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 	size_t	particleIdx;
 
 	Vec		dr;
-	double	distancePSQ;
+	double	distanceSQP;
 	double	distanceP;
 	double	wallWeight;
 	double	w;
@@ -177,32 +175,34 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 		{
 			continue;
 		}
-		for (;;)
+		while (true)
 		{
 			dr.x = this->ps[particleIdx].center.x - oneselfPos.x;
 			dr.y = this->ps[particleIdx].center.y - oneselfPos.y;
 			dr.z = this->ps[particleIdx].center.z - oneselfPos.z;
-			distancePSQ = dr.MagnitudeSQ3d();
+			distanceSQP = dr.MagnitudeSQ3d();
 			wallWeight  = this->buckets[bucketIdx].wallWeight;
-			w = 0.0;
 			if (particleIdx != oneself) 
 			{
-				if (distancePSQ < E_RADIUS_SQ) 
+				if (distanceSQP < E_RADIUS_SQ) 
 				{
-					if (distancePSQ <= 0.0)
+					if (distanceSQP <= 0.0)
 					{
 						std::cout << distanceP << std::endl;
 					}
-					distanceP = sqrt(distancePSQ);
+					distanceP = sqrt(distanceSQP);
 					w = WEIGHT(distanceP);
+					acceleration.x += (this->ps[particleIdx].velocity.x - oneselfV.x) * w;
+					acceleration.y += (this->ps[particleIdx].velocity.y - oneselfV.y) * w;
+					acceleration.z += (this->ps[particleIdx].velocity.z - oneselfV.z) * w;
 				}
 				if (0.0 < wallWeight)
 				{
-					w += wallWeight;
+					w = wallWeight;
+					acceleration.x += (- 2.0 * oneselfV.x) * w;
+					acceleration.y += (- 2.0 * oneselfV.y) * w;
+					acceleration.z += (- 2.0 * oneselfV.z) * w;
 				}
-				acceleration.x += (this->ps[particleIdx].velocity.x - oneselfV.x) * w;
-				acceleration.y += (this->ps[particleIdx].velocity.y - oneselfV.y) * w;
-				acceleration.z += (this->ps[particleIdx].velocity.z - oneselfV.z) * w;
 			}
 			particleIdx = this->particleNextIdxs[particleIdx];
 			if (particleIdx == UINT64_MAX)
@@ -211,7 +211,25 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 			}
 		}
 	}}}
-	this->ps[oneself].acceleration = acceleration;
+	this->ps[oneself].acceleration = acceleration * this->_cffVTerm;
+}
+
+void	MPS::_UpdateVPA(void)
+{
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		this->ps[i].velocity.x += this->ps[i].acceleration.x * DELTA_TIME;
+		this->ps[i].velocity.y += this->ps[i].acceleration.y * DELTA_TIME;
+		this->ps[i].velocity.z += this->ps[i].acceleration.z * DELTA_TIME;
+
+		this->ps[i].center.x += this->ps[i].velocity.x * DELTA_TIME;
+		this->ps[i].center.y += this->ps[i].velocity.y * DELTA_TIME;
+		this->ps[i].center.z += this->ps[i].velocity.z * DELTA_TIME;
+
+		this->ps[i].acceleration.x = 0.0;
+		this->ps[i].acceleration.y = 0.0;
+		this->ps[i].acceleration.z = 0.0;
+	}
 }
 
 void	MPS::ViscosityAndGravityTerm(void)
@@ -221,12 +239,13 @@ void	MPS::ViscosityAndGravityTerm(void)
 		this->_CalcEachViscosity(i);
 		this->ps[i].acceleration += this->g;
 	}
+	this->_UpdateVPA();
 }
 
-// void	MPS::NavierStokesEquations(const	Vec &g)
-// {
-// 	//PressureGradientTerm + ViscosityTerm + g
-// }
+void	MPS::NavierStokesEquations(void)
+{
+	this->ViscosityAndGravityTerm();
+}
 
 // MPS::MPS(const MPS &mps): MPS
 // {

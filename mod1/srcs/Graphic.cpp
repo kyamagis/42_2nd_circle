@@ -9,11 +9,10 @@ typedef struct s_data
 {
 	int64_t 				**map;
 	uint32_t				mapSize[3];
-	double					halfMapsize[2];
+	Vec						halfMapSize;
 	std::deque<Triangle>	ts;
 	std::deque<Triangle>	origenTs;
-	t_bucket				*bs;
-	size_t	numOfBuckets;
+	MPS						*mps;
 
 	int64_t	maxHeight;
 	int64_t	minHeight;
@@ -29,6 +28,7 @@ typedef struct s_data
 	Vec		rotatedVertex;
 	bool	circleFlg;
 	bool	lineFlg;
+	bool	visibleBucketsFlg;
 	int		gWindowID;
 
 	unsigned char key;
@@ -56,7 +56,7 @@ void defaultkeyboard(unsigned char key, int x, int y)
 	}
 }
 
-void	Rotation(Vec &vertex)
+void	rotation(Vec &vertex)
 {
 	switch (g_data.key)
 	{
@@ -93,17 +93,15 @@ void	Rotation(Vec &vertex)
 	}
 }
 
-void	drawVertex(Vec &vertex)
+void	drawVertex(const Vec &vertex)
 {
-	Rotation(vertex);
-
 	double	coordinateX = vertex.x / double(g_data.mapSize[X]);
 	double	coordinateY =  - 1.0 * (vertex.y / double(g_data.mapSize[Y]));
 	double	coordinateZ = vertex.z / double(g_data.midHeight);
 
 	glVertex3f(coordinateX * g_data.scaling, 
 			   coordinateY * g_data.scaling, 
-			   -coordinateZ * DEPTH_SCALING);
+			   -coordinateZ * DEPTH_SCALING * g_data.scaling);
 }
 
 void	RenderingAlgorithm()
@@ -116,12 +114,18 @@ void	RenderingAlgorithm()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
 	
-	
-
-
 	if (g_data.ts.size() < g_data.i)
 	{
 		g_data.i = g_data.ts.size();
+	}
+	g_data.mps->Rotation();
+	if (g_data.visibleBucketsFlg)
+	{
+		g_data.mps->DrawDisFromWall();
+	}
+	for (size_t	i = 0; i < g_data.ts.size(); ++i)
+	{
+		g_data.ts[i].Rotation();
 	}
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
@@ -139,7 +143,58 @@ void	RenderingAlgorithm()
 									g_data.origenTs[i].c.z);
 	
 	}
+	// g_data.key = 0;
 	glFlush();
+}
+
+void mouseWheel(int button, int dir, int x, int y)
+{
+	(void)button;
+	(void)x;
+	(void)y;
+
+	Print::Err(std::to_string(g_data.scaling));
+	if (dir > 0)
+	{
+		
+	}
+	else
+	{
+
+	}
+	
+	return;
+}
+
+void mouse(int button, int state, int x, int y)
+{
+	(void)x;
+	(void)y;
+
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+		if (g_data.scaling < 3.0)
+		{
+			g_data.scaling += 0.1;
+		}
+	}
+	else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
+	{
+		if (0.1 < g_data.scaling)
+		{
+			g_data.scaling -= 0.1;
+		}
+	}
+	else if(button == GLUT_MIDDLE_BUTTON && state == GLUT_DOWN)
+	{
+		if (0.1 < g_data.scaling)
+		{
+			g_data.scaling -= 0.1;
+		}
+	}
+
+	glutPostRedisplay();
+	// printf(" at (%d, %d)\n", x, y);
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -151,12 +206,46 @@ void keyboard(unsigned char key, int x, int y)
 
 	switch (key)
 	{
+		case 'b':
+			g_data.visibleBucketsFlg = !g_data.visibleBucketsFlg;
+			glutPostRedisplay();
+			return ;
+		case 'c':
+			g_data.ts = g_data.origenTs;
+			g_data.circleFlg = !g_data.circleFlg;
+			glutPostRedisplay();
+			return ;
+		case 'i':
+			g_data.scaling = SCALING;
+			glutPostRedisplay();
+			return ;
+		case 'l':
+			g_data.lineFlg = !g_data.lineFlg;
+			glutPostRedisplay();
+			return ;
+		case 'n':
+			++g_data.i;
+			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
+			glutPostRedisplay();
+			return ;
+		case 'p':
+			if (0 < g_data.i)
+			{
+				--g_data.i;
+			}
+			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
+			glutPostRedisplay();
+			return ;
 		case 'q':
 		case 'Q':
 		case '\033':  // ESC
 			glutDestroyWindow(g_data.gWindowID);
 			std::exit(EXIT_SUCCESS);
 			return;
+		case 't':
+			g_data.ts = g_data.origenTs;
+			glutPostRedisplay();
+			return ;
 		case 'x':
 		case 'X':
 		case 'y':
@@ -165,59 +254,18 @@ void keyboard(unsigned char key, int x, int y)
 		case 'Z':
 			glutPostRedisplay();
 			return ;
-		case 'i':
-			glutPostRedisplay();
-			return ;
-		case 't':
-			g_data.ts = g_data.origenTs;
-			glutPostRedisplay();
-			return ;
-		case 'c':
-			g_data.ts = g_data.origenTs;
-			g_data.circleFlg = !g_data.circleFlg;
-			glutPostRedisplay();
-			return ;
-		case 'n':
-			++g_data.i;
-			std::cout << "i: " << g_data.i << g_data.ts[g_data.i];
-			glutPostRedisplay();
-			return ;
-		case 'p':
-			if (0 < g_data.i)
-			{
-				--g_data.i;
-			}
-			std::cout << "i: " << g_data.i << g_data.ts[g_data.i];
-			glutPostRedisplay();
-			return ;
-		case 'l':
-			g_data.lineFlg = !g_data.lineFlg;
-			glutPostRedisplay();
 		default:
 			break;
 	}
-}
-
-void	MoveVecToMapCenter(Vec &vec)
-{
-	vec.x -= g_data.halfMapsize[X];
-	vec.y -= g_data.halfMapsize[Y];
-	vec.z -= g_data.midHeight / 2.0;
 }
 
 void	MoveOToMapCenter(std::deque<Triangle> &ts)
 {
 	for (size_t	i = 0; i < ts.size(); ++i)
 	{
-		MoveVecToMapCenter(ts[i].a);
-		MoveVecToMapCenter(ts[i].b);
-		MoveVecToMapCenter(ts[i].c);
-
-		ts[i].circumcircle.center.x -= g_data.halfMapsize[X];
-		ts[i].circumcircle.center.y -= g_data.halfMapsize[Y];
+		ts[i].MoveVertexToMapCenter(g_data.halfMapSize, g_data.midHeight);
 	}
 }
-
 
 Graphic::Graphic()
 {
@@ -242,13 +290,17 @@ Graphic::Graphic(const int argc, const char** argv, int	sizeX, int	sizeY)
 Graphic::~Graphic()
 {
 	Print::Out("des");
+	delete g_data.mps;
 }
 
 void	Graphic::GraphicLoop(void (*func)(void))
 {
 	MoveOToMapCenter(g_data.ts);
 	g_data.origenTs = g_data.ts;
+	g_data.mps->MoveVertexToMapCenter(g_data.halfMapSize, g_data.midHeight);
+	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
+	glutMouseWheelFunc(mouseWheel);
 	glutDisplayFunc(func);
 	glutMainLoop();
 }
@@ -257,7 +309,10 @@ void	Graphic::GraphicLoop(void)
 {
 	MoveOToMapCenter(g_data.ts);
 	g_data.origenTs = g_data.ts;
+	g_data.mps->MoveVertexToMapCenter(g_data.halfMapSize, g_data.midHeight);
+	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
+	glutMouseWheelFunc(mouseWheel);
 	glutDisplayFunc(RenderingAlgorithm);
 	glutMainLoop();
 }
@@ -267,15 +322,14 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 								 const int64_t maxHeight,
 								 const int64_t minHeight)
 {
-	g_data.bs = NULL;
-	g_data.numOfBuckets = 0;
-
 	g_data.ts = ts;
+	g_data.mps = new MPS(mapSize, ts);
 	g_data.mapSize[X] = mapSize[X];
 	g_data.mapSize[Y] = mapSize[Y];
 	g_data.mapSize[Z] = mapSize[Z];
-	g_data.halfMapsize[X] = mapSize[X] / 2.0;
-	g_data.halfMapsize[Y] = mapSize[Y] / 2.0;
+	g_data.halfMapSize.x = mapSize[X] / 2.0;
+	g_data.halfMapSize.y = mapSize[Y] / 2.0;
+	g_data.halfMapSize.z = mapSize[Z] / 2.0;
 	g_data.maxHeight = maxHeight;
 	g_data.minHeight = minHeight;
 	g_data.midHeight = (g_data.maxHeight + g_data.minHeight) / 2.0;
@@ -297,6 +351,7 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.scaling = SCALING;
 	g_data.circleFlg = false;
 	g_data.lineFlg = false;
+	g_data.visibleBucketsFlg = false;
 	g_data.key = 'i';
 }
 

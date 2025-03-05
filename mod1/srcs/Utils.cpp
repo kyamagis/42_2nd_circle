@@ -182,3 +182,10 @@ std::deque<Vec>	init_wall_weight(void)
 	}
 	return weights;
 }
+
+void	move_vec_to_map_center(Vec &vec, const Vec &halfMapSize, const double midHeight)
+{
+	vec.x -= halfMapSize.x;
+	vec.y -= halfMapSize.y;
+	vec.z -= midHeight / 2.0;
+}

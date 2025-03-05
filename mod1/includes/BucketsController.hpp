@@ -66,14 +66,13 @@ class BC
 
 		t_bucket			*buckets;
 		size_t				*particleNextIdxs;
-
-
-
 		
 		BC(const Vec &visibleMapSize_,
 			const Vec &totalMapSize_);
 			virtual ~BC();
-			
+		
+		void	MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight);
+		void	Rotation(void);
 		void	DrawDisFromWall(void);
 		// BC(const BC &BC);
 		// BC&	operator=(const BC &BC);

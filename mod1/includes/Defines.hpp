@@ -21,9 +21,11 @@
 #define	D 3 // dimension number
 #define	GRADIENT  0
 #define LAPLACIAN 1
-#define	BUCKET_LENGTH  E_RADIUS
+#define COURANT_NUM 0.1
+#define	BUCKET_LENGTH  (E_RADIUS * (1.0 + COURANT_NUM))
 #define	NUM_OF_BUCKETS
 #define InvisibleSpace (2.0 * BUCKET_LENGTH)
+#define DELTA_TIME 0.0005
 
 #define X 0
 #define Y 1

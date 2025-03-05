@@ -45,6 +45,9 @@ class Triangle
 							const int64_t heightA, 
 							const int64_t heightB, 
 							const int64_t heightC);
+		
+		void	MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight);
+		void	Rotation(void);
 
 		bool		operator==(const Triangle &triangle) const;
 		Triangle&	operator=(const Triangle &triangle);

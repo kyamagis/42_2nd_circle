@@ -26,7 +26,8 @@ class Graphic
 								const int64_t minHeight);
 		// void	RenderingAlgorithm();
 };
-void	drawVertex(Vec &vertex);
+void	rotation(Vec &vertex);
+void	drawVertex(const Vec &vertex);
 void	onWindowClose(void);
 
 #endif

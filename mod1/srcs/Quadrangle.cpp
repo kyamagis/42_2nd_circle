@@ -20,7 +20,7 @@ Quadrangle::~Quadrangle()
 
 }
 
-void	Quadrangle::DrawQuad(void)
+void	Quadrangle::DrawQuad(void) const
 {
 	glColor3f(0.5f, 0.5f, 0.5f);
 	glBegin(GL_LINE_LOOP);

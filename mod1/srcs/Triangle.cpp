@@ -163,8 +163,6 @@ double	Triangle::FindZ(const double pX, const double pY)
 	return this->a.z - (this->n.x * (pX - this->a.x) + this->n.y * (pY - this->a.y)) / this->n.z;
 }
 
-
-
 void	Triangle::DrawTriangle(const int64_t	maxHeight,
 							const int64_t	minHeight,
 							const double	midHeight,
@@ -191,6 +189,22 @@ void	Triangle::DrawTriangle(const int64_t	maxHeight,
 	line_gradation(maxHeight, minHeight, midHeight, heightC);
 	drawVertex(this->c);
 	glEnd();
+}
+
+void	Triangle::MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight)
+{
+	move_vec_to_map_center(this->a, halfMapSize, midHeight);
+	move_vec_to_map_center(this->b, halfMapSize, midHeight);
+	move_vec_to_map_center(this->c, halfMapSize, midHeight);
+	this->circumcircle.center.x -= halfMapSize.x;
+	this->circumcircle.center.y -= halfMapSize.y;
+}
+
+void	Triangle::Rotation(void)
+{
+	rotation(this->a);
+	rotation(this->b);
+	rotation(this->c);
 }
 
 bool	Triangle::operator==(const Triangle &triangle) const
