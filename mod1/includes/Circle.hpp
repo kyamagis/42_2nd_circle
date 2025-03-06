@@ -19,9 +19,11 @@ class Circle
 		virtual ~Circle();
 
 		void DrawCircle2d(const uint32_t mapSize[3], 
+							const Vec &halfMapSize,
 							const double scaling, 
 							const int num_segments);
 		void DrawCircle3d(const uint32_t mapSize[3], 
+							const Vec &halfMapSize,
 							const double scaling,
 							const int num_segments);
 		Circle&	operator=(const Circle &c);

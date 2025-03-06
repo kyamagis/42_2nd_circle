@@ -1,4 +1,5 @@
 #include <cmath>
+#include "../includes/Quaternion.hpp"
 #include "../includes/Vec.hpp"
 
 Vec::Vec():x(0), y(0), z(0)
@@ -6,7 +7,7 @@ Vec::Vec():x(0), y(0), z(0)
 
 }
 
-Vec::Vec(double cX, double cY, double cZ):x(cX), y(cY), z(cZ)
+Vec::Vec(const double cX, const double cY, const double cZ):x(cX), y(cY), z(cZ)
 {
 
 }
@@ -100,7 +101,7 @@ double	Vec::Magnitude2d(void) const
 	return sqrt(this->MagnitudeSQ2d());
 }
 
-void	Vec::RotationZ(double rad)
+void	Vec::RotationZ(const double rad)
 {
 	double	tempX = this->x;
 	double	tempY = this->y;
@@ -109,7 +110,7 @@ void	Vec::RotationZ(double rad)
 	this->y = tempX * sin(rad) + tempY * cos(rad);
 }
 
-void	Vec::RotationX(double rad)
+void	Vec::RotationX(const double rad)
 {
 	double	tempY = this->y;
 	double	tempZ = this->z;
@@ -118,13 +119,25 @@ void	Vec::RotationX(double rad)
 	this->z =  tempY * sin(rad) + tempZ * cos(rad);
 }
 
-void	Vec::RotationY(double rad)
+void	Vec::RotationY(const double rad)
 {
 	double	tempX = this->x;
 	double	tempZ = this->z;
 
 	this->x =  tempX * cos(rad) + tempZ * sin(rad);
 	this->z = -tempX * sin(rad) + tempZ * cos(rad);
+}
+
+Vec	Vec::Rotate(const Vec &axis, const double rad) const
+{
+	double halfSin = sin(rad / 2.0);
+	double halfCos = cos(rad / 2.0);
+
+	Quaternion q(halfCos, axis * halfSin);
+	Quaternion pos(0.0, *this);
+	Quaternion rotated = q * pos * q.conjugate();
+
+	return Vec(rotated.x, rotated.y, rotated.z);
 }
 
 // double	Vec::cos_angle(const Vec &a, const Vec &b)

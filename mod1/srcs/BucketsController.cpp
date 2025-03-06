@@ -348,7 +348,7 @@ void	BC::RotationBs(void)
 	}
 }
 
-void	BC::DrawDisFromWall(void)
+void	BC::DrawDisFromWall(const Vec &halfMapSize, const double midHeight)
 {
 	glPointSize(2.0f);
 	glBegin(GL_POINTS);
@@ -366,7 +366,7 @@ void	BC::DrawDisFromWall(void)
 			{
 				glColor3f(this->buckets[i].wallWeight / midWeight, 1 - this->buckets[i].wallWeight / midWeight, 0);
 			}
-			drawVertex(this->buckets[i].position);
+			drawVertex(move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight));
 		}
 	}
 	glEnd();

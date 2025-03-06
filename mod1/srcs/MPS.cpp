@@ -152,7 +152,7 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 
 	if (oneself == 0)
 	{
-		std::cout << this->ps[oneself].center << std::endl;
+		std::cout << currentBX << " " << currentBY << " " << currentBZ << std::endl;
 	}
 
 	const size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
@@ -284,14 +284,14 @@ void	MPS::RotationPs(void)
 	rotation(this->g);
 }
 
-void	MPS::DrawParticles(void)
+void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
 {
 	glPointSize(2.0f);
 	glBegin(GL_POINTS);
 	glColor3f(0.5, 0.5, 1);
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
-		drawVertex(this->ps[i].center);
+		drawVertex(move_vec_to_map_center(this->ps[i].center, halfMapSize, midHeight));
 	}
 	glEnd();
 }

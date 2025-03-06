@@ -16,7 +16,7 @@ class Vec
 		double z;
 
 		Vec();
-		Vec(double cX, double cY, double cZ);
+		Vec(const double cX, const double cY, const double cZ);
 		Vec(const Vec &vec);
 		~Vec();
 
@@ -35,12 +35,11 @@ class Vec
 		double	MagnitudeSQ2d(void) const;
 		double	Magnitude2d(const Vec &p) const;
 		double	Magnitude2d(void) const;
-		// double	cos_angle(const Vec &a, const Vec &b);
-
 		
-		void	RotationZ(double rad);
-		void	RotationX(double rad);
-		void	RotationY(double rad);
+		void	RotationZ(const double rad);
+		void	RotationX(const double rad);
+		void	RotationY(const double rad);
+		Vec		Rotate(const Vec &axis, const double rad) const;
 
 		bool	operator==(const Vec &vec) const;
 		Vec&	operator=(const Vec &vec);

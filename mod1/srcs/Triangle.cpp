@@ -166,10 +166,8 @@ double	Triangle::FindZ(const double pX, const double pY)
 void	Triangle::DrawTriangle(const int64_t	maxHeight,
 							const int64_t	minHeight,
 							const double	midHeight,
-							const bool	lineFlg, 
-							const int64_t heightA, 
-					 		const int64_t heightB, 
-					 		const int64_t heightC)
+							const Vec &halfMapSize,
+							const bool	lineFlg)
 {
 	if (lineFlg)
 	{
@@ -182,12 +180,12 @@ void	Triangle::DrawTriangle(const int64_t	maxHeight,
 
 	glBegin(GL_TRIANGLES);
 
-	line_gradation(maxHeight, minHeight, midHeight, heightA);
-	drawVertex(this->a);
-	line_gradation(maxHeight, minHeight, midHeight, heightB);
-	drawVertex(this->b);
-	line_gradation(maxHeight, minHeight, midHeight, heightC);
-	drawVertex(this->c);
+	line_gradation(maxHeight, minHeight, midHeight, this->a.z);
+	drawVertex(move_vec_to_map_center(this->a, halfMapSize, midHeight));
+	line_gradation(maxHeight, minHeight, midHeight, this->b.z);
+	drawVertex(move_vec_to_map_center(this->b, halfMapSize, midHeight));
+	line_gradation(maxHeight, minHeight, midHeight, this->c.z);
+	drawVertex(move_vec_to_map_center(this->c, halfMapSize, midHeight));
 	glEnd();
 }
 
@@ -196,8 +194,6 @@ void	Triangle::MoveVertexToMapCenter(const Vec &halfMapSize, const double midHei
 	move_vec_to_map_center(this->a, halfMapSize, midHeight);
 	move_vec_to_map_center(this->b, halfMapSize, midHeight);
 	move_vec_to_map_center(this->c, halfMapSize, midHeight);
-	this->circumcircle.center.x -= halfMapSize.x;
-	this->circumcircle.center.y -= halfMapSize.y;
 }
 
 void	Triangle::Rotation(void)

@@ -134,30 +134,6 @@ std::deque<Triangle>	TerrestrialSimulation::_CalcWeight(const int argc, const ch
 }
 // //////////////////////////////////////////////////////////////////////////////////////////
 
-void	RenderingAlgorithm3(void)
-{
-	glEnable(GL_DEPTH_TEST);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
-	
-	g_testdata.mps->RotationBs();
-	g_testdata.mps->DrawDisFromWall();
-
-	glFlush();
-}
-
-void	TerrestrialSimulation::_DrawBuckets(const int argc, 
-											const char** argv, 
-											const std::deque<Triangle> &ts)
-{
-
-	g_testdata.mps = new MPS(this->_mapSize, ts);
-
-	Graphic g = Graphic(argc, argv, SCREEN_SIZE_X, SCREEN_SIZE_Y);
-
-	g.InitGraphicData(ts, this->_mapSize, this->_maxHeight, this->_minHeight);
-	g.GraphicLoop(RenderingAlgorithm3);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 void	TerrestrialSimulation::_DrawSimulation(const int argc, 
@@ -184,7 +160,6 @@ bool	TerrestrialSimulation::SimulationStart(const int argc,
 		   this->_maxHeight, this->_minHeight);
 	std::deque<Triangle>	ts = dT.Calculation();
 
-	// this->_DrawBuckets(argc, argv, ts);
 	this->_DrawSimulation(argc, argv, ts);
 
 	// this->PrintSpecificPoints();

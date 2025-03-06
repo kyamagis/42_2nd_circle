@@ -74,7 +74,7 @@ class BC
 		
 		void	MoveVertexToMapCenterBs(const Vec &halfMapSize, const double midHeight);
 		void	RotationBs(void);
-		void	DrawDisFromWall(void);
+		void	DrawDisFromWall(const Vec &halfMapSize, const double midHeight);
 		// BC(const BC &BC);
 		// BC&	operator=(const BC &BC);
 		// bool	operator==(const BC &BC) const;

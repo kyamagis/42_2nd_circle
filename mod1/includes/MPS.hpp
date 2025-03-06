@@ -44,7 +44,7 @@ class MPS: public BC
 		void	NavierStokesEquations(void);
 		void	MoveVertexToMapCenterPs(const Vec &halfMapSize, const double midHeight);
 		void	RotationPs(void);
-		void	DrawParticles(void);
+		void	DrawParticles(const Vec &halfMapSize, const double midHeight);
 
 		// bool	operator==(const MPS &mps) const;
 };

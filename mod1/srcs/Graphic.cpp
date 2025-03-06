@@ -11,7 +11,6 @@ typedef struct s_data
 	uint32_t				mapSize[3];
 	Vec						halfMapSize;
 	std::deque<Triangle>	ts;
-	std::deque<Triangle>	origenTs;
 	MPS						*mps;
 
 	int64_t	maxHeight;
@@ -61,12 +60,6 @@ void	rotation(Vec &vertex)
 	switch (g_data.key)
 	{
 		case 'i':
-			// if (g_data.count == 0)
-			// {
-			// 	++g_data.count;
-			// 	glutPostRedisplay();
-			// 	break;
-			// }
 			vertex.RotationZ(g_data.radZ);
 			vertex.RotationX(g_data.radX);
 			break;
@@ -96,9 +89,12 @@ void	rotation(Vec &vertex)
 
 void	drawVertex(const Vec &vertex)
 {
-	double	coordinateX = vertex.x / double(g_data.mapSize[X]);
-	double	coordinateY =  - 1.0 * (vertex.y / double(g_data.mapSize[Y]));
-	double	coordinateZ = vertex.z / double(g_data.midHeight);
+	Vec	rotatedPos = vertex.Rotate(Vec(1,0,0), g_data.radX);
+		rotatedPos = rotatedPos.Rotate(Vec(0,1,0), g_data.radY);
+		rotatedPos = rotatedPos.Rotate(Vec(0,0,1), g_data.radZ);
+	double	coordinateX = rotatedPos.x / double(g_data.mapSize[X]);
+	double	coordinateY =  - 1.0 * (rotatedPos.y / double(g_data.mapSize[Y]));
+	double	coordinateZ = rotatedPos.z / double(g_data.midHeight);
 
 	glVertex3f(coordinateX * g_data.scaling, 
 			   coordinateY * g_data.scaling, 
@@ -108,10 +104,6 @@ void	drawVertex(const Vec &vertex)
 void	RenderingAlgorithm()
 {
 	// std::cout << "RenderingAlgorithm " << g_data.radY++ << std::endl;
-	if (g_data.key == 'i')
-	{
-		g_data.ts = g_data.origenTs;
-	}
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
 	
@@ -119,28 +111,24 @@ void	RenderingAlgorithm()
 	{
 		g_data.i = g_data.ts.size();
 	}
-	g_data.mps->RotationBs();
-	g_data.mps->RotationPs();
-	rotation_ts(g_data.ts);
 	if (g_data.visibleBucketsFlg)
 	{
-		g_data.mps->DrawDisFromWall();
+		g_data.mps->DrawDisFromWall(g_data.halfMapSize, g_data.midHeight);
 	}
-	g_data.mps->DrawParticles();
+	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
 		{
-			g_data.ts[i].circumcircle.DrawCircle2d(g_data.mapSize, 
+			g_data.ts[i].circumcircle.DrawCircle2d(g_data.mapSize,
+													g_data.halfMapSize, 
 													g_data.scaling, 100);
 		}
 		g_data.ts[i].DrawTriangle(g_data.maxHeight,
 									g_data.minHeight,
 									g_data.midHeight,
-									g_data.lineFlg,
-									g_data.origenTs[i].a.z,
-									g_data.origenTs[i].b.z,
-									g_data.origenTs[i].c.z);
+									g_data.halfMapSize,
+									g_data.lineFlg);
 	
 	}
 	g_data.key = 0;
@@ -208,34 +196,33 @@ void keyboard(unsigned char key, int x, int y)
 	{
 		case 'b':
 			g_data.visibleBucketsFlg = !g_data.visibleBucketsFlg;
-			glutPostRedisplay();
-			return ;
+			break;
 		case 'c':
-			g_data.ts = g_data.origenTs;
+			g_data.radX = 0;
+			g_data.radY = 0;
+			g_data.radZ = 0;
 			g_data.circleFlg = !g_data.circleFlg;
-			glutPostRedisplay();
-			return ;
+			break;
 		case 'i':
+			g_data.radX = M_PI / 12.0 * 5.0;
+			g_data.radY = 0;
+			g_data.radZ = M_PI_4;
 			g_data.scaling = SCALING;
-			glutPostRedisplay();
-			return ;
+			break;
 		case 'l':
 			g_data.lineFlg = !g_data.lineFlg;
-			glutPostRedisplay();
-			return ;
+			break;
 		case 'n':
 			++g_data.i;
 			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
-			glutPostRedisplay();
-			return ;
+			break;
 		case 'p':
 			if (0 < g_data.i)
 			{
 				--g_data.i;
 			}
 			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
-			glutPostRedisplay();
-			return ;
+			break;
 		case 'q':
 		case 'Q':
 		case '\033':  // ESC
@@ -244,32 +231,43 @@ void keyboard(unsigned char key, int x, int y)
 			return;
 		case 's':
 			g_data.mps->NavierStokesEquations();
-			glutPostRedisplay();
-			return ;
-		case 't':
-			g_data.ts = g_data.origenTs;
-			glutPostRedisplay();
-			return ;
-		case 'x':
-		case 'X':
-		case 'y':
-		case 'Y':
-		case 'z':
-		case 'Z':
-			glutPostRedisplay();
-			return ;
-		default:
 			break;
+		case 't':
+			g_data.radX = 0;
+			g_data.radY = 0;
+			g_data.radZ = 0;
+			break;
+		case 'x':
+			g_data.radX += M_PI / 12;
+			break;
+		case 'X':
+			g_data.radX -= M_PI / 12;
+			break;
+		case 'y':
+			g_data.radY += M_PI / 12;
+			break;
+		case 'Y':
+			g_data.radY -= M_PI / 12;
+			break;
+		case 'z':
+			g_data.radZ += M_PI / 12;
+			break;
+		case 'Z':
+			g_data.radZ -= M_PI / 12;
+			break;			
+		default:
+			return ;
 	}
+	glutPostRedisplay();
 }
 
-void	MoveOToMapCenter(std::deque<Triangle> &ts)
-{
-	for (size_t	i = 0; i < ts.size(); ++i)
-	{
-		ts[i].MoveVertexToMapCenter(g_data.halfMapSize, g_data.midHeight);
-	}
-}
+// void	MoveOToMapCenter(std::deque<Triangle> &ts)
+// {
+// 	for (size_t	i = 0; i < ts.size(); ++i)
+// 	{
+// 		ts[i].MoveVertexToMapCenter(g_data.halfMapSize, g_data.midHeight);
+// 	}
+// }
 
 Graphic::Graphic()
 {
@@ -299,10 +297,6 @@ Graphic::~Graphic()
 
 void	Graphic::GraphicLoop(void (*func)(void))
 {
-	MoveOToMapCenter(g_data.ts);
-	g_data.origenTs = g_data.ts;
-	g_data.mps->MoveVertexToMapCenterBs(g_data.halfMapSize, g_data.midHeight);
-	g_data.mps->MoveVertexToMapCenterPs(g_data.halfMapSize, g_data.midHeight);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
 	glutMouseWheelFunc(mouseWheel);
@@ -312,10 +306,6 @@ void	Graphic::GraphicLoop(void (*func)(void))
 
 void	Graphic::GraphicLoop(void)
 {
-	MoveOToMapCenter(g_data.ts);
-	g_data.origenTs = g_data.ts;
-	g_data.mps->MoveVertexToMapCenterBs(g_data.halfMapSize, g_data.midHeight);
-	g_data.mps->MoveVertexToMapCenterPs(g_data.halfMapSize, g_data.midHeight);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
 	glutMouseWheelFunc(mouseWheel);
@@ -341,9 +331,9 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.midHeight = (g_data.maxHeight + g_data.minHeight) / 2.0;
 	g_data.shrinkageRatioX = 1.0 / g_data.mapSize[X] * 2.0;
 	g_data.shrinkageRatioY = 1.0 / g_data.mapSize[Y] * 2.0;
-	g_data.radX = M_PI / 12.0 * 5.0;
+	g_data.radX = 5.0 * M_PI / 12;
 	g_data.radY = 0;
-	g_data.radZ = M_PI_4;
+	g_data.radZ = 0;
 	g_data.ts.push_back({Vec(0,0,-EPS), 
 						 Vec(0,g_data.mapSize[Y] - 1,-EPS), 
 						 Vec(g_data.mapSize[X] - 1,0,-EPS), 

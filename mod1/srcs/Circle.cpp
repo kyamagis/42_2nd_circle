@@ -28,14 +28,15 @@ Circle::~Circle()
 }
 
 void Circle::DrawCircle2d(const uint32_t mapSize[3], 
+						const Vec &halfMapSize,
 						const double scaling,
 						const int num_segments) 
 {
 	glBegin(GL_LINE_LOOP);
 	glColor3f(0.0, 1.0, 0.0);
 
-	double	cx = double(this->center.x) / mapSize[X];
-	double	cy = - 1.0 * (this->center.y) / mapSize[Y];
+	double	cx = double(this->center.x - halfMapSize.x) / mapSize[X];
+	double	cy = - 1.0 * (this->center.y - halfMapSize.y) / mapSize[Y];
 	double 	r2d = sqrt(this->r) / mapSize[X];
 
 	for (int i = 0; i < num_segments; i++) {
@@ -48,14 +49,15 @@ void Circle::DrawCircle2d(const uint32_t mapSize[3],
 }
 
 void Circle::DrawCircle3d(const uint32_t mapSize[3], 
+							const Vec &halfMapSize,
 							const double scaling,
 							const int num_segments) 
 {
 	glBegin(GL_LINE_LOOP);
 	glColor3f(0.0, 1.0, 0.0);
 
-	double	cx = double(this->center.x) / mapSize[X];
-	double	cy = - 1.0 * (this->center.y) / mapSize[Y];
+	double	cx = double(this->center.x - halfMapSize.x) / mapSize[X];
+	double	cy = - 1.0 * (this->center.y - halfMapSize.y) / mapSize[Y];
 	// double	cz = double(this->center.z) / mapSize[Z];
 	double 	r2d = sqrt(this->r) / mapSize[X];
 

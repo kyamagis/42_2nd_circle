@@ -41,10 +41,8 @@ class Triangle
 		void	DrawTriangle(const int64_t	maxHeight,
 							const int64_t	minHeight,
 							const double	midHeight,
-							const bool	lineFlg, 
-							const int64_t heightA, 
-							const int64_t heightB, 
-							const int64_t heightC);
+							const Vec &halfMapSize,
+							const bool	lineFlg);
 		
 		void	MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight);
 		void	Rotation(void);
