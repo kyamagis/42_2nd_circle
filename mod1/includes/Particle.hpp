@@ -21,6 +21,9 @@ class Particle: public Circle
 		Particle(const Particle &p);
 		~Particle();
 
+		void	MoveVertexToMapCenterP(const Vec &halfMapSize, const double midHeight);
+		void	RotationP(void);
+
 		Particle&	operator=(const Particle &p);
 		bool		operator==(const Particle &p) const;
 };

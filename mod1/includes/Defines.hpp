@@ -25,7 +25,8 @@
 #define	BUCKET_LENGTH  (E_RADIUS * (1.0 + COURANT_NUM))
 #define	NUM_OF_BUCKETS
 #define InvisibleSpace (2.0 * BUCKET_LENGTH)
-#define DELTA_TIME 0.0005
+// #define DELTA_TIME 0.0005
+#define DELTA_TIME 1
 
 #define X 0
 #define Y 1

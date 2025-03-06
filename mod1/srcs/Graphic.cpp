@@ -119,15 +119,14 @@ void	RenderingAlgorithm()
 	{
 		g_data.i = g_data.ts.size();
 	}
-	g_data.mps->Rotation();
+	g_data.mps->RotationBs();
+	g_data.mps->RotationPs();
+	rotation_ts(g_data.ts);
 	if (g_data.visibleBucketsFlg)
 	{
 		g_data.mps->DrawDisFromWall();
 	}
-	for (size_t	i = 0; i < g_data.ts.size(); ++i)
-	{
-		g_data.ts[i].Rotation();
-	}
+	g_data.mps->DrawParticles();
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
@@ -243,6 +242,10 @@ void keyboard(unsigned char key, int x, int y)
 			glutDestroyWindow(g_data.gWindowID);
 			std::exit(EXIT_SUCCESS);
 			return;
+		case 's':
+			g_data.mps->NavierStokesEquations();
+			glutPostRedisplay();
+			return ;
 		case 't':
 			g_data.ts = g_data.origenTs;
 			glutPostRedisplay();
@@ -298,7 +301,8 @@ void	Graphic::GraphicLoop(void (*func)(void))
 {
 	MoveOToMapCenter(g_data.ts);
 	g_data.origenTs = g_data.ts;
-	g_data.mps->MoveVertexToMapCenter(g_data.halfMapSize, g_data.midHeight);
+	g_data.mps->MoveVertexToMapCenterBs(g_data.halfMapSize, g_data.midHeight);
+	g_data.mps->MoveVertexToMapCenterPs(g_data.halfMapSize, g_data.midHeight);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
 	glutMouseWheelFunc(mouseWheel);
@@ -310,7 +314,8 @@ void	Graphic::GraphicLoop(void)
 {
 	MoveOToMapCenter(g_data.ts);
 	g_data.origenTs = g_data.ts;
-	g_data.mps->MoveVertexToMapCenter(g_data.halfMapSize, g_data.midHeight);
+	g_data.mps->MoveVertexToMapCenterBs(g_data.halfMapSize, g_data.midHeight);
+	g_data.mps->MoveVertexToMapCenterPs(g_data.halfMapSize, g_data.midHeight);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
 	glutMouseWheelFunc(mouseWheel);

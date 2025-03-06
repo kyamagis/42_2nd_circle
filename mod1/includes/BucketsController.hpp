@@ -35,6 +35,7 @@ class BC
 		double	_CalcShortestDistanceFromVertexSQ(const Triangle &t, 
 												const size_t bucketIdx);
 
+		void	_CalcBucketsPos(const size_t i);
 		double	_CalcDistanceFromSideSQ(const Vec &a, 
 										const Vec &b, 
 										const size_t bucketIdx);							  
@@ -71,8 +72,8 @@ class BC
 			const Vec &totalMapSize_);
 			virtual ~BC();
 		
-		void	MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight);
-		void	Rotation(void);
+		void	MoveVertexToMapCenterBs(const Vec &halfMapSize, const double midHeight);
+		void	RotationBs(void);
 		void	DrawDisFromWall(void);
 		// BC(const BC &BC);
 		// BC&	operator=(const BC &BC);

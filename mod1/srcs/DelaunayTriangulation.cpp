@@ -121,13 +121,6 @@ void	DT::_EraseTempTriangles(void)
 
 	for (; itr != this->_triangles.end();)
 	{
-		// if (minHeight == 0.0 && 
-		// 	(*itr).a.z == 0.0 && 
-		// 	(*itr).b.z == 0.0 && 
-		// 	(*itr).c.z == 0.0)
-		// {
-		// 	itr = this->_triangles.erase(itr);
-		// }
 		if (itr->tempVertexFlg)
 		{	
 			itr = this->_triangles.erase(itr);

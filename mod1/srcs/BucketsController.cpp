@@ -79,8 +79,29 @@ void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 		{
 			this->particleNextIdxs[nextIdx] = i;
 		}
-		
 	}
+}
+
+void	BC::_CalcBucketsPos(const size_t i)
+{
+	size_t	bucketX;
+	size_t	bucketY;
+	size_t	bucketZ;
+	size_t	bucketXY;
+
+	bucketZ = i / this->_columnMultiplDepth;
+	this->buckets[i].position.z = BUCKET_LENGTH * bucketZ;
+
+	bucketXY = i % this->_columnMultiplDepth;	
+	bucketY = bucketXY / this->bucketColumn;
+	this->buckets[i].position.y = BUCKET_LENGTH * bucketY;
+	
+	bucketX = bucketXY % this->bucketColumn;
+	this->buckets[i].position.x = BUCKET_LENGTH * bucketX;
+
+	this->buckets[i].position.x += BUCKET_LENGTH / 2.0;
+	this->buckets[i].position.y += BUCKET_LENGTH / 2.0;
+	this->buckets[i].position.z += BUCKET_LENGTH / 2.0;
 }
 
 void	BC::_MakeBuckets(const std::deque<Particle> &ps)
@@ -89,37 +110,19 @@ void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 	this->_bucketLast       = new t_bucket[this->numOfBuckets];
 	this->particleNextIdxs  = new size_t[NUM_OF_PARTICLES];
 
-	size_t	bucketX;
-	size_t	bucketY;
-	size_t	bucketZ;
-	size_t	bucketXY;
-
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
 		this->buckets[i].firstPrtIdx     = UINT64_MAX;
 		this->buckets[i].wallWeight      = 0.0;
 		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
 
-		bucketZ = i / this->_columnMultiplDepth;
-		this->buckets[i].position.z = BUCKET_LENGTH * bucketZ;
-
-		bucketXY = i % this->_columnMultiplDepth;	
-		bucketY = bucketXY / this->bucketColumn;
-		this->buckets[i].position.y = BUCKET_LENGTH * bucketY;
-		
-		bucketX = bucketXY % this->bucketColumn;
-		this->buckets[i].position.x = BUCKET_LENGTH * bucketX;
-	
-		this->buckets[i].position.x += BUCKET_LENGTH / 2.0;
-		this->buckets[i].position.y += BUCKET_LENGTH / 2.0;
-		this->buckets[i].position.z += BUCKET_LENGTH / 2.0;
+		this->_CalcBucketsPos(i);
 		
 		if (i < NUM_OF_PARTICLES)
 		{
 			this->particleNextIdxs[i] = UINT64_MAX;
 		}
 	}
-
 	this->_UpdateParticlesInBuckets(ps);
 }
 
@@ -329,7 +332,7 @@ void	BC::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 	}
 }
 
-void	BC::MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight)
+void	BC::MoveVertexToMapCenterBs(const Vec &halfMapSize, const double midHeight)
 {
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
@@ -337,7 +340,7 @@ void	BC::MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight)
 	}
 }
 
-void	BC::Rotation(void)
+void	BC::RotationBs(void)
 {
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{

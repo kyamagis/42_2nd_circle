@@ -17,11 +17,10 @@ MPS::MPS(const uint32_t	mapSize[3],
 			Vec(mapSize[X], mapSize[Y], mapSize[Z])), 
 		visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
 		totalMapSize(this->visibleMapSize),
-		g(0, 0, 9.8)
+		g(0, 0, -9.8)
 {
 	this->_InitParticlesWaterColumnCollapse();
 	this->_InitBuckets(ts);
-
 }
 
 MPS::~MPS()
@@ -129,14 +128,12 @@ size_t	_InitOtherBucketCoor(const size_t coor)
 
 size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 {
-	if (coor < max)
+	if (coor < max + 1)
 	{
 		return  coor + 1;
 	}
 	return coor;
 }
-
-
 
 void	MPS::_CalcEachViscosity(const size_t oneself)
 {
@@ -149,9 +146,14 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 	const Vec	oneselfA(this->ps[oneself].acceleration.x, this->ps[oneself].acceleration.y, this->ps[oneself].acceleration.z);
 	Vec	acceleration;
 
-	size_t	otherBEdgeX = _InitOtherBucketCoor(currentBX);
-	size_t	otherBEdgeY = _InitOtherBucketCoor(currentBY);
-	size_t	otherBEdgeZ = _InitOtherBucketCoor(currentBZ);
+	const size_t	otherBEdgeX = _InitOtherBucketCoor(currentBX);
+	const size_t	otherBEdgeY = _InitOtherBucketCoor(currentBY);
+	const size_t	otherBEdgeZ = _InitOtherBucketCoor(currentBZ);
+
+	if (oneself == 0)
+	{
+		std::cout << this->ps[oneself].center << std::endl;
+	}
 
 	const size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
 	const size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
@@ -165,6 +167,11 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 	double	distanceP;
 	double	wallWeight;
 	double	w;
+
+	if (oneself == 0)
+	{
+		std::cout << "_ViscosityAndGravityTerm" << std::endl;
+	}
 
 	for (size_t	otherBX = otherBEdgeX; otherBX <= maxBX ; ++otherBX){
 	for (size_t	otherBY = otherBEdgeY; otherBY <= maxBY ; ++otherBY){
@@ -181,7 +188,6 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 			dr.y = this->ps[particleIdx].center.y - oneselfPos.y;
 			dr.z = this->ps[particleIdx].center.z - oneselfPos.z;
 			distanceSQP = dr.MagnitudeSQ3d();
-			wallWeight  = this->buckets[bucketIdx].wallWeight;
 			if (particleIdx != oneself) 
 			{
 				if (distanceSQP < E_RADIUS_SQ) 
@@ -196,12 +202,12 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 					acceleration.y += (this->ps[particleIdx].velocity.y - oneselfV.y) * w;
 					acceleration.z += (this->ps[particleIdx].velocity.z - oneselfV.z) * w;
 				}
+				wallWeight  = this->buckets[bucketIdx].wallWeight;
 				if (0.0 < wallWeight)
 				{
-					w = wallWeight;
-					acceleration.x += (- 2.0 * oneselfV.x) * w;
-					acceleration.y += (- 2.0 * oneselfV.y) * w;
-					acceleration.z += (- 2.0 * oneselfV.z) * w;
+					acceleration.x += (- 2.0 * oneselfV.x) * wallWeight;
+					acceleration.y += (- 2.0 * oneselfV.y) * wallWeight;
+					acceleration.z += (- 2.0 * oneselfV.z) * wallWeight;
 				}
 			}
 			particleIdx = this->particleNextIdxs[particleIdx];
@@ -212,6 +218,11 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 		}
 	}}}
 	this->ps[oneself].acceleration = acceleration * this->_cffVTerm;
+
+	if (oneself == 0)
+	{
+		std::cout << "end" << std::endl;
+	}
 }
 
 void	MPS::_UpdateVPA(void)
@@ -230,21 +241,59 @@ void	MPS::_UpdateVPA(void)
 		this->ps[i].acceleration.y = 0.0;
 		this->ps[i].acceleration.z = 0.0;
 	}
+	// std::cout << this->ps[0] << std::endl;
 }
 
-void	MPS::ViscosityAndGravityTerm(void)
+void	MPS::_ViscosityAndGravityTerm(void)
 {
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		this->_CalcEachViscosity(i);
 		this->ps[i].acceleration += this->g;
+		
 	}
+	
 	this->_UpdateVPA();
+}
+
+void	MPS::_CalcCollision(void)
+{
+	
 }
 
 void	MPS::NavierStokesEquations(void)
 {
-	this->ViscosityAndGravityTerm();
+	this->_ViscosityAndGravityTerm();
+	this->_UpdateBuckets(this->ps);
+}
+
+void	MPS::MoveVertexToMapCenterPs(const Vec &halfMapSize, const double midHeight)
+{
+	for (size_t	i = 0; i < this->ps.size(); ++i)
+	{
+		this->ps[i].MoveVertexToMapCenterP(halfMapSize, midHeight);
+	}
+}
+
+void	MPS::RotationPs(void)
+{
+	for (size_t	i = 0; i < this->ps.size(); ++i)
+	{
+		this->ps[i].RotationP();
+	}
+	rotation(this->g);
+}
+
+void	MPS::DrawParticles(void)
+{
+	glPointSize(2.0f);
+	glBegin(GL_POINTS);
+	glColor3f(0.5, 0.5, 1);
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		drawVertex(this->ps[i].center);
+	}
+	glEnd();
 }
 
 // MPS::MPS(const MPS &mps): MPS
@@ -252,7 +301,7 @@ void	MPS::NavierStokesEquations(void)
 // 	*this = MPS;
 // }
 
-// bool	MPS::operator==(const MPS &MPS) const
+// bool	MPS::operator==(const MPS &mps) const
 // {
 // 	return (this->x == MPS.x) && 
 // 		   (this->y == MPS.y) &&
@@ -270,7 +319,7 @@ void	MPS::NavierStokesEquations(void)
 // 	return *this;
 // }
 
-// std::ostream &operator<<(std::ostream &ostrm, const MPS &MPS)
+// std::ostream &operator<<(std::ostream &ostrm, const MPS &mps)
 // {
 // 	return ostrm << '(' << MPS.x << ", " 
 // 						<< MPS.y << ", "

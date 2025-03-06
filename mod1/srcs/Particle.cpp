@@ -1,4 +1,6 @@
 #include "../includes/Particle.hpp"
+#include "../includes/Graphic.hpp"
+#include "../includes/Utils.hpp"
 
 Particle::Particle():Circle()
 {
@@ -30,6 +32,16 @@ Particle::~Particle()
 
 }
 
+void	Particle::MoveVertexToMapCenterP(const Vec &halfMapSize, const double midHeight)
+{
+	move_vec_to_map_center(this->center, halfMapSize, midHeight);
+}
+
+void	Particle::RotationP(void)
+{
+	rotation(this->center);
+}
+
 bool	Particle::operator==(const Particle &p) const
 {
 	return (this->center == p.center) && 
@@ -51,8 +63,9 @@ Particle&	Particle::operator=(const Particle &p)
 std::ostream &operator<<(std::ostream &ostrm, const Particle &p)
 {
 	return ostrm << '(' << p.center << ", " 
-						<< p.r << ", " 
-						<< p.velocity << ')' 
+						<< p.velocity << ", " 
+						<< p.acceleration << ", "
+						<< p.r << ')'  
 						
 						<< std::endl;
 }
