@@ -61,11 +61,12 @@ void	rotation(Vec &vertex)
 	switch (g_data.key)
 	{
 		case 'i':
-			if (g_data.count == 0)
-			{
-				++g_data.count;
-				break;
-			}
+			// if (g_data.count == 0)
+			// {
+			// 	++g_data.count;
+			// 	glutPostRedisplay();
+			// 	break;
+			// }
 			vertex.RotationZ(g_data.radZ);
 			vertex.RotationX(g_data.radX);
 			break;
@@ -143,7 +144,7 @@ void	RenderingAlgorithm()
 									g_data.origenTs[i].c.z);
 	
 	}
-	// g_data.key = 0;
+	g_data.key = 0;
 	glFlush();
 }
 

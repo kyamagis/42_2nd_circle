@@ -139,6 +139,7 @@ void	RenderingAlgorithm3(void)
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
 	
+	g_testdata.mps->Rotation();
 	g_testdata.mps->DrawDisFromWall();
 
 	glFlush();
