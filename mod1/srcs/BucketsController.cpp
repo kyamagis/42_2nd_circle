@@ -340,14 +340,6 @@ void	BC::MoveVertexToMapCenterBs(const Vec &halfMapSize, const double midHeight)
 	}
 }
 
-void	BC::RotationBs(void)
-{
-	for (size_t	i = 0; i < this->numOfBuckets; ++i)
-	{
-		rotation(this->buckets[i].position);
-	}
-}
-
 void	BC::DrawDisFromWall(const Vec &halfMapSize, const double midHeight)
 {
 	glPointSize(2.0f);

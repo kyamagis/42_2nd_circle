@@ -53,38 +53,6 @@ void defaultkeyboard(unsigned char key, int x, int y)
 	}
 }
 
-void	rotation(Vec &vertex)
-{
-	switch (g_data.key)
-	{
-		case 'i':
-			vertex.RotationZ(g_data.rad.z);
-			vertex.RotationX(g_data.rad.x);
-			break;
-		case 'x':
-			vertex.RotationX(M_PI / 12.0);
-			break;
-		case 'X':
-			vertex.RotationX(-M_PI / 12.0);
-			break;
-		case 'y':
-			vertex.RotationY(M_PI / 12);
-			break;
-		case 'Y':
-			vertex.RotationY(-M_PI / 12);
-			break;
-		case 'z':
-			vertex.RotationZ(M_PI / 12);
-			break;
-		case 'Z':
-			vertex.RotationZ(-M_PI / 12);
-			break;
-		case 'c':
-		default:
-			break;
-	}
-}
-
 void	drawVertex(const Vec &vertex)
 {
 	Vec		rotatedPos = vertex.Rotate(g_data.rad);

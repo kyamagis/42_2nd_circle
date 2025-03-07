@@ -193,11 +193,3 @@ Vec	move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double 
 				vec.y - halfMapSize.y, 
 				vec.z - midHeight / 2.0);
 }
-
-void	rotation_ts(std::deque<Triangle> &ts)
-{
-	for (size_t	i = 0; i < ts.size(); ++i)
-	{
-		ts[i].Rotation();
-	}
-}

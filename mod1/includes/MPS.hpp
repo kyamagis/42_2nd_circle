@@ -59,8 +59,6 @@ class MPS: public BC
 								Vec &acceleration, 
 								const size_t bucketIdx, 
 								const size_t particleIdx,
-								const Vec &dr,
-								const double distanceSQP,
 								double &ni);
 		void	_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operation e, 
 												const Vec &acceleration, const double ni);

@@ -45,7 +45,6 @@ class Triangle
 							const bool	lineFlg);
 		
 		void	MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight);
-		void	Rotation(void);
 
 		bool		operator==(const Triangle &triangle) const;
 		Triangle&	operator=(const Triangle &triangle);

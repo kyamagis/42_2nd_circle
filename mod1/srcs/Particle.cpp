@@ -37,11 +37,6 @@ void	Particle::MoveVertexToMapCenterP(const Vec &halfMapSize, const double midHe
 	move_vec_to_map_center(this->center, halfMapSize, midHeight);
 }
 
-void	Particle::RotationP(void)
-{
-	rotation(this->center);
-}
-
 bool	Particle::operator==(const Particle &p) const
 {
 	return (this->center == p.center) && 

@@ -19,7 +19,7 @@
 #define DISTANCE_LIMIT_SQ (DISTANCE_LIMIT * DISTANCE_LIMIT)
 #define REPULSION_COEFFICIENT 1.2
 
-#define NUM_OF_PARTICLES 100
+#define NUM_OF_PARTICLES 10000
 #define	D 3 // dimension number
 #define	GRADIENT  0
 #define LAPLACIAN 1

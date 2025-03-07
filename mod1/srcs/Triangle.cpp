@@ -191,13 +191,6 @@ void	Triangle::MoveVertexToMapCenter(const Vec &halfMapSize, const double midHei
 	move_vec_to_map_center(this->c, halfMapSize, midHeight);
 }
 
-void	Triangle::Rotation(void)
-{
-	rotation(this->a);
-	rotation(this->b);
-	rotation(this->c);
-}
-
 bool	Triangle::operator==(const Triangle &triangle) const
 {
 	return (this->a == triangle.a) && 

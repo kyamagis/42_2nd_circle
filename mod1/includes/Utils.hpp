@@ -27,7 +27,5 @@ void	line_gradation(const int64_t	maxHeight,
 std::deque<Vec>	init_wall_weight(void);
 
 Vec		move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double midHeight);
-void	rotation_ts(std::deque<Triangle> &ts);
-
 
 #endif
