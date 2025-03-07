@@ -37,6 +37,7 @@ class Triangle
 		void	CalcNormalVector();
 		double	FindZ(const double pX, const double pY);
 
+		void	DrawFrame(const double	midHeight, const Vec &halfMapSize);
 		void	DrawTriangle(const int64_t	maxHeight,
 							const int64_t	minHeight,
 							const double	midHeight,

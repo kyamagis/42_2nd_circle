@@ -14,6 +14,9 @@ class Particle: public Circle
 	public:
 		Vec	velocity;
 		Vec	acceleration;
+		double	pressure;
+
+		bool	validFlag;
 
 		Particle();
 		Particle(const double &cX, const double &cY, const double &cZ);

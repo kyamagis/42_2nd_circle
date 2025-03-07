@@ -39,7 +39,8 @@ class Vec
 		void	RotationZ(const double rad);
 		void	RotationX(const double rad);
 		void	RotationY(const double rad);
-		Vec		Rotate(const Vec &axis, const double rad) const;
+		Vec		Rotate(const Vec &rad) const;
+		Vec		Rotate(const Vec &rad, const unsigned key) const;
 
 		bool	operator==(const Vec &vec) const;
 		Vec&	operator=(const Vec &vec);

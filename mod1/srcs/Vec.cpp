@@ -128,12 +128,47 @@ void	Vec::RotationY(const double rad)
 	this->z = -tempX * sin(rad) + tempZ * cos(rad);
 }
 
-Vec	Vec::Rotate(const Vec &axis, const double rad) const
+Vec	Vec::Rotate(const Vec &rad) const
 {
-	double halfSin = sin(rad / 2.0);
-	double halfCos = cos(rad / 2.0);
+	Quaternion qx(cos(rad.x / 2.0), Vec(1,0,0) * sin(rad.x / 2.0));
+	Quaternion qy(cos(rad.y / 2.0), Vec(0,1,0) * sin(rad.y / 2.0));
+	Quaternion qz(cos(rad.z / 2.0), Vec(0,0,1) * sin(rad.z / 2.0));
 
-	Quaternion q(halfCos, axis * halfSin);
+	Quaternion q = qz * qy * qx;
+
+	Quaternion pos(0.0, *this);
+	Quaternion rotated = q * pos * q.conjugate();
+
+	return Vec(rotated.x, rotated.y, rotated.z);
+}
+
+Vec	Vec::Rotate(const Vec &rad, const unsigned key) const
+{
+	Quaternion qx(cos(rad.x / 2.0), Vec(1,0,0) * sin(rad.x / 2.0));
+	Quaternion qy(cos(rad.y / 2.0), Vec(0,1,0) * sin(rad.y / 2.0));
+	Quaternion qz(cos(rad.z / 2.0), Vec(0,0,1) * sin(rad.z / 2.0));
+
+	Quaternion q;
+
+	switch (key)
+	{
+		case 'x':
+		case 'X':
+			q = qx * qy * qz;
+			break;
+		case 'y':
+		case 'Y':
+			q = qy * qz * qx;
+			break;
+		case 'z':
+		case 'Z':
+			q = qz * qx * qy;
+			break;
+		default:
+			q = qz * qx * qy;
+			break;
+	}
+
 	Quaternion pos(0.0, *this);
 	Quaternion rotated = q * pos * q.conjugate();
 

@@ -2,7 +2,7 @@
 #include "../includes/Graphic.hpp"
 #include "../includes/Utils.hpp"
 
-Particle::Particle():Circle()
+Particle::Particle():Circle(), pressure(0),  validFlag(true)
 {
 
 }
@@ -10,14 +10,14 @@ Particle::Particle():Circle()
 Particle::Particle(const double &cX, 
 				   const double &cY, 
 				   const double &cZ, 
-				   const double &R):Circle(cX, cY, cZ, R)
+				   const double &R):Circle(cX, cY, cZ, R), pressure(0), validFlag(true)
 {
 
 }
 
 Particle::Particle(const double &cX, 
 				   const double &cY, 
-				   const double &cZ):Circle(cX, cY, cZ, RADIUS)
+				   const double &cZ):Circle(cX, cY, cZ, RADIUS), pressure(0), validFlag(true)
 {
 
 }
@@ -56,16 +56,17 @@ Particle&	Particle::operator=(const Particle &p)
 		this->center = p.center;
 		this->r = p.r;
 		this->velocity = p.velocity;
+		this->pressure = p.pressure;
+		this->validFlag = p.validFlag;
 	}
 	return *this;
 }
 
 std::ostream &operator<<(std::ostream &ostrm, const Particle &p)
 {
-	return ostrm << '(' << p.center << ", " 
-						<< p.velocity << ", " 
-						<< p.acceleration << ", "
-						<< p.r << ')'  
-						
-						<< std::endl;
+	return ostrm << "pos: " << p.center << ", " 
+				 << "vel: "	<< p.velocity << ", " 
+				 << "acc: "	<< p.acceleration << ", "
+				 << "rad: "	<< p.r 
+				 << std::endl;
 }

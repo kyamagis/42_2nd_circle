@@ -173,8 +173,6 @@ void	DT::_AddLeftSide(void)
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
 
-	std::cout << this->_triangles.back().n << std::endl;
-
 	vertexA = Vec(0, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
@@ -189,8 +187,6 @@ void	DT::_AddRightSide(void)
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
-
-	std::cout << this->_triangles.back().n << std::endl;
 
 	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
 
@@ -207,8 +203,6 @@ void	DT::_AddDeepInTheFront(void)
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
 
-	std::cout << this->_triangles.back().n << std::endl;
-
 	vertexA = Vec(this->_mapSize[X] - 1, 0, this->_mapSize[Z] - 1);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
@@ -224,8 +218,6 @@ void	DT::_AddFront(void)
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
 
-	std::cout << this->_triangles.back().n << std::endl;
-
 	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
@@ -240,12 +232,6 @@ void	DT::_AddCube(void)
 	this->_AddRightSide();
 	this->_AddFront();
 	this->_AddDeepInTheFront();
-	
-
-	std::cout << this->_triangles.back().n << std::endl;
-
-
-	std::cout << this->_mapSize[Y] - 1 << " " << this->_mapSize[Z] - 1 << std::endl;
 }
 
 std::deque<Triangle>	DT::Calculation(void)

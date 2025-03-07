@@ -9,6 +9,15 @@
 #include "./Triangle.hpp"
 #include "./BucketsController.hpp"
 
+enum	e_operation
+{
+	e_VISCOSITY,
+	e_COLLISION,
+	e_PRESSURE,
+	e_PGRADIENT1,
+	e_PGRADIENT2,
+};
+
 class MPS: public BC
 {
 	private:
@@ -22,16 +31,52 @@ class MPS: public BC
 
 		void	_InitTermCoefficient(void);
 		void	_SetParameter(void);
-		void	_CalcEachViscosity(const size_t oneself);
-		void	_UpdateVPA(void);
+
+		void	_UpdateVPA1(void);
+		void	_UpdateVPA2(void);
+		void	_CalcOneOnOneViscosity(const Vec &oneselfVel, 
+										Vec &acceleration, 
+										const size_t bucketIdx, 
+										const size_t particleIdx,
+										const double distanceSQP);
+		void	_CalcOneOnOneCollision(const Vec &oneselfPos,
+										const Vec &oneselfVel,
+										Vec &acceleration, 
+										const size_t particleIdx,
+										const Vec &dr,
+										const double distanceSQP);
+		void	_CalcOneOnOnePressure(const double distanceSQP, double &ni);
+		void	_SmallerPressure(double &minPressure, const size_t particleIdx, const double distanceSQP);
+		void	_CalcOneOnOnePressureGradient(double &minPressure,
+												Vec &acceleration, 
+												const size_t particleIdx,
+												const Vec &dr,
+												const double distanceSQP);
+		void	_SwitchOperation(const e_operation e, 
+								double &minPressure,
+								const Vec &oneselfPos,
+								const Vec &oneselfVel, 
+								Vec &acceleration, 
+								const size_t bucketIdx, 
+								const size_t particleIdx,
+								const Vec &dr,
+								const double distanceSQP,
+								double &ni);
+		void	_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operation e, 
+												const Vec &acceleration, const double ni);
+		void	_SearchNeighborParticles(const size_t oneself, const e_operation e, double &minPressure);
+
 		void	_ViscosityAndGravityTerm(void);
-		void	_CalcCollision(void);
+		void	_CalcParticlesCollision(void);
+		void	_CalcParticlesPressure(void);
+		void	_PressureGradientTerm(void);
 
 	public:
 		std::deque<Particle> ps;
 		const Vec	visibleMapSize;
 		const Vec	totalMapSize;
 		Vec			g;
+		double		n0;
 
 		MPS(const uint32_t mapSize[3], 
 		   const std::deque<Triangle> &ts);
@@ -40,10 +85,7 @@ class MPS: public BC
 		MPS&	operator=(const MPS &mps);
 
 		double	W(const size_t i, const size_t oneself, bool gradientFlg);
-		void	PressureGradientTerm(Vec &p, const size_t oneself);
 		void	NavierStokesEquations(void);
-		void	MoveVertexToMapCenterPs(const Vec &halfMapSize, const double midHeight);
-		void	RotationPs(void);
 		void	DrawParticles(const Vec &halfMapSize, const double midHeight);
 
 		// bool	operator==(const MPS &mps) const;

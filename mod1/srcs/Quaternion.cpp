@@ -15,6 +15,12 @@ Quaternion::Quaternion(const double _w, const Vec &pos): w(_w), x(pos.x), y(pos.
 
 }
 
+Quaternion::Quaternion(const Quaternion& q)
+{
+	*this = q;
+}
+
+
 Quaternion::~Quaternion()
 {
 
@@ -23,6 +29,18 @@ Quaternion::~Quaternion()
 Quaternion Quaternion::conjugate() const
 {
 	return	Quaternion(this->w, - this->x, - this->y, - this->z);
+}
+
+Quaternion&	Quaternion::operator=(const Quaternion &q)
+{
+	if (this != &q)
+	{
+		this->w = q.w;
+		this->x = q.x;
+		this->y = q.y;
+		this->z = q.z;
+	}
+	return *this;
 }
 
 Quaternion Quaternion::operator*(const Quaternion& q) const {

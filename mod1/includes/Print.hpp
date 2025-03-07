@@ -7,6 +7,20 @@
 class Print
 {
 	public:
+
+		template <typename T>
+		static void OutWords(T word) 
+		{
+			std::cout << word << std::endl;
+		}
+
+		template <typename T, typename... Args>
+		static bool OutWords(T first, Args... rest) 
+		{
+			std::cout << first << " ";
+			print_words(rest...);
+			return true;
+		}
 		static bool	Out(const std::string &str)
 		{
 			std::cout << "\x1b[34m"<< str << "\033[m" << std::endl;

@@ -54,8 +54,6 @@ class BC
 		void	_UpdateBuckets(const std::deque<Particle> &ps);
 
 		void	_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts);
-		void	_SearchNeighborParticle(const size_t i);
-		void	_SearchNeighborParticles(const size_t oneself);
 
 	public:
 

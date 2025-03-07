@@ -142,6 +142,16 @@ double	Triangle::FindZ(const double pX, const double pY)
 	return this->a.z - (this->n.x * (pX - this->a.x) + this->n.y * (pY - this->a.y)) / this->n.z;
 }
 
+void	Triangle::DrawFrame(const double midHeight, const Vec &halfMapSize)
+{
+	glBegin(GL_LINE_STRIP);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	drawVertex(move_vec_to_map_center(this->b, halfMapSize, midHeight));
+	drawVertex(move_vec_to_map_center(this->a, halfMapSize, midHeight));
+	drawVertex(move_vec_to_map_center(this->c, halfMapSize, midHeight));
+	glEnd();
+}
+
 void	Triangle::DrawTriangle(const int64_t	maxHeight,
 							const int64_t	minHeight,
 							const double	midHeight,
@@ -150,15 +160,10 @@ void	Triangle::DrawTriangle(const int64_t	maxHeight,
 {
 	if (!this->visibleFlg)
 	{
-		glBegin(GL_LINE_STRIP);
-		glColor3f(1.0f, 1.0f, 1.0f);
-		drawVertex(move_vec_to_map_center(this->b, halfMapSize, midHeight));
-		drawVertex(move_vec_to_map_center(this->a, halfMapSize, midHeight));
-		drawVertex(move_vec_to_map_center(this->c, halfMapSize, midHeight));
-		glEnd();
+		// this->DrawFrame(midHeight, halfMapSize);
 		return ;
 	}
-	else if (lineFlg || !this->visibleFlg)
+	if (lineFlg || !this->visibleFlg)
 	{
 		glBegin(GL_LINE_LOOP);
 	}

@@ -21,6 +21,7 @@ MPS::MPS(const uint32_t	mapSize[3],
 {
 	this->_InitParticlesWaterColumnCollapse();
 	this->_InitBuckets(ts);
+	this->_SetParameter();
 }
 
 MPS::~MPS()
@@ -40,7 +41,9 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 	size_t	pIdx = 0;
 	size_t	maxXIdx = this->totalMapSize.x / DIAMETER;
 	size_t	maxYIdx = this->totalMapSize.y / DIAMETER;
-	size_t	maxZIdx = this->totalMapSize.z / DIAMETER;
+	size_t	maxZIdx = (this->totalMapSize.z / DIAMETER);
+
+	// std::cout << maxZIdx << std::endl;
 
 	size_t	psSize = this->ps.size();
 
@@ -58,11 +61,11 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 			}
 		}
 	}
+	std::cout << pIdx << std::endl;
 }
 
 void	MPS::_InitTermCoefficient(void)
 {
-	double	n0 = 0;
 	double	lambda = 0;
 	double	tempLambda = 0;
 
@@ -84,15 +87,15 @@ void	MPS::_InitTermCoefficient(void)
 		if (distanceSQ <= E_RADIUS_SQ)
 		{
 			distance = sqrt(distanceSQ);
-			n0 += WEIGHT(distance);
+			this->n0 += WEIGHT(distance);
 			tempLambda += distanceSQ * WEIGHT(distance);
 		}
 	}}}
 
-	lambda =  tempLambda / n0;
-	this->_cffVTerm  = 2.0 * KINEMATIC_VISCOSITY * D / n0 / lambda;
-	this->_cffPress  = SPEED_OF_SOUND * SPEED_OF_SOUND / n0;
-	this->_cffPGTerm = - D / n0;
+	lambda =  tempLambda / this->n0;
+	this->_cffVTerm  = 2.0 * KINEMATIC_VISCOSITY * D / this->n0 / lambda;
+	this->_cffPress  = SPEED_OF_SOUND * SPEED_OF_SOUND / this->n0;
+	this->_cffPGTerm = - D / this->n0;
 }
 
 void	MPS::_SetParameter(void)
@@ -112,10 +115,7 @@ void	MPS::_SetParameter(void)
 // 	return E_RADIUS / rSQ + rSQ / E_RADIUS - 2;
 // }
 
-// void	MPS::PressureGradientTerm(Vec &p, const size_t oneself)
-// {
 
-// }
 
 size_t	_InitOtherBucketCoor(const size_t coor)
 {
@@ -135,32 +135,166 @@ size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 	return coor;
 }
 
-void	MPS::_CalcEachViscosity(const size_t oneself)
+void	MPS::_CalcOneOnOneViscosity(const Vec &oneselfVel, 
+									Vec &acceleration, 
+									const size_t bucketIdx, 
+									const size_t particleIdx,
+									const double distanceSQP)
 {
-	if (this->ps[oneself].center.x < 0.0 ||
-		this->ps[oneself].center.y < 0.0 ||
-		this->ps[oneself].center.z < 0.0)
-	{
-		return ;
-	}
+	double	distanceP;
+	double	wallWeight;
+	double	w;
 
+	if (distanceSQP < E_RADIUS_SQ) 
+	{
+		if (distanceSQP <= 0.0)
+		{
+			std::cout << "distanceSQP" <<" " << distanceSQP << std::endl;
+		}
+		distanceP = sqrt(distanceSQP);
+		w = WEIGHT(distanceP);
+		acceleration += (this->ps[particleIdx].velocity - oneselfVel) * w;
+	}
+	wallWeight  = this->buckets[bucketIdx].wallWeight;
+	if (0.0 < wallWeight)
+	{
+		acceleration += (oneselfVel * -2.0) * wallWeight;
+	}
+}
+
+void	MPS::_CalcOneOnOneCollision(const Vec &oneselfPos,
+									const Vec &oneselfVel,
+									Vec &acceleration, 
+									const size_t particleIdx,
+									const Vec &dr,
+									const double distanceSQP)
+{
+	(void)oneselfPos;
+	if (distanceSQP < DISTANCE_LIMIT_SQ)
+	{
+		double	closing = (this->ps[particleIdx].velocity - oneselfVel).DotProduct3d(dr);
+
+		if (closing < 0.0)
+		{
+			closing *= REPULSION_COEFFICIENT / 2 * distanceSQP;
+			acceleration += dr * closing;	
+		}
+	}
+}
+
+void	MPS::_CalcOneOnOnePressure(const double distanceSQP, double &ni)
+{
+	if (distanceSQP < E_RADIUS_SQ)
+	{
+		double distance = sqrt(distanceSQP);
+		double w = WEIGHT(distance);
+		ni += w;
+	}
+}
+
+void	MPS::_SmallerPressure(double &minPressure, const size_t particleIdx, const double distanceSQP)
+{
+	if (distanceSQP < E_RADIUS_SQ)
+	{
+		if(this->ps[particleIdx].pressure < minPressure)
+		{
+			minPressure = this->ps[particleIdx].pressure;
+		}
+	}
+}
+
+void	MPS::_CalcOneOnOnePressureGradient(double &minPressure,
+											Vec &acceleration, 
+											const size_t particleIdx,
+											const Vec &dr,
+											const double distanceSQP)
+{
+	if (distanceSQP < E_RADIUS_SQ)
+	{
+		double distance = sqrt(distanceSQP);
+		double w = WEIGHT(distance);
+		w *= (this->ps[particleIdx].pressure - minPressure) / distanceSQP;
+		acceleration += dr * w;
+	}
+}
+
+void	MPS::_SwitchOperation(const e_operation e, 
+								double &minPressure,
+								const Vec &oneselfPos,
+								const Vec &oneselfVel, 
+								Vec &acceleration, 
+								const size_t bucketIdx, 
+								const size_t particleIdx,
+								const Vec &dr,
+								const double distanceSQP,
+								double &ni)
+{
+	switch (e)
+	{
+		case e_VISCOSITY:
+			this->_CalcOneOnOneViscosity(oneselfVel, acceleration, 
+										bucketIdx, particleIdx,	distanceSQP);
+			break;
+		case e_COLLISION:
+			this->_CalcOneOnOneCollision(oneselfPos, oneselfVel, acceleration, 
+										particleIdx, dr, distanceSQP);
+			break;
+		case e_PRESSURE:
+			this->_CalcOneOnOnePressure(distanceSQP, ni);
+			break;
+		case e_PGRADIENT1:
+			this->_SmallerPressure(minPressure, particleIdx, distanceSQP);
+			break;
+		case e_PGRADIENT2:
+			break;
+			this->_CalcOneOnOnePressureGradient(minPressure, acceleration, 
+												particleIdx, dr, distanceSQP);
+		default:
+			break;
+	}
+}
+
+void	MPS::_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operation e, 
+											 const Vec &acceleration, const double ni)
+{
+	switch (e)
+	{
+		case e_VISCOSITY:
+			this->ps[oneself].acceleration = acceleration * this->_cffVTerm;
+			break;
+		case e_COLLISION:
+			this->ps[oneself].acceleration = acceleration;
+			break;
+		case e_PRESSURE:
+			this->ps[oneself].pressure = (this->n0 < ni) * (ni - this->n0) * 
+										 this->_cffPress * DENSITY_OF_PARTICLES;
+			break;
+		case e_PGRADIENT2:
+			this->ps[oneself].acceleration = acceleration * 1 / DENSITY_OF_PARTICLES * this->_cffPGTerm;
+			break;
+		default:
+			break;
+	}
+}
+
+void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, double &minPressure)
+{
 	const size_t	currentBX = size_t(this->ps[oneself].center.x / BUCKET_LENGTH);
 	const size_t	currentBY = size_t(this->ps[oneself].center.y / BUCKET_LENGTH);
 	const size_t	currentBZ = size_t(this->ps[oneself].center.z / BUCKET_LENGTH);
 
-	const Vec	oneselfPos(this->ps[oneself].center.x, this->ps[oneself].center.y, this->ps[oneself].center.z);
-	const Vec	oneselfV(this->ps[oneself].velocity.x, this->ps[oneself].velocity.y, this->ps[oneself].velocity.z);
-	const Vec	oneselfA(this->ps[oneself].acceleration.x, this->ps[oneself].acceleration.y, this->ps[oneself].acceleration.z);
+	const Vec	oneselfPos(this->ps[oneself].center);
+	const Vec	oneselfVel(this->ps[oneself].velocity);
 	Vec	acceleration;
+
+	if (e == e_COLLISION)
+	{
+		acceleration = oneselfVel;
+	}
 
 	const size_t	otherBEdgeX = _InitOtherBucketCoor(currentBX);
 	const size_t	otherBEdgeY = _InitOtherBucketCoor(currentBY);
 	const size_t	otherBEdgeZ = _InitOtherBucketCoor(currentBZ);
-
-	if (oneself == 0)
-	{
-		std::cout << currentBX << " " << currentBY << " " << currentBZ << std::endl;
-	}
 
 	const size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
 	const size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
@@ -171,14 +305,7 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 
 	Vec		dr;
 	double	distanceSQP;
-	double	distanceP;
-	double	wallWeight;
-	double	w;
-
-	if (oneself == 0)
-	{
-		std::cout << "_ViscosityAndGravityTerm" << std::endl;
-	}
+	double	ni = 0.0;
 
 	for (size_t	otherBX = otherBEdgeX; otherBX <= maxBX ; ++otherBX){
 	for (size_t	otherBY = otherBEdgeY; otherBY <= maxBY ; ++otherBY){
@@ -191,31 +318,12 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 		}
 		while (true)
 		{
-			dr.x = this->ps[particleIdx].center.x - oneselfPos.x;
-			dr.y = this->ps[particleIdx].center.y - oneselfPos.y;
-			dr.z = this->ps[particleIdx].center.z - oneselfPos.z;
-			distanceSQP = dr.MagnitudeSQ3d();
-			if (particleIdx != oneself) 
+			if (particleIdx != oneself && this->ps[particleIdx].validFlag) 
 			{
-				if (distanceSQP < E_RADIUS_SQ) 
-				{
-					if (distanceSQP <= 0.0)
-					{
-						std::cout << distanceP << std::endl;
-					}
-					distanceP = sqrt(distanceSQP);
-					w = WEIGHT(distanceP);
-					acceleration.x += (this->ps[particleIdx].velocity.x - oneselfV.x) * w;
-					acceleration.y += (this->ps[particleIdx].velocity.y - oneselfV.y) * w;
-					acceleration.z += (this->ps[particleIdx].velocity.z - oneselfV.z) * w;
-				}
-				wallWeight  = this->buckets[bucketIdx].wallWeight;
-				if (0.0 < wallWeight)
-				{
-					acceleration.x += (- 2.0 * oneselfV.x) * wallWeight;
-					acceleration.y += (- 2.0 * oneselfV.y) * wallWeight;
-					acceleration.z += (- 2.0 * oneselfV.z) * wallWeight;
-				}
+				dr = this->ps[particleIdx].center - oneselfPos;
+				distanceSQP = dr.MagnitudeSQ3d();
+				this->_SwitchOperation(e, minPressure, oneselfPos, oneselfVel, acceleration, 
+										bucketIdx, particleIdx, dr,distanceSQP, ni);
 			}
 			particleIdx = this->particleNextIdxs[particleIdx];
 			if (particleIdx == UINT64_MAX)
@@ -224,71 +332,123 @@ void	MPS::_CalcEachViscosity(const size_t oneself)
 			}
 		}
 	}}}
-	this->ps[oneself].acceleration = acceleration * this->_cffVTerm;
-
-	if (oneself == 0)
-	{
-		std::cout << "end" << std::endl;
-	}
+	this->_SwitchAssignmentOfAcceleration(oneself, e, acceleration, ni);
 }
 
-void	MPS::_UpdateVPA(void)
+void	MPS::_UpdateVPA1(void)
 {
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
-		this->ps[i].velocity.x += this->ps[i].acceleration.x * DELTA_TIME;
-		this->ps[i].velocity.y += this->ps[i].acceleration.y * DELTA_TIME;
-		this->ps[i].velocity.z += this->ps[i].acceleration.z * DELTA_TIME;
+		if (!this->ps[i].validFlag)
+		{
+			continue;
+		}
+		this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
+		this->ps[i].center += this->ps[i].velocity * DELTA_TIME;
 
-		this->ps[i].center.x += this->ps[i].velocity.x * DELTA_TIME;
-		this->ps[i].center.y += this->ps[i].velocity.y * DELTA_TIME;
-		this->ps[i].center.z += this->ps[i].velocity.z * DELTA_TIME;
+		if (this->ps[i].center.x < 0.0 || 
+			this->ps[i].center.y < 0.0 || 
+			this->ps[i].center.z < 0.0)
+		{
+			this->ps[i].validFlag = false;
+		}
 
-		this->ps[i].acceleration.x = 0.0;
-		this->ps[i].acceleration.y = 0.0;
-		this->ps[i].acceleration.z = 0.0;
+		this->ps[i].acceleration = 0.0;
+	}
+	// std::cout << this->ps[0] << std::endl;
+}
+
+void	MPS::_UpdateVPA2(void)
+{
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		if (!this->ps[i].validFlag)
+		{
+			continue;
+		}
+		this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
+		this->ps[i].center += this->ps[i].acceleration * DELTA_TIME * DELTA_TIME;
+
+		if (this->ps[i].center.x < 0.0 || 
+			this->ps[i].center.y < 0.0 || 
+			this->ps[i].center.z < 0.0)
+		{
+			this->ps[i].validFlag = false;
+		}
+
+		this->ps[i].acceleration = 0.0;
 	}
 	// std::cout << this->ps[0] << std::endl;
 }
 
 void	MPS::_ViscosityAndGravityTerm(void)
 {
+	double	noMeaning = 0;
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
-		this->_CalcEachViscosity(i);
-		this->ps[i].acceleration += this->g;
-		
+		if (this->ps[i].validFlag)
+		{
+			this->_SearchNeighborParticles(i, e_VISCOSITY, noMeaning);
+			this->ps[i].acceleration += this->g;
+		}
 	}
-	
-	this->_UpdateVPA();
 }
 
-void	MPS::_CalcCollision(void)
+void	MPS::_CalcParticlesCollision(void)
 {
-	
+	double	noMeaning = 0;
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		if (this->ps[i].validFlag)
+		{
+			this->_SearchNeighborParticles(i, e_COLLISION, noMeaning);
+		}
+	}
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		if (this->ps[i].validFlag)
+		{
+			this->ps[i].velocity = this->ps[i].acceleration;
+		}
+	}
+}
+
+void	MPS::_CalcParticlesPressure(void)
+{
+	double	noMeaning = 0;
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		if (this->ps[i].validFlag)
+		{
+			this->_SearchNeighborParticles(i, e_PRESSURE, noMeaning);
+		}
+	}
+}
+
+void	MPS::_PressureGradientTerm(void)
+{
+	double	minPressure = 0;
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		if (this->ps[i].validFlag)
+		{
+			minPressure = this->ps[i].pressure;
+			this->_SearchNeighborParticles(i, e_PGRADIENT1, minPressure);
+			this->_SearchNeighborParticles(i, e_PGRADIENT2, minPressure);
+		}
+	}
 }
 
 void	MPS::NavierStokesEquations(void)
 {
-	this->_ViscosityAndGravityTerm();
 	this->_UpdateBuckets(this->ps);
-}
-
-void	MPS::MoveVertexToMapCenterPs(const Vec &halfMapSize, const double midHeight)
-{
-	for (size_t	i = 0; i < this->ps.size(); ++i)
-	{
-		this->ps[i].MoveVertexToMapCenterP(halfMapSize, midHeight);
-	}
-}
-
-void	MPS::RotationPs(void)
-{
-	for (size_t	i = 0; i < this->ps.size(); ++i)
-	{
-		this->ps[i].RotationP();
-	}
-	rotation(this->g);
+	this->_ViscosityAndGravityTerm();
+	this->_UpdateVPA1();
+	this->_CalcParticlesCollision();
+	this->_CalcParticlesPressure();
+	this->_PressureGradientTerm();
+	this->_UpdateVPA2();
+	this->_CalcParticlesPressure();
 }
 
 void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
@@ -332,4 +492,84 @@ void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
 // 						<< MPS.y << ", "
 // 						<< MPS.r << ')' 
 // 						<< std::endl;
+// }
+
+
+
+// void	MPS::_CalcEachViscosity(const size_t oneself)
+// {
+// 	const size_t	currentBX = size_t(this->ps[oneself].center.x / BUCKET_LENGTH);
+// 	const size_t	currentBY = size_t(this->ps[oneself].center.y / BUCKET_LENGTH);
+// 	const size_t	currentBZ = size_t(this->ps[oneself].center.z / BUCKET_LENGTH);
+
+// 	const Vec	oneselfPos(this->ps[oneself].center.x, this->ps[oneself].center.y, this->ps[oneself].center.z);
+// 	const Vec	oneselfV(this->ps[oneself].velocity.x, this->ps[oneself].velocity.y, this->ps[oneself].velocity.z);
+// 	const Vec	oneselfA(this->ps[oneself].acceleration.x, this->ps[oneself].acceleration.y, this->ps[oneself].acceleration.z);
+// 	Vec	acceleration;
+
+// 	const size_t	otherBEdgeX = _InitOtherBucketCoor(currentBX);
+// 	const size_t	otherBEdgeY = _InitOtherBucketCoor(currentBY);
+// 	const size_t	otherBEdgeZ = _InitOtherBucketCoor(currentBZ);
+
+// 	const size_t	maxBX = _InitMaxOtherBucketCoor(this->bucketRow,    currentBX);
+// 	const size_t	maxBY = _InitMaxOtherBucketCoor(this->bucketColumn, currentBY);
+// 	const size_t	maxBZ = _InitMaxOtherBucketCoor(this->bucketDepth,  currentBZ);
+
+// 	size_t	bucketIdx;
+// 	size_t	particleIdx;
+
+// 	Vec		dr;
+// 	double	distanceSQP;
+// 	double	distanceP;
+// 	double	wallWeight;
+// 	double	w;
+
+// 	for (size_t	otherBX = otherBEdgeX; otherBX <= maxBX ; ++otherBX){
+// 	for (size_t	otherBY = otherBEdgeY; otherBY <= maxBY ; ++otherBY){
+// 	for (size_t	otherBZ = otherBEdgeZ; otherBZ <= maxBZ ; ++otherBZ){
+// 		bucketIdx   = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
+// 		particleIdx = this->buckets[bucketIdx].firstPrtIdx;
+// 		if (particleIdx == UINT64_MAX)
+// 		{
+// 			continue;
+// 		}
+// 		while (true)
+// 		{
+// 			// dr.x = this->ps[particleIdx].center.x - oneselfPos.x;
+// 			// dr.y = this->ps[particleIdx].center.y - oneselfPos.y;
+// 			// dr.z = this->ps[particleIdx].center.z - oneselfPos.z;
+// 			dr = this->ps[particleIdx].center - oneselfPos;
+// 			distanceSQP = dr.MagnitudeSQ3d();
+// 			if (particleIdx != oneself && this->ps[particleIdx].validFlag) 
+// 			{
+// 				if (distanceSQP < E_RADIUS_SQ) 
+// 				{
+// 					if (distanceSQP <= 0.0)
+// 					{
+// 						std::cout << "distanceSQP" <<" " << distanceSQP << std::endl;
+// 					}
+// 					distanceP = sqrt(distanceSQP);
+// 					w = WEIGHT(distanceP);
+// 					// acceleration.x += (this->ps[particleIdx].velocity.x - oneselfV.x) * w;
+// 					// acceleration.y += (this->ps[particleIdx].velocity.y - oneselfV.y) * w;
+// 					// acceleration.z += (this->ps[particleIdx].velocity.z - oneselfV.z) * w;
+// 					acceleration += (this->ps[particleIdx].velocity - oneselfV) * w;
+// 				}
+// 				wallWeight  = this->buckets[bucketIdx].wallWeight;
+// 				if (0.0 < wallWeight)
+// 				{
+// 					// acceleration.x += (- 2.0 * oneselfV.x) * wallWeight;
+// 					// acceleration.y += (- 2.0 * oneselfV.y) * wallWeight;
+// 					// acceleration.z += (- 2.0 * oneselfV.z) * wallWeight;
+// 					acceleration += (oneselfV * -2.0) * wallWeight;
+// 				}
+// 			}
+// 			particleIdx = this->particleNextIdxs[particleIdx];
+// 			if (particleIdx == UINT64_MAX)
+// 			{
+// 				break;
+// 			}
+// 		}
+// 	}}}
+// 	this->ps[oneself].acceleration = acceleration * this->_cffVTerm;
 // }

@@ -18,9 +18,7 @@ typedef struct s_data
 	double	midHeight;
 	double	shrinkageRatioX;
 	double	shrinkageRatioY;
-	double	radX;
-	double	radY;
-	double	radZ;
+	Vec		rad;
 	double	scaling;
 	size_t	i;
 	size_t	count;
@@ -60,8 +58,8 @@ void	rotation(Vec &vertex)
 	switch (g_data.key)
 	{
 		case 'i':
-			vertex.RotationZ(g_data.radZ);
-			vertex.RotationX(g_data.radX);
+			vertex.RotationZ(g_data.rad.z);
+			vertex.RotationX(g_data.rad.x);
 			break;
 		case 'x':
 			vertex.RotationX(M_PI / 12.0);
@@ -89,9 +87,8 @@ void	rotation(Vec &vertex)
 
 void	drawVertex(const Vec &vertex)
 {
-	Vec	rotatedPos = vertex.Rotate(Vec(1,0,0), g_data.radX);
-		rotatedPos = rotatedPos.Rotate(Vec(0,1,0), g_data.radY);
-		rotatedPos = rotatedPos.Rotate(Vec(0,0,1), g_data.radZ);
+	Vec		rotatedPos = vertex.Rotate(g_data.rad);
+
 	double	coordinateX = rotatedPos.x / double(g_data.mapSize[X]);
 	double	coordinateY =  - 1.0 * (rotatedPos.y / double(g_data.mapSize[Y]));
 	double	coordinateZ = rotatedPos.z / double(g_data.midHeight);
@@ -111,7 +108,7 @@ void	RenderingAlgorithm()
 	// {
 	// 	g_data.mps->DrawDisFromWall(g_data.halfMapSize, g_data.midHeight);
 	// }
-	// g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
+	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
@@ -194,15 +191,13 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.visibleBucketsFlg = !g_data.visibleBucketsFlg;
 			break;
 		case 'c':
-			g_data.radX = 0;
-			g_data.radY = 0;
-			g_data.radZ = 0;
+			g_data.rad = 0.0;
 			g_data.circleFlg = !g_data.circleFlg;
 			break;
 		case 'i':
-			g_data.radX = M_PI / 12.0 * 5.0;
-			g_data.radY = 0;
-			g_data.radZ = M_PI_4;
+			g_data.rad.x = M_PI / 12.0 * 5.0;
+			g_data.rad.y = 0.0;
+			g_data.rad.z = M_PI_4;
 			g_data.scaling = SCALING;
 			break;
 		case 'l':
@@ -232,27 +227,25 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.mps->NavierStokesEquations();
 			break;
 		case 't':
-			g_data.radX = 0;
-			g_data.radY = 0;
-			g_data.radZ = 0;
+			g_data.rad = 0.0;
 			break;
 		case 'x':
-			g_data.radX += M_PI / 12;
+			g_data.rad.x += M_PI / 12;
 			break;
 		case 'X':
-			g_data.radX -= M_PI / 12;
+			g_data.rad.x -= M_PI / 12;
 			break;
 		case 'y':
-			g_data.radY += M_PI / 12;
+			g_data.rad.y += M_PI / 12;
 			break;
 		case 'Y':
-			g_data.radY -= M_PI / 12;
+			g_data.rad.y -= M_PI / 12;
 			break;
 		case 'z':
-			g_data.radZ += M_PI / 12;
+			g_data.rad.z += M_PI / 12;
 			break;
 		case 'Z':
-			g_data.radZ -= M_PI / 12;
+			g_data.rad.z -= M_PI / 12;
 			break;			
 		default:
 			return ;
@@ -318,7 +311,7 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 								 const int64_t minHeight)
 {
 	g_data.ts = ts;
-	// g_data.mps = new MPS(mapSize, ts);
+	g_data.mps = new MPS(mapSize, ts);
 	g_data.mapSize[X] = mapSize[X];
 	g_data.mapSize[Y] = mapSize[Y];
 	g_data.mapSize[Z] = mapSize[Z];
@@ -330,9 +323,9 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.midHeight = (g_data.maxHeight + g_data.minHeight) / 2.0;
 	g_data.shrinkageRatioX = 1.0 / g_data.mapSize[X] * 2.0;
 	g_data.shrinkageRatioY = 1.0 / g_data.mapSize[Y] * 2.0;
-	g_data.radX = 5.0 * M_PI / 12;
-	g_data.radY = 0;
-	g_data.radZ = 0;
+	g_data.rad.x = 5.0 * M_PI / 12;
+	g_data.rad.y = 0.0;
+	g_data.rad.z = 0.0;
 	g_data.i = g_data.ts.size();
 	g_data.count = 0;
 	g_data.scaling = SCALING;
