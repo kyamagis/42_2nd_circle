@@ -15,19 +15,19 @@ class Triangle
 		Vec a;
 		Vec b;
 		Vec c;
-
-		std::deque<Vec> intersectionWithMidHeight;
-
 		Vec	n;
 		
+
 		Circle	circumcircle;
 
 		bool	tempVertexFlg;
+		bool	visibleFlg;
 
 		Triangle();
 		~Triangle();
 
-		Triangle(const Vec &A, const Vec &B,const Vec &C, bool TempVertexFlg);
+		Triangle(const Vec &A, const Vec &B,const Vec &C, const bool TempVertexFlg);
+		Triangle(const Vec &A, const Vec &B,const Vec &C, const bool TempVertexFlg, const bool _visibleFlg);
 
 		bool	IsInsideCircumcircle(const Vec &point) const;
 		void	CalcCircumcircle();
@@ -35,7 +35,6 @@ class Triangle
 		bool	InternalAndExternalJudgments2d(const Vec &point) const;
 		bool	InternalAndExternalJudgments3d(const Vec &point) const;
 		void	CalcNormalVector();
-		// void	CalcIntersectionWithMidHeight(const Vec &midHeight);
 		double	FindZ(const double pX, const double pY);
 
 		void	DrawTriangle(const int64_t	maxHeight,

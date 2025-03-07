@@ -137,6 +137,13 @@ size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 
 void	MPS::_CalcEachViscosity(const size_t oneself)
 {
+	if (this->ps[oneself].center.x < 0.0 ||
+		this->ps[oneself].center.y < 0.0 ||
+		this->ps[oneself].center.z < 0.0)
+	{
+		return ;
+	}
+
 	const size_t	currentBX = size_t(this->ps[oneself].center.x / BUCKET_LENGTH);
 	const size_t	currentBY = size_t(this->ps[oneself].center.y / BUCKET_LENGTH);
 	const size_t	currentBZ = size_t(this->ps[oneself].center.z / BUCKET_LENGTH);

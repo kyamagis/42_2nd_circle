@@ -30,7 +30,14 @@ class DT
 		void	_SideFlip(const size_t idx, const Triangle &t);
 		void	_EraseTempTriangles(void);
 		void	_IntegrateTriangles(void);
-		void	_MakeMap(int64_t **map);
+
+		void	_AddBottom(void);
+		void	_AddTop(void);
+		void	_AddLeftSide(void);
+		void	_AddRightSide(void);
+		void	_AddFront(void);
+		void	_AddDeepInTheFront(void);
+		void	_AddCube(void);
 
 	public:
 		DT(const std::deque<Vec> &specificPoints,
@@ -39,7 +46,6 @@ class DT
 		   const int64_t minHeight);
 		~DT();
 
-		void	Calculation(int64_t **map);
 		std::deque<Triangle>	Calculation(void);
 };
 

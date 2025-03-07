@@ -6,12 +6,16 @@ Triangle::Triangle()
 
 }
 
-Triangle::Triangle(const Vec &A, const Vec &B,const Vec &C, bool TempVertexFlg):a(A), b(B), c(C), tempVertexFlg(TempVertexFlg)
+Triangle::Triangle(const Vec &A, const Vec &B,const Vec &C, const bool TempVertexFlg): 
+					a(A), b(B), c(C), tempVertexFlg(TempVertexFlg), visibleFlg(true)
 {
 	this->CalcCircumcircle();
+}
 
-	// std::cout << this->cOfCircumcircle[1] << std::endl;
-	// std::cout << this->rOfCircumcircle << std::endl;
+Triangle::Triangle(const Vec &A, const Vec &B,const Vec &C, const bool TempVertexFlg, const bool _visibleFlg): 
+					a(A), b(B), c(C), tempVertexFlg(TempVertexFlg), visibleFlg(_visibleFlg)
+{
+	this->CalcCircumcircle();
 }
 
 Triangle::~Triangle()
@@ -74,6 +78,10 @@ void	Triangle::CalcCircumcircle()
 	if (det == 0.0)
 	{
 		std::cout << "det is 0" << std::endl;
+		this->circumcircle.center.x = 0.0;
+		this->circumcircle.center.y = 0.0;
+		this->circumcircle.r = 0.0;
+		return;
 	}
 
 	this->circumcircle.center.x = (abConstNum * acCoeff[1] - acConstNum * abCoeff[1]) / det;
@@ -104,35 +112,6 @@ bool	Triangle::InternalAndExternalJudgments3d(const Vec &point) const
 		this->b == this->c || 
 		this->c == this->a)
 		return false;
-
-	// Vec	abp = (this->b - this->a).CrossProduct3d(point - this->b);
-	// abp /=  abp.Magnitude3d();
-	// const Vec	bcp = (this->c - this->b).CrossProduct3d(point - this->c);
-	// if (!abp.NearlyEqual(bcp / bcp.Magnitude3d()))
-	// {
-	// 	return false ;
-	// }
-	// const Vec	cap = (this->a - this->c).CrossProduct3d(point - this->a);
-	// return (abp.NearlyEqual(cap / cap.Magnitude3d()));
-
-	// const Vec	abp = (this->b - this->a).CrossProduct3d(point - this->b);
-	// const Vec	bcp = (this->c - this->b).CrossProduct3d(point - this->c);
-	// if (!abp.NearlyEqual(bcp))
-	// {
-	// 	return false ;
-	// }
-	// const Vec	cap = (this->a - this->c).CrossProduct3d(point - this->a);
-	// return (abp.NearlyEqual(cap));
-
-	// const Vec	abp = (this->a - this->b).CrossProduct3d(point - this->b);
-	// const Vec	bcp = (this->b - this->c).CrossProduct3d(point - this->c);
-	// const Vec	cap = (this->c - this->a).CrossProduct3d(point - this->a);
-
-	// if (!abp.NearlyEqual(bcp))
-	// {
-	// 	return false ;
-	// }
-	// return (abp.NearlyEqual(cap));
 
 	const Vec	abp = (this->a - this->b).CrossProduct3d(point - this->b);
 	const Vec	bcp = (this->b - this->c).CrossProduct3d(point - this->c);
@@ -169,7 +148,17 @@ void	Triangle::DrawTriangle(const int64_t	maxHeight,
 							const Vec &halfMapSize,
 							const bool	lineFlg)
 {
-	if (lineFlg)
+	if (!this->visibleFlg)
+	{
+		glBegin(GL_LINE_STRIP);
+		glColor3f(1.0f, 1.0f, 1.0f);
+		drawVertex(move_vec_to_map_center(this->b, halfMapSize, midHeight));
+		drawVertex(move_vec_to_map_center(this->a, halfMapSize, midHeight));
+		drawVertex(move_vec_to_map_center(this->c, halfMapSize, midHeight));
+		glEnd();
+		return ;
+	}
+	else if (lineFlg || !this->visibleFlg)
 	{
 		glBegin(GL_LINE_LOOP);
 	}
@@ -186,6 +175,7 @@ void	Triangle::DrawTriangle(const int64_t	maxHeight,
 	drawVertex(move_vec_to_map_center(this->b, halfMapSize, midHeight));
 	line_gradation(maxHeight, minHeight, midHeight, this->c.z);
 	drawVertex(move_vec_to_map_center(this->c, halfMapSize, midHeight));
+
 	glEnd();
 }
 
@@ -208,7 +198,6 @@ bool	Triangle::operator==(const Triangle &triangle) const
 	return (this->a == triangle.a) && 
 		   (this->b == triangle.b) &&
 		   (this->c == triangle.c) &&
-		   (this->intersectionWithMidHeight == this->intersectionWithMidHeight) &&
 		   (this->tempVertexFlg == triangle.tempVertexFlg);
 }
 
@@ -221,7 +210,6 @@ Triangle&	Triangle::operator=(const Triangle &triangle)
 		this->c = triangle.c;
 		this->n = triangle.n;
 		this->circumcircle = triangle.circumcircle;
-		this->intersectionWithMidHeight = this->intersectionWithMidHeight;
 		this->tempVertexFlg = triangle.tempVertexFlg;
 	}
 	return *this;

@@ -99,12 +99,16 @@ void	line_gradation(const int64_t	maxHeight,
 	if (height <= midHeight)
 	{
 		ratio = height - minHeight / (midHeight - minHeight);
-		glColor3f(0.0, ratio, 1 - ratio);
+		glColor3f(0.0f, ratio, 1.0f - ratio);
+	}
+	else if (height <= maxHeight)
+	{
+		ratio = height - midHeight / (maxHeight - midHeight);
+		glColor3f(ratio, 1.0f - ratio, 0.0f);
 	}
 	else
 	{
-		ratio = height - midHeight / (maxHeight - midHeight);
-		glColor3f(ratio, 1 - ratio, 0.0);
+		glColor3f(1.0f , 1.0f, 1.0f);
 	}
 }
 

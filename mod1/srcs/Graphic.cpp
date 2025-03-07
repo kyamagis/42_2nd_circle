@@ -106,16 +106,12 @@ void	RenderingAlgorithm()
 	// std::cout << "RenderingAlgorithm " << g_data.radY++ << std::endl;
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
-	
-	if (g_data.ts.size() < g_data.i)
-	{
-		g_data.i = g_data.ts.size();
-	}
-	if (g_data.visibleBucketsFlg)
-	{
-		g_data.mps->DrawDisFromWall(g_data.halfMapSize, g_data.midHeight);
-	}
-	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
+
+	// if (g_data.visibleBucketsFlg)
+	// {
+	// 	g_data.mps->DrawDisFromWall(g_data.halfMapSize, g_data.midHeight);
+	// }
+	// g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
@@ -213,7 +209,10 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.lineFlg = !g_data.lineFlg;
 			break;
 		case 'n':
-			++g_data.i;
+			if (g_data.i + 1 < g_data.ts.size())
+			{
+				++g_data.i;
+			} 
 			std::cout << "i: " << g_data.i << g_data.ts[g_data.i] << std::endl;
 			break;
 		case 'p':
@@ -319,7 +318,7 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 								 const int64_t minHeight)
 {
 	g_data.ts = ts;
-	g_data.mps = new MPS(mapSize, ts);
+	// g_data.mps = new MPS(mapSize, ts);
 	g_data.mapSize[X] = mapSize[X];
 	g_data.mapSize[Y] = mapSize[Y];
 	g_data.mapSize[Z] = mapSize[Z];
@@ -334,14 +333,6 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.radX = 5.0 * M_PI / 12;
 	g_data.radY = 0;
 	g_data.radZ = 0;
-	g_data.ts.push_back({Vec(0,0,-EPS), 
-						 Vec(0,g_data.mapSize[Y] - 1,-EPS), 
-						 Vec(g_data.mapSize[X] - 1,0,-EPS), 
-						 false});
-	g_data.ts.push_back({Vec(g_data.mapSize[X] - 1,g_data.mapSize[Y] - 1,-EPS), 
-						 Vec(0,g_data.mapSize[Y] - 1,-EPS), 
-						 Vec(g_data.mapSize[X] - 1,0,-EPS), 
-						 false});
 	g_data.i = g_data.ts.size();
 	g_data.count = 0;
 	g_data.scaling = SCALING;

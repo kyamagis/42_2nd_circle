@@ -133,62 +133,119 @@ void	DT::_EraseTempTriangles(void)
 	}
 }
 
-void	DT::_MakeMap(int64_t **map)
+void	DT::_AddBottom(void)
 {
-	size_t	i = 0;
-	size_t	j = 0;
-	size_t	searchedI = 0;
-	size_t	total = this->_mapSize[X] * this->_mapSize[Y];
+	Vec	vertexA(0,0,-EPS);
+	Vec	vertexB(0, this->_mapSize[Y] - 1,-EPS);
+	Vec	vertexC(this->_mapSize[X] - 1,0,-EPS);
 
-	for (size_t	x = 0; x < this->_mapSize[X]; ++x)
-	{
-		for (size_t	y = 0; y < this->_mapSize[Y]; ++y)
-		{
-			if (this->_triangles[i].InternalAndExternalJudgments2d(Vec(x, y, 0)))
-			{
-				map[x][y] = this->_triangles[i].FindZ(x, y);
-			}
-			else
-			{
-				searchedI = i;
-				for (i = 0; i < this->_triangles.size(); ++i)
-				{
-					if (i == searchedI)
-					{
-						continue;
-					}
-					if (this->_triangles[i].InternalAndExternalJudgments2d(Vec(x, y, 0)))
-					{
-						map[x][y] = this->_triangles[i].FindZ(x, y);
-						break;
-					}
-	
-				}
-			}
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false});
+	this->_triangles.back().CalcNormalVector();
 
-			// for (i = 0; i < this->_triangles.size(); ++i)
-			// {
-			// 	if (this->_triangles[i].InternalAndExternalJudgments(Vec(x, y, 0)))
-			// 	{
-			// 		map[x][y] = this->_triangles[i].FindZ(x, y);
-			// 		break;
-			// 	}
+	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1,-EPS);
 
-			// }
-
-			std::cout << std::fixed << std::setprecision(1) 
-				  << double(j) /total * 100
-				  << " %\r" << std::flush;
-			++j;
-		}
-	}
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false});
+	this->_triangles.back().CalcNormalVector();
 }
 
-void	DT::Calculation(int64_t **map)
+void	DT::_AddTop(void)
 {
-	this->Calculation();
+	Vec	vertexA(0, 0,this->_mapSize[Z] - 1);
+	Vec	vertexB(0, this->_mapSize[Y] - 1,this->_mapSize[Z] - 1);
+	Vec	vertexC(this->_mapSize[X] - 1, 0,this->_mapSize[Z] - 1);
 
-	this->_MakeMap(map);
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+
+	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1,this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+}
+
+
+void	DT::_AddLeftSide(void)
+{
+	Vec	vertexA(0, 0, 0);
+	Vec	vertexB(0, this->_mapSize[Y] - 1, 0);
+	Vec	vertexC(0, 0, this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+
+	std::cout << this->_triangles.back().n << std::endl;
+
+	vertexA = Vec(0, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+}
+
+void	DT::_AddRightSide(void)
+{
+	Vec	vertexA(this->_mapSize[X] - 1, 0, 0);
+	Vec	vertexB(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, 0);
+	Vec	vertexC(this->_mapSize[X] - 1, 0, this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+
+	std::cout << this->_triangles.back().n << std::endl;
+
+	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+}
+
+void	DT::_AddDeepInTheFront(void)
+{
+	Vec	vertexA(0, 0, 0);
+	Vec	vertexB(this->_mapSize[X] - 1, 0, 0);
+	Vec	vertexC(0, 0, this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+
+	std::cout << this->_triangles.back().n << std::endl;
+
+	vertexA = Vec(this->_mapSize[X] - 1, 0, this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+}
+
+void	DT::_AddFront(void)
+{
+	Vec	vertexA(0, this->_mapSize[Y] - 1, 0);
+	Vec	vertexB(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, 0);
+	Vec	vertexC(0, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+
+	std::cout << this->_triangles.back().n << std::endl;
+
+	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
+
+	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
+	this->_triangles.back().CalcNormalVector();
+}
+
+void	DT::_AddCube(void)
+{
+	this->_AddBottom();
+	this->_AddTop();
+	this->_AddLeftSide();
+	this->_AddRightSide();
+	this->_AddFront();
+	this->_AddDeepInTheFront();
+	
+
+	std::cout << this->_triangles.back().n << std::endl;
+
+
+	std::cout << this->_mapSize[Y] - 1 << " " << this->_mapSize[Z] - 1 << std::endl;
 }
 
 std::deque<Triangle>	DT::Calculation(void)
@@ -207,6 +264,7 @@ std::deque<Triangle>	DT::Calculation(void)
 	std::cout <<  std::endl << "Triangulation Done" << std::endl;
 
 	this->_EraseTempTriangles();
+	this->_AddCube();
 	return this->_triangles;
 }
 
