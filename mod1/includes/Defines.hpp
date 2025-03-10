@@ -28,7 +28,9 @@
 #define	NUM_OF_BUCKETS
 #define InvisibleSpace (2.0 * BUCKET_LENGTH)
 // #define DELTA_TIME 0.0005
-#define DELTA_TIME 1
+
+#define DELTA_TIME 1.0
+#define ONE_SECOUD 1.0
 
 #define X 0
 #define Y 1

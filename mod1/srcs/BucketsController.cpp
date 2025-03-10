@@ -64,6 +64,10 @@ void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
+		if (ps[i].validFlag == false)
+		{
+			continue;
+		}
 		bucketX = size_t(ps[i].center.x / BUCKET_LENGTH);
 		bucketY = size_t(ps[i].center.y / BUCKET_LENGTH);
 		bucketZ = size_t(ps[i].center.z / BUCKET_LENGTH);
@@ -84,24 +88,19 @@ void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 
 void	BC::_CalcBucketsPos(const size_t i)
 {
-	size_t	bucketX;
-	size_t	bucketY;
-	size_t	bucketZ;
 	size_t	bucketXY;
 
-	bucketZ = i / this->_columnMultiplDepth;
-	this->buckets[i].position.z = BUCKET_LENGTH * bucketZ;
+	this->buckets[i].bucketZ = i / this->_columnMultiplDepth;
+	this->buckets[i].position.z = BUCKET_LENGTH * this->buckets[i].bucketZ;
 
 	bucketXY = i % this->_columnMultiplDepth;	
-	bucketY = bucketXY / this->bucketColumn;
-	this->buckets[i].position.y = BUCKET_LENGTH * bucketY;
+	this->buckets[i].bucketY = bucketXY / this->bucketColumn;
+	this->buckets[i].position.y = BUCKET_LENGTH * this->buckets[i].bucketY;
 	
-	bucketX = bucketXY % this->bucketColumn;
-	this->buckets[i].position.x = BUCKET_LENGTH * bucketX;
+	this->buckets[i].bucketX = bucketXY % this->bucketColumn;
+	this->buckets[i].position.x = BUCKET_LENGTH * this->buckets[i].bucketX;
 
-	this->buckets[i].position.x += BUCKET_LENGTH / 2.0;
-	this->buckets[i].position.y += BUCKET_LENGTH / 2.0;
-	this->buckets[i].position.z += BUCKET_LENGTH / 2.0;
+	this->buckets[i].center += this->buckets[i].position +  BUCKET_LENGTH / 2.0;
 }
 
 void	BC::_MakeBuckets(const std::deque<Particle> &ps)
@@ -113,11 +112,12 @@ void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
 		this->buckets[i].firstPrtIdx     = UINT64_MAX;
-		this->buckets[i].wallWeight      = 0.0;
+		this->buckets[i].disFromWall     = E_RADIUS + EPS;
+		this->buckets[i].bucketIdx       = i;
 		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
 
 		this->_CalcBucketsPos(i);
-		
+	
 		if (i < NUM_OF_PARTICLES)
 		{
 			this->particleNextIdxs[i] = UINT64_MAX;
@@ -264,23 +264,20 @@ double	BC::_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx)
 	return min_of_3_elm(disFromVertex, disFromSide, disFromTriangle);
 }
 
-double	BC::_CalcWallWeight(const double disFromWall)
+bool	BC::_IsOutOfWallWeightRange(const double disFromWall)
 {
-	if (disFromWall < 0.0)
-	{
-		Print::Err("_CalcWallWeight: disFromWall");
-	}
-	if (this->_weights.back().x < disFromWall + EPS)
-	{
-		return 0.0;
-	}
+	return this->_weights.back().x < disFromWall + EPS;
+}
+
+double	BC::_InterpolateWallWeight(const double interpolatedDis)
+{
 	Vec nextWeight;
 	for (size_t	i = 0; i + 1 < this->_weights.size(); ++i)
 	{
 		nextWeight = this->_weights[i + 1];
-		if (disFromWall <= nextWeight.x)
+		if (interpolatedDis <= nextWeight.x)
 		{
-			return	this->_weights[i].Interpolate2d(nextWeight, disFromWall);
+			return	this->_weights[i].Interpolate2d(nextWeight, interpolatedDis);
 		}
 	}
 	Print::Err("_CalcWallWeight: weight");
@@ -298,17 +295,15 @@ void	BC::_CalcDistanceFromWall(const Triangle &t)
 	size_t	bucketIdx;
 
 	double	shortestDistance;
-	double	wallWeight;
 	
 	for (double	i = minCrd.x; size_t(i) <= size_t(maxCrd.x);) {
 	for (double	j = minCrd.y; size_t(j) <= size_t(maxCrd.y);) {
 	for (double	k = minCrd.z; size_t(k) <= size_t(maxCrd.z);) {
 				bucketIdx        = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
 				shortestDistance = sqrt(this->_CalcShortestDistanceSQ(t, bucketIdx));
-				wallWeight 	     = this->_CalcWallWeight(shortestDistance);
-				if (this->buckets[bucketIdx].wallWeight < wallWeight)
+				if (shortestDistance < this->buckets[bucketIdx].disFromWall)
 				{
-					this->buckets[bucketIdx].wallWeight = wallWeight;
+					this->buckets[bucketIdx].disFromWall = shortestDistance;
 				}
 				k += BUCKET_LENGTH;
 				bucketZ = k / BUCKET_LENGTH;
@@ -344,19 +339,19 @@ void	BC::DrawDisFromWall(const Vec &halfMapSize, const double midHeight)
 {
 	glPointSize(2.0f);
 	glBegin(GL_POINTS);
-	double	maxWeight = this->_weights[0].y;
-	double	midWeight = maxWeight / 2.0;
+	const double	maxDis = E_RADIUS;
+	const double	mixDis = maxDis / 2.0;
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		if (0.0 < this->buckets[i].wallWeight)
+		if (0.0 < this->buckets[i].disFromWall)
 		{
-			if (this->buckets[i].wallWeight < midWeight)
+			if (this->buckets[i].disFromWall < mixDis)
 			{
-				glColor3f(0, this->buckets[i].wallWeight / midWeight, 1 - this->buckets[i].wallWeight / midWeight);
+				glColor3f(0, this->buckets[i].disFromWall / mixDis, 1 - this->buckets[i].disFromWall / mixDis);
 			}
 			else
 			{
-				glColor3f(this->buckets[i].wallWeight / midWeight, 1 - this->buckets[i].wallWeight / midWeight, 0);
+				glColor3f(this->buckets[i].disFromWall / mixDis, 1 - this->buckets[i].disFromWall / mixDis, 0);
 			}
 			drawVertex(move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight));
 		}

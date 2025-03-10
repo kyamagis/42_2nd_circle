@@ -15,9 +15,7 @@ class TerrestrialSimulation
 		int64_t			_maxHeight;
 		int64_t			_minHeight;
 
-		std::deque<Triangle>	_CalcWeight(const int argc, const char** argv);
 		bool	_ReadMapData(const std::string &fileName);
-
 		void	_DrawSimulation(const int argc, 
 								const char** argv, 
 								const std::deque<Triangle> &ts);

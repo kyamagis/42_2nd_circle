@@ -58,6 +58,7 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 				ps[pIdx].center.z = RADIUS + zIdx * DIAMETER;
 				ps[pIdx].r = RADIUS;
 				ps[pIdx].velocity = 0.0;
+				ps[pIdx].acceleration = 0.0;
 			}
 		}
 	}
@@ -134,30 +135,39 @@ size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 	return coor;
 }
 
+// double	MPS::_CalcWallWeight(const double disFromWall)
+// {
+// 	if (disFromWall < 0.0)
+// 	{
+// 		Print::Err("_CalcWallWeight: disFromWall");
+// 	}
+// 	if (this->_IsOutOfWallWeightRange(disFromWall))
+// 	{
+// 		return 0.0;
+// 	}
+
+// 	const double interpolatedDis;
+// 	return this->_InterpolateWallWeight(interpolatedDis);
+// }
+
 void	MPS::_CalcOneOnOneViscosity(const Vec &oneselfVel, 
 									Vec &acceleration, 
-									const size_t bucketIdx, 
 									const size_t particleIdx,
 									const double distanceSQP)
 {
-	double	distanceP;
-	double	wallWeight;
-	double	w;
-
 	if (distanceSQP < E_RADIUS_SQ) 
 	{
-		if (distanceSQP <= 0.0)
+		double	distanceP = sqrt(distanceSQP);
+		double	w;
+		if (distanceSQP < 0.1)
 		{
-			std::cout << "distanceSQP" <<" " << distanceSQP << std::endl;
+			w = WEIGHT(0.1);
 		}
-		distanceP = sqrt(distanceSQP);
-		w = WEIGHT(distanceP);
+		else
+		{
+			w = WEIGHT(distanceP);
+		}
 		acceleration += (this->ps[particleIdx].velocity - oneselfVel) * w;
-	}
-	wallWeight  = this->buckets[bucketIdx].wallWeight;
-	if (0.0 < wallWeight)
-	{
-		acceleration += (oneselfVel * -2.0) * wallWeight;
 	}
 }
 
@@ -175,7 +185,14 @@ void	MPS::_CalcOneOnOneCollision(const Vec &oneselfPos,
 
 		if (closing < 0.0)
 		{
-			closing *= REPULSION_COEFFICIENT / 2 * distanceSQP;
+			if (distanceSQP < 0.1)
+			{
+				closing *= REPULSION_COEFFICIENT / (2 * 0.1);
+			}
+			else
+			{
+				closing *= REPULSION_COEFFICIENT / (2 * distanceSQP);
+			}
 			acceleration += dr * closing;	
 		}
 	}
@@ -222,7 +239,6 @@ void	MPS::_SwitchOperation(const e_operation e,
 								const Vec &oneselfPos,
 								const Vec &oneselfVel, 
 								Vec &acceleration, 
-								const size_t bucketIdx, 
 								const size_t particleIdx,
 								double &ni)
 {
@@ -233,7 +249,7 @@ void	MPS::_SwitchOperation(const e_operation e,
 	{
 		case e_VISCOSITY:
 			this->_CalcOneOnOneViscosity(oneselfVel, acceleration, 
-										bucketIdx, particleIdx,	distanceSQP);
+										particleIdx, distanceSQP);
 			break;
 		case e_COLLISION:
 			this->_CalcOneOnOneCollision(oneselfPos, oneselfVel, acceleration, 
@@ -249,6 +265,125 @@ void	MPS::_SwitchOperation(const e_operation e,
 			break;
 			this->_CalcOneOnOnePressureGradient(minPressure, acceleration, 
 												particleIdx, dr, distanceSQP);
+		default:
+			break;
+	}
+}
+
+double	MPS::_SearchNeighborBDisFromWall(size_t currentBX,
+									size_t currentBY,
+									size_t currentBZ,
+									const unsigned char cmp)
+{
+	switch (cmp)
+	{
+		case 'x':
+			currentBX += 1;
+			break;
+		case 'y':
+			currentBY += 1;
+			break;
+		case 'z':
+			currentBZ += 1;
+			break;
+		default:
+		break;
+	}
+	const size_t	neighborBIdx = this->_CalcBucketIdx(currentBX, currentBY, currentBZ);
+	return this->buckets[neighborBIdx].disFromWall;
+}
+
+bool	MPS::_StoreEachCmpOfNeighborBDisFromWall(const size_t currentBX,
+											const size_t currentBY,
+											const size_t currentBZ,
+											const unsigned char cmp,
+											double &neighborBDisFromWall)
+{
+	size_t	currentBcmp;
+	size_t	maxRCD;
+
+	switch (cmp)
+	{
+		case 'x':
+			currentBcmp = currentBX;
+			maxRCD = this->bucketRow;
+			break;
+		case 'y':
+			currentBcmp = currentBY;
+			maxRCD = this->bucketColumn;
+			break;
+		case 'z':
+			currentBcmp = currentBZ;
+			maxRCD = this->bucketDepth;
+			break;
+		default:
+			break;
+	}
+
+	if (currentBcmp < maxRCD)
+	{
+		neighborBDisFromWall = 
+		this->_SearchNeighborBDisFromWall(currentBX, currentBY, currentBZ,
+											  cmp);
+	}
+	else
+	{
+		neighborBDisFromWall = E_RADIUS + EPS;
+	}
+
+	return currentBcmp < maxRCD;
+}
+
+void	MPS::_InterpolateDisformWall(const size_t oneself,
+									const size_t currentBX,
+									const size_t currentBY,
+									const size_t currentBZ)
+	{
+	const size_t	currentBIdx = this->_CalcBucketIdx(currentBX, currentBY, currentBZ);
+	const size_t	disFromWall_000 = this->buckets[currentBIdx].disFromWall;
+
+	const Vec	oneselfPos(this->ps[oneself].center);
+	double disFromWall_100;
+	double disFromWall_110;
+	double disFromWall_101;
+	double disFromWall_111;
+
+
+	this->_StoreEachCmpOfNeighborBDisFromWall(currentBX, currentBY, currentBZ, 'x', neighborBDisFromWall);
+
+	this->_StoreEachCmpOfNeighborBDisFromWall(currentBX, currentBY, currentBZ, 'y', neighborBDisFromWall);
+
+	this->_StoreEachCmpOfNeighborBDisFromWall(currentBX, currentBY, currentBZ, 'z', neighborBDisFromWall);
+	
+	const ru = ;
+}
+
+void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
+										 const size_t currentBX,
+										 const size_t currentBY,
+										 const size_t currentBZ, 
+										 const Vec &acceleration, const double ni)
+{
+	
+	switch (e)
+	{
+		case e_VISCOSITY:
+			// double	wallWeight  = this->buckets[bucketIdx].disFromWall;
+			// if (0.0 < wallWeight)
+			// {
+			// 	acceleration += (oneselfVel * -2.0) * wallWeight;
+			// }
+			break;
+		case e_COLLISION:
+			this->ps[oneself].acceleration = acceleration;
+			break;
+		case e_PRESSURE:
+			this->ps[oneself].pressure = (this->n0 < ni) * (ni - this->n0) * 
+										 this->_cffPress * DENSITY_OF_PARTICLES;
+			break;
+		case e_PGRADIENT2:
+			this->ps[oneself].acceleration = acceleration * 1 / DENSITY_OF_PARTICLES * this->_cffPGTerm;
+			break;
 		default:
 			break;
 	}
@@ -285,7 +420,7 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 
 	const Vec	oneselfPos(this->ps[oneself].center);
 	const Vec	oneselfVel(this->ps[oneself].velocity);
-	Vec	acceleration;
+	Vec	acceleration(0.0);
 
 	if (e == e_COLLISION)
 	{
@@ -305,10 +440,25 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 
 	double	ni = 0.0;
 
-	for (size_t	otherBX = otherBEdgeX; otherBX <= maxBX ; ++otherBX){
-	for (size_t	otherBY = otherBEdgeY; otherBY <= maxBY ; ++otherBY){
-	for (size_t	otherBZ = otherBEdgeZ; otherBZ <= maxBZ ; ++otherBZ){
+	for (size_t	otherBX = otherBEdgeX; otherBX < maxBX ; ++otherBX){
+	for (size_t	otherBY = otherBEdgeY; otherBY < maxBY ; ++otherBY){
+	for (size_t	otherBZ = otherBEdgeZ; otherBZ < maxBZ ; ++otherBZ){
 		bucketIdx   = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
+		if (oneself == 2)
+		{
+			switch (e)
+			{
+				case e_VISCOSITY:
+					std::cout << "e_VISCOSITY" << " ";
+					break;
+				case e_COLLISION:
+					std::cout << "e_COLLISION" << " ";
+					break;
+				default:
+					break;
+			}
+			Print::OutWords(this->numOfBuckets, bucketIdx, this->ps[oneself].center, otherBX, otherBY, otherBZ);
+		}
 		particleIdx = this->buckets[bucketIdx].firstPrtIdx;
 		if (particleIdx == UINT64_MAX)
 		{
@@ -320,7 +470,7 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 			{
 				
 				this->_SwitchOperation(e, minPressure, oneselfPos, oneselfVel, 
-									   acceleration, bucketIdx, particleIdx, ni);
+									   acceleration,  particleIdx, ni);
 			}
 			particleIdx = this->particleNextIdxs[particleIdx];
 			if (particleIdx == UINT64_MAX)
@@ -332,25 +482,44 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 	this->_SwitchAssignmentOfAcceleration(oneself, e, acceleration, ni);
 }
 
+bool	MPS::_CheckOutOfRange(const Vec &pos)
+{
+	if (pos.x < 0.0 || 
+		pos.y < 0.0 || 
+		pos.z < 0.0)
+	{
+		return false;
+	}
+	if (this->visibleMapSize.x - 1 < pos.x || 
+		this->visibleMapSize.y - 1 < pos.y || 
+		this->visibleMapSize.z - 1 < pos.z)
+	{
+		return false;
+	}
+	return true;
+}
+
 void	MPS::_UpdateVPA1(void)
 {
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
-		if (!this->ps[i].validFlag)
+		if (this->ps[i].validFlag)
 		{
-			continue;
-		}
-		this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
-		this->ps[i].center += this->ps[i].velocity * DELTA_TIME;
+			// if (i == 2)
+			// {
+			// 	Print::OutWords("_UpdateVPA1", this->ps[i]);
+			// }
+			this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
+			this->ps[i].center += this->ps[i].velocity * DELTA_TIME;
+			// if (i == 2)
+			// {
+			// 	Print::OutWords("_UpdateVPA1", this->ps[i], this->ps[i].acceleration.x);
+			// }
 
-		if (this->ps[i].center.x < 0.0 || 
-			this->ps[i].center.y < 0.0 || 
-			this->ps[i].center.z < 0.0)
-		{
-			this->ps[i].validFlag = false;
+			this->ps[i].validFlag = this->_CheckOutOfRange(this->ps[i].center);
+			this->ps[i].acceleration = 0.0;
 		}
-
-		this->ps[i].acceleration = 0.0;
+		
 	}
 	// std::cout << this->ps[0] << std::endl;
 }
@@ -359,21 +528,14 @@ void	MPS::_UpdateVPA2(void)
 {
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
-		if (!this->ps[i].validFlag)
+		if (this->ps[i].validFlag)
 		{
-			continue;
-		}
-		this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
-		this->ps[i].center += this->ps[i].acceleration * DELTA_TIME * DELTA_TIME;
+			this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
+			this->ps[i].center   += this->ps[i].acceleration * DELTA_TIME * DELTA_TIME;
 
-		if (this->ps[i].center.x < 0.0 || 
-			this->ps[i].center.y < 0.0 || 
-			this->ps[i].center.z < 0.0)
-		{
-			this->ps[i].validFlag = false;
+			this->ps[i].validFlag = this->_CheckOutOfRange(this->ps[i].center);
+			this->ps[i].acceleration = 0.0;
 		}
-
-		this->ps[i].acceleration = 0.0;
 	}
 	// std::cout << this->ps[0] << std::endl;
 }
@@ -441,10 +603,11 @@ void	MPS::NavierStokesEquations(void)
 	this->_UpdateBuckets(this->ps);
 	this->_ViscosityAndGravityTerm();
 	this->_UpdateVPA1();
-	this->_CalcParticlesCollision();
-	this->_CalcParticlesPressure();
-	this->_PressureGradientTerm();
-	this->_UpdateVPA2();
+	// this->_CalcParticlesCollision();
+	// this->_CalcParticlesPressure();
+	// this->_PressureGradientTerm();
+	// this->_UpdateVPA2();
+
 	// this->_CalcParticlesPressure();
 	// for (size_t i = 0; i < NUM_OF_PARTICLES; ++i)
 	// {

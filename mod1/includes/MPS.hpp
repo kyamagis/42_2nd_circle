@@ -32,11 +32,11 @@ class MPS: public BC
 		void	_InitTermCoefficient(void);
 		void	_SetParameter(void);
 
-		void	_UpdateVPA1(void);
-		void	_UpdateVPA2(void);
+		bool	_CheckOutOfRange(const Vec &pos);
+		
+		double	_CalcWallWeight(const double disFromWall);
 		void	_CalcOneOnOneViscosity(const Vec &oneselfVel, 
 										Vec &acceleration, 
-										const size_t bucketIdx, 
 										const size_t particleIdx,
 										const double distanceSQP);
 		void	_CalcOneOnOneCollision(const Vec &oneselfPos,
@@ -57,17 +57,37 @@ class MPS: public BC
 								const Vec &oneselfPos,
 								const Vec &oneselfVel, 
 								Vec &acceleration, 
-								const size_t bucketIdx, 
 								const size_t particleIdx,
 								double &ni);
+	
+		double	_SearchNeighborBDisFromWall(size_t currentBX,
+											size_t currentBY,
+											size_t currentBZ,
+											const unsigned char cmp);
+		bool	_StoreEachCmpOfNeighborBDisFromWall(const size_t currentBX, 
+													const size_t currentBY, 
+													const size_t currentBZ,
+													const unsigned char cmp,
+													double &neighborBDisFromWall);
+		void	_InterpolateDisformWall(const size_t oneself,
+										const size_t currentBX,
+										const size_t currentBY,
+										const size_t currentBZ);
+		void	_SwitchContributionFromWall(const size_t oneself, const e_operation e, 
+											const size_t currentBX,
+											const size_t currentBY,
+											const size_t currentBZ, 
+											const Vec &acceleration, const double ni);
 		void	_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operation e, 
 												const Vec &acceleration, const double ni);
-		void	_SearchNeighborParticles(const size_t oneself, const e_operation e, double &minPressure);
 
+		void	_SearchNeighborParticles(const size_t oneself, const e_operation e, double &minPressure);
 		void	_ViscosityAndGravityTerm(void);
 		void	_CalcParticlesCollision(void);
 		void	_CalcParticlesPressure(void);
 		void	_PressureGradientTerm(void);
+		void	_UpdateVPA1(void);
+		void	_UpdateVPA2(void);
 
 	public:
 		std::deque<Particle> ps;

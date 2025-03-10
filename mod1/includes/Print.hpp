@@ -18,7 +18,7 @@ class Print
 		static bool OutWords(T first, Args... rest) 
 		{
 			std::cout << first << " ";
-			print_words(rest...);
+			OutWords(rest...);
 			return true;
 		}
 		static bool	Out(const std::string &str)

@@ -11,8 +11,13 @@
 typedef struct s_bucket
 {
 	size_t	firstPrtIdx; // first particle index
-	double	wallWeight;
+	double	disFromWall;
 	Vec		position;
+	Vec		center;
+	// size_t	bucketX;
+	// size_t	bucketY;
+	// size_t	bucketZ;
+	// size_t	bucketIdx;
 } t_bucket;
 
 class BC
@@ -43,16 +48,18 @@ class BC
 		
 		double  _CalcDistanceFromTriangle(const Triangle &t, const size_t bucketIdx);
 		
-		double	_CalcWallWeight(const double disFromWall);
 		double	_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx);
 		void	_CalcDistanceFromWall(const Triangle &t);
-
-	protected:
+		
+		protected:
 		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
 		size_t	_CalcBucketIdx(const Vec &v);
 		void	_MakeBuckets(const std::deque<Particle> &ps);
 		void	_UpdateBuckets(const std::deque<Particle> &ps);
 
+		bool	_IsOutOfWallWeightRange(const double disFromWall);
+		double	_InterpolateWallWeight(const double interpolatedDis);
+		
 		void	_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts);
 
 	public:

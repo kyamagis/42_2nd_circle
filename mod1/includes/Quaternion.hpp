@@ -10,7 +10,7 @@
 class Quaternion
 {
 	private:
-	
+
 	public:
 		double	w;
 		double	x;

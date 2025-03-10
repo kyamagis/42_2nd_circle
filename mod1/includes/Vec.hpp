@@ -17,6 +17,7 @@ class Vec
 
 		Vec();
 		Vec(const double cX, const double cY, const double cZ);
+		Vec(const double num);
 		Vec(const Vec &vec);
 		~Vec();
 

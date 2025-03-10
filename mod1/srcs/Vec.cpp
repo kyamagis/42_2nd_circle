@@ -11,6 +11,10 @@ Vec::Vec(const double cX, const double cY, const double cZ):x(cX), y(cY), z(cZ)
 {
 
 }
+Vec::Vec(const double num):x(num), y(num), z(num)
+{
+
+}
 
 Vec::Vec(const Vec &vec)
 {

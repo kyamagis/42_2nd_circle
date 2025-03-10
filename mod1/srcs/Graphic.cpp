@@ -72,10 +72,10 @@ void	RenderingAlgorithm()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
 
-	// if (g_data.visibleBucketsFlg)
-	// {
-	// 	g_data.mps->DrawDisFromWall(g_data.halfMapSize, g_data.midHeight);
-	// }
+	if (g_data.visibleBucketsFlg)
+	{
+		g_data.mps->DrawDisFromWall(g_data.halfMapSize, g_data.midHeight);
+	}
 	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
