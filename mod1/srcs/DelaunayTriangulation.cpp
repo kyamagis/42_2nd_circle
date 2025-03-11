@@ -128,6 +128,10 @@ void	DT::_EraseTempTriangles(void)
 		else
 		{
 			(*itr).CalcNormalVector();
+			if ((*itr).n.z < 0.0)
+			{
+				(*itr).n *= -1.0;
+			}
 			++itr;
 		}
 	}
@@ -141,11 +145,13 @@ void	DT::_AddBottom(void)
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.z = abs(this->_triangles.back().n.z);
 
 	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1,-EPS);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.z = abs(this->_triangles.back().n.z);
 }
 
 void	DT::_AddTop(void)
@@ -156,11 +162,13 @@ void	DT::_AddTop(void)
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.z = -abs(this->_triangles.back().n.z);
 
 	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1,this->_mapSize[Z] - 1);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.z = -abs(this->_triangles.back().n.z);
 }
 
 
@@ -172,11 +180,13 @@ void	DT::_AddLeftSide(void)
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.x = abs(this->_triangles.back().n.x);
 
 	vertexA = Vec(0, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.x = abs(this->_triangles.back().n.x);
 }
 
 void	DT::_AddRightSide(void)
@@ -187,11 +197,13 @@ void	DT::_AddRightSide(void)
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.x = -abs(this->_triangles.back().n.x);
 
 	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.x = -abs(this->_triangles.back().n.x);
 }
 
 void	DT::_AddDeepInTheFront(void)
@@ -202,11 +214,13 @@ void	DT::_AddDeepInTheFront(void)
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.y = abs(this->_triangles.back().n.y);
 
 	vertexA = Vec(this->_mapSize[X] - 1, 0, this->_mapSize[Z] - 1);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.y = abs(this->_triangles.back().n.y);
 }
 
 void	DT::_AddFront(void)
@@ -217,11 +231,13 @@ void	DT::_AddFront(void)
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.y = -abs(this->_triangles.back().n.y);
 
 	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
 
 	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
 	this->_triangles.back().CalcNormalVector();
+	this->_triangles.back().n.y = -abs(this->_triangles.back().n.y);
 }
 
 void	DT::_AddCube(void)

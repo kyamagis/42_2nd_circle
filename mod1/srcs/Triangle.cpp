@@ -135,6 +135,7 @@ bool	Triangle::InternalAndExternalJudgments3d(const Vec &point) const
 void	Triangle::CalcNormalVector()
 {
 	this->n = (this->b - this->a).CrossProduct3d(this->c - this->a);
+	this->g = (this->a + this->b + this->c) / 3.0;
 }
 
 double	Triangle::FindZ(const double pX, const double pY)
@@ -149,6 +150,15 @@ void	Triangle::DrawFrame(const double midHeight, const Vec &halfMapSize)
 	drawVertex(move_vec_to_map_center(this->b, halfMapSize, midHeight));
 	drawVertex(move_vec_to_map_center(this->a, halfMapSize, midHeight));
 	drawVertex(move_vec_to_map_center(this->c, halfMapSize, midHeight));
+	glEnd();
+}
+
+void	Triangle::DrawNormalVector(const double midHeight, const Vec &halfMapSize)
+{
+	glBegin(GL_LINES);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	drawVertex(move_vec_to_map_center(this->g, halfMapSize, midHeight));
+	drawVertex(move_vec_to_map_center(this->g + (this->n / this->n.Magnitude3d()) * 10000, halfMapSize, midHeight));
 	glEnd();
 }
 
@@ -207,6 +217,7 @@ Triangle&	Triangle::operator=(const Triangle &triangle)
 		this->b = triangle.b;
 		this->c = triangle.c;
 		this->n = triangle.n;
+		this->g = triangle.g;
 		this->circumcircle = triangle.circumcircle;
 		this->tempVertexFlg = triangle.tempVertexFlg;
 	}

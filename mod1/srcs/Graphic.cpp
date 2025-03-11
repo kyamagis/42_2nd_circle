@@ -77,6 +77,7 @@ void	RenderingAlgorithm()
 		g_data.mps->DrawDisFromWall(g_data.halfMapSize, g_data.midHeight);
 	}
 	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
+	
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
@@ -85,6 +86,7 @@ void	RenderingAlgorithm()
 													g_data.halfMapSize, 
 													g_data.scaling, 100);
 		}
+		// g_data.ts[i].DrawNormalVector(g_data.midHeight, g_data.halfMapSize);
 		g_data.ts[i].DrawTriangle(g_data.maxHeight,
 									g_data.minHeight,
 									g_data.midHeight,

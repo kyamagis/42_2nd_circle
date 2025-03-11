@@ -275,13 +275,16 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 										 const size_t currentBZ, 
 										 Vec &acceleration, double &ni)
 {
-	const double distFromWall = 
+	const size_t	currentBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
+	const double	distFromWall = 
 	this->BC_InterpolateDistFromWall(this->ps[oneself].center, currentBX, currentBY, currentBZ);
 	if (E_RADIUS_SQ < distFromWall * distFromWall)
 	{
 		return ;
 	}
 	double	wallWeight;
+	Vec		nVector;
+	double	closing;
 	switch (e)
 	{
 		case e_VISCOSITY:
@@ -292,14 +295,19 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_COLLISION:
-			this->ps[oneself].acceleration = acceleration;
+			nVector = this->buckets[currentBIdx].n;
+			closing = this->ps[oneself].velocity.DotProduct3d(nVector);
+			if (closing < 0.0)
+			{
+				acceleration += nVector * REPULSION_COEFFICIENT * (-closing);
+			}
 			break;
 		case e_PRESSURE:
 			ni += this->_WallWeight(distFromWall);
 			break;
-		case e_PGRADIENT2:
-			this->ps[oneself].acceleration = acceleration * 1 / DENSITY_OF_PARTICLES * this->_cffPGTerm;
-			break;
+		// case e_PGRADIENT2:
+		// 	this->ps[oneself].acceleration = acceleration * 1 / DENSITY_OF_PARTICLES * this->_cffPGTerm;
+		// 	break;
 		default:
 			break;
 	}
@@ -359,7 +367,7 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 	for (size_t	otherBX = otherBEdgeX; otherBX < maxBX ; ++otherBX){
 	for (size_t	otherBY = otherBEdgeY; otherBY < maxBY ; ++otherBY){
 	for (size_t	otherBZ = otherBEdgeZ; otherBZ < maxBZ ; ++otherBZ){
-		bucketIdx   = this->_CalcBucketIdx(otherBX, otherBY, otherBZ);
+		bucketIdx   = this->BC_CalcBucketIdx(otherBX, otherBY, otherBZ);
 		if (oneself == 2)
 		{
 			switch (e)

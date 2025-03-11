@@ -14,6 +14,7 @@ typedef struct s_bucket
 	double	disFromWall;
 	Vec		position;
 	Vec		center;
+	Vec		n;
 	size_t	bucketX;
 	size_t	bucketY;
 	size_t	bucketZ;
@@ -66,8 +67,8 @@ class BC
 													double &neighborBDistFromWall);
 		
 	protected:
-		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
-		size_t	_CalcBucketIdx(const Vec &v);
+		size_t	BC_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
+		size_t	BC_CalcBucketIdx(const Vec &v);
 		void	_MakeBuckets(const std::deque<Particle> &ps);
 		void	_UpdateBuckets(const std::deque<Particle> &ps);
 

@@ -42,17 +42,7 @@ BC::~BC()
 	}
 }
 
-size_t	BC::_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketZ)
-{
-	return bucketX + 
-		   this->bucketColumn * bucketY + 
-		   this->_columnMultiplDepth * bucketZ;
-}
 
-size_t	BC::_CalcBucketIdx(const Vec &v)
-{
-	return this->_CalcBucketIdx(v.x, v.y, v.z);
-}
 
 void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 {
@@ -72,7 +62,7 @@ void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 		bucketY = size_t(ps[i].center.y / BUCKET_LENGTH);
 		bucketZ = size_t(ps[i].center.z / BUCKET_LENGTH);
 
-		bucketIdx = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
+		bucketIdx = this->BC_CalcBucketIdx(bucketX, bucketY, bucketZ);
 		nextIdx = this->_bucketLast[bucketIdx].firstPrtIdx;
 		this->_bucketLast[bucketIdx].firstPrtIdx = i;
 		if (nextIdx == UINT64_MAX)
@@ -281,10 +271,11 @@ void	BC::_CalcDistanceFromWall(const Triangle &t)
 	for (double	i = minCrd.x; size_t(i) <= size_t(maxCrd.x);) {
 	for (double	j = minCrd.y; size_t(j) <= size_t(maxCrd.y);) {
 	for (double	k = minCrd.z; size_t(k) <= size_t(maxCrd.z);) {
-				bucketIdx        = this->_CalcBucketIdx(bucketX, bucketY, bucketZ);
+				bucketIdx        = this->BC_CalcBucketIdx(bucketX, bucketY, bucketZ);
 				shortestDistance = sqrt(this->_CalcShortestDistanceSQ(t, bucketIdx));
 				if (shortestDistance < this->buckets[bucketIdx].disFromWall)
 				{
+					this->buckets[bucketIdx].n = t.n;
 					this->buckets[bucketIdx].disFromWall = shortestDistance;
 				}
 				k += BUCKET_LENGTH;
@@ -313,7 +304,7 @@ double	BC::_GetDistFromWall(const size_t currentBX,
 						 	const size_t currentBY,
 						 	const size_t currentBZ)
 {
-	const size_t	neighborBIdx = this->_CalcBucketIdx(currentBX, currentBY, currentBZ);
+	const size_t	neighborBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
 	return this->buckets[neighborBIdx].disFromWall;
 }
 
@@ -378,6 +369,18 @@ bool	BC::_StoreEachCmpOfNeighborBDistFromWall(const size_t currentBX,
 	}
 
 	return currentBcmp < maxRCD;
+}
+
+size_t	BC::BC_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketZ)
+{
+	return bucketX + 
+		   this->bucketColumn * bucketY + 
+		   this->_columnMultiplDepth * bucketZ;
+}
+
+size_t	BC::BC_CalcBucketIdx(const Vec &v)
+{
+	return this->BC_CalcBucketIdx(v.x, v.y, v.z);
 }
 
 bool	BC::BC_IsOutOfWallWeightRange(const double disFromWall)
