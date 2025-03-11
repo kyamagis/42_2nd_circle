@@ -135,6 +135,7 @@ bool	Triangle::InternalAndExternalJudgments3d(const Vec &point) const
 void	Triangle::CalcNormalVector()
 {
 	this->n = (this->b - this->a).CrossProduct3d(this->c - this->a);
+	this->n /= this->n.Magnitude3d();
 	this->g = (this->a + this->b + this->c) / 3.0;
 }
 
@@ -158,7 +159,7 @@ void	Triangle::DrawNormalVector(const double midHeight, const Vec &halfMapSize)
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 1.0f, 1.0f);
 	drawVertex(move_vec_to_map_center(this->g, halfMapSize, midHeight));
-	drawVertex(move_vec_to_map_center(this->g + (this->n / this->n.Magnitude3d()) * 10000, halfMapSize, midHeight));
+	drawVertex(move_vec_to_map_center(this->g + this->n * 10000, halfMapSize, midHeight));
 	glEnd();
 }
 

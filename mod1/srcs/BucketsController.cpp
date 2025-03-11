@@ -93,28 +93,7 @@ void	BC::_CalcBucketsPos(const size_t i)
 	this->buckets[i].center += this->buckets[i].position +  BUCKET_LENGTH / 2.0;
 }
 
-void	BC::_MakeBuckets(const std::deque<Particle> &ps)
-{
-	this->buckets           = new t_bucket[this->numOfBuckets];
-	this->_bucketLast       = new t_bucket[this->numOfBuckets];
-	this->particleNextIdxs  = new size_t[NUM_OF_PARTICLES];
 
-	for (size_t	i = 0; i < this->numOfBuckets; ++i)
-	{
-		this->buckets[i].firstPrtIdx     = UINT64_MAX;
-		this->buckets[i].disFromWall     = E_RADIUS + EPS;
-		// this->buckets[i].bucketIdx       = i;
-		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
-
-		this->_CalcBucketsPos(i);
-	
-		if (i < NUM_OF_PARTICLES)
-		{
-			this->particleNextIdxs[i] = UINT64_MAX;
-		}
-	}
-	this->_UpdateParticlesInBuckets(ps);
-}
 
 void	BC::_UpdateBuckets(const std::deque<Particle> &ps)
 {
@@ -231,8 +210,6 @@ double	BC::_CalcDistanceFromTriangle(const Triangle &t, const size_t bucketIdx)
 	
 	if (t.InternalAndExternalJudgments3d(projectivePoint))
 	{
-		// std::cout << apVec.DotProduct3d(t.n) << " " << t.n.MagnitudeSQ3d() << std::endl;
-		
 		return orientVec.MagnitudeSQ3d();
 	}
 	return 2.0 * BUCKET_LENGTH * 2.0 * BUCKET_LENGTH;
@@ -253,8 +230,6 @@ double	BC::_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx)
 
 	return min_of_3_elm(disFromVertex, disFromSide, disFromTriangle);
 }
-
-
 
 void	BC::_CalcDistanceFromWall(const Triangle &t)
 {
@@ -278,6 +253,12 @@ void	BC::_CalcDistanceFromWall(const Triangle &t)
 					this->buckets[bucketIdx].n = t.n;
 					this->buckets[bucketIdx].disFromWall = shortestDistance;
 				}
+				// else if (shortestDistance - EPS < this->buckets[bucketIdx].disFromWall &&
+				// 		 this->buckets[bucketIdx].disFromWall < shortestDistance + EPS)
+				// {
+				// 	this->buckets[bucketIdx].n += t.n;
+				// 	this->buckets[bucketIdx].n /= this->buckets[bucketIdx].n.Magnitude3d();
+				// }
 				k += BUCKET_LENGTH;
 				bucketZ = k / BUCKET_LENGTH;
 			}
@@ -291,14 +272,7 @@ void	BC::_CalcDistanceFromWall(const Triangle &t)
 	}
 }
 
-void	BC::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
-{
-	for (size_t	i = 0; i < ts.size(); ++i)
-	{
-		// std::cout << i << " " << ts[i] << std::endl << std::endl;
-		this->_CalcDistanceFromWall(ts[i]);
-	}
-}
+
 
 double	BC::_GetDistFromWall(const size_t currentBX,
 						 	const size_t currentBY,
@@ -369,6 +343,39 @@ bool	BC::_StoreEachCmpOfNeighborBDistFromWall(const size_t currentBX,
 	}
 
 	return currentBcmp < maxRCD;
+}
+
+void	BC::BC_MakeBuckets(const std::deque<Particle> &ps)
+{
+	// Print::OutWords("BC_MakeBuckets", this->bucketRow, this->bucketColumn, this->bucketDepth);
+	this->buckets           = new t_bucket[this->numOfBuckets];
+	this->_bucketLast       = new t_bucket[this->numOfBuckets];
+	this->particleNextIdxs  = new size_t[NUM_OF_PARTICLES];
+
+	for (size_t	i = 0; i < this->numOfBuckets; ++i)
+	{
+		this->buckets[i].firstPrtIdx     = UINT64_MAX;
+		this->buckets[i].disFromWall     = E_RADIUS + EPS;
+		// this->buckets[i].bucketIdx       = i;
+		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
+
+		this->_CalcBucketsPos(i);
+	
+		if (i < NUM_OF_PARTICLES)
+		{
+			this->particleNextIdxs[i] = UINT64_MAX;
+		}
+	}
+	this->_UpdateParticlesInBuckets(ps);
+}
+
+void	BC::BC_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
+{
+	for (size_t	i = 0; i < ts.size(); ++i)
+	{
+		// std::cout << i << " " << ts[i] << std::endl << std::endl;
+		this->_CalcDistanceFromWall(ts[i]);
+	}
 }
 
 size_t	BC::BC_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketZ)
@@ -480,7 +487,7 @@ void	BC::DrawDisFromWall(const Vec &halfMapSize, const double midHeight)
 	const double	mixDis = maxDis / 2.0;
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		if (0.0 < this->buckets[i].disFromWall)
+		if (this->buckets[i].disFromWall < E_RADIUS)
 		{
 			if (this->buckets[i].disFromWall < mixDis)
 			{

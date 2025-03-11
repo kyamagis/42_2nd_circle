@@ -67,15 +67,15 @@ class BC
 													double &neighborBDistFromWall);
 		
 	protected:
+		void	BC_MakeBuckets(const std::deque<Particle> &ps);
+		void	BC_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts);
 		size_t	BC_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
 		size_t	BC_CalcBucketIdx(const Vec &v);
-		void	_MakeBuckets(const std::deque<Particle> &ps);
 		void	_UpdateBuckets(const std::deque<Particle> &ps);
 
 		bool	BC_IsOutOfWallWeightRange(const double disFromWall);
 		double	BC_InterpolateWallWeight(const double interpolatedDis);
 		
-		void	_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts);
 
 		double	BC_InterpolateDistFromWall(const Vec	 &pPos,
 										const size_t currentBX,

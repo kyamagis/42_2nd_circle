@@ -6,9 +6,9 @@
 #include "./Graphic.hpp"
 #include "./Vec.hpp"
 
-#define EPS 1e-6
 
-int32_t	cross_product_2d(const Vec &a, const Vec &b, const Vec &point);
+
+int64_t	cross_product_2d(const Vec &a, const Vec &b, const Vec &point);
 
 uint32_t	max(uint32_t	aX, uint32_t bX);
 double	min(const double aX, const double bX);
