@@ -28,4 +28,10 @@ std::deque<Vec>	init_wall_weight(void);
 
 Vec		move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double midHeight);
 
+double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
+								const size_t currentBY,
+								const size_t currentBZ, 
+								double dist_000, double dist_100, double dist_010, double dist_110, 
+								double dist_001, double dist_101, double dist_011, double dist_111);
+
 #endif

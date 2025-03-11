@@ -193,3 +193,55 @@ Vec	move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double 
 				vec.y - halfMapSize.y, 
 				vec.z - midHeight / 2.0);
 }
+
+
+// 三線形補間関数
+double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
+								const size_t currentBY,
+								const size_t currentBZ, 
+							double dist_000, double dist_100, double dist_010, double dist_110, 
+							double dist_001, double dist_101, double dist_011, double dist_111)
+{
+	// const Vec	origin;
+	const Vec	diagonalPoint(BUCKET_LENGTH);
+	const Vec	calibratedPPos(pPos.x - currentBX * BUCKET_LENGTH, 
+							   pPos.y - currentBY * BUCKET_LENGTH, 
+							   pPos.z - currentBZ * BUCKET_LENGTH);
+
+	const double R00 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_000 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_100;
+	const double R01 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_010 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_110;
+	const double R10 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_001 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_101;
+	const double R11 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_011 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_111;
+
+	// Y方向補間
+	double P0 = ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) * R00 + ((calibratedPPos.y) / (diagonalPoint.y)) * R01;
+	double P1 = ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) * R10 + ((calibratedPPos.y) / (diagonalPoint.y)) * R11;
+
+	// Z方向補間
+	return ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) * P0 + ((calibratedPPos.z) / (diagonalPoint.z)) * P1;
+}
+
+// int main() {
+//     // 補間したい点
+//     double x = 2.5, y = 2.5, z = 2.5;
+    
+//     // 格子点の座標
+//     double x1 = 2.0, x2 = 3.0;
+//     double y1 = 2.0, y2 = 3.0;
+//     double z1 = 2.0, z2 = 3.0;
+
+//     // 各格子点の値（仮のデータ）
+//     double Q000 = 1.0, Q100 = 2.0, Q010 = 1.5, Q110 = 2.5;
+//     double Q001 = 1.2, Q101 = 2.2, Q011 = 1.7, Q111 = 2.7;
+
+//     // 三線形補間を実行
+//     double interpolatedValue = trilinearInterpolation(x, y, z, 
+//                                                       x1, x2, y1, y2, z1, z2,
+//                                                       Q000, Q100, Q010, Q110, 
+//                                                       Q001, Q101, Q011, Q111);
+
+//     std::cout << "Interpolated Value at (" << x << ", " << y << ", " << z << "): " 
+//               << interpolatedValue << std::endl;
+
+//     return 0;
+// }

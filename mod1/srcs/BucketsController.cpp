@@ -113,7 +113,7 @@ void	BC::_MakeBuckets(const std::deque<Particle> &ps)
 	{
 		this->buckets[i].firstPrtIdx     = UINT64_MAX;
 		this->buckets[i].disFromWall     = E_RADIUS + EPS;
-		this->buckets[i].bucketIdx       = i;
+		// this->buckets[i].bucketIdx       = i;
 		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
 
 		this->_CalcBucketsPos(i);
@@ -264,25 +264,7 @@ double	BC::_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx)
 	return min_of_3_elm(disFromVertex, disFromSide, disFromTriangle);
 }
 
-bool	BC::_IsOutOfWallWeightRange(const double disFromWall)
-{
-	return this->_weights.back().x < disFromWall + EPS;
-}
 
-double	BC::_InterpolateWallWeight(const double interpolatedDis)
-{
-	Vec nextWeight;
-	for (size_t	i = 0; i + 1 < this->_weights.size(); ++i)
-	{
-		nextWeight = this->_weights[i + 1];
-		if (interpolatedDis <= nextWeight.x)
-		{
-			return	this->_weights[i].Interpolate2d(nextWeight, interpolatedDis);
-		}
-	}
-	Print::Err("_CalcWallWeight: weight");
-	return 0.0;
-}
 
 void	BC::_CalcDistanceFromWall(const Triangle &t)
 {
@@ -325,6 +307,158 @@ void	BC::_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts)
 		// std::cout << i << " " << ts[i] << std::endl << std::endl;
 		this->_CalcDistanceFromWall(ts[i]);
 	}
+}
+
+double	BC::_GetDistFromWall(const size_t currentBX,
+						 	const size_t currentBY,
+						 	const size_t currentBZ)
+{
+	const size_t	neighborBIdx = this->_CalcBucketIdx(currentBX, currentBY, currentBZ);
+	return this->buckets[neighborBIdx].disFromWall;
+}
+
+double	BC::_SearchNeighborBDistFromWall(size_t currentBX,
+									size_t currentBY,
+									size_t currentBZ,
+									const unsigned char cmp)
+{
+	switch (cmp)
+	{
+		case 'x':
+			currentBX += 1;
+			break;
+		case 'y':
+			currentBY += 1;
+			break;
+		case 'z':
+			currentBZ += 1;
+			break;
+		default:
+		break;
+	}
+	return this->_GetDistFromWall(currentBX, currentBY, currentBZ);
+}
+
+bool	BC::_StoreEachCmpOfNeighborBDistFromWall(const size_t currentBX,
+											const size_t currentBY,
+											const size_t currentBZ,
+											const unsigned char cmp,
+											double &neighborBDistFromWall)
+{
+	size_t	currentBcmp;
+	size_t	maxRCD;
+
+	switch (cmp)
+	{
+		case 'x':
+			currentBcmp = currentBX;
+			maxRCD = this->bucketRow;
+			break;
+		case 'y':
+			currentBcmp = currentBY;
+			maxRCD = this->bucketColumn;
+			break;
+		case 'z':
+			currentBcmp = currentBZ;
+			maxRCD = this->bucketDepth;
+			break;
+		default:
+			break;
+	}
+
+	if (currentBcmp < maxRCD)
+	{
+		neighborBDistFromWall = 
+		this->_SearchNeighborBDistFromWall(currentBX, currentBY, currentBZ,
+											  cmp);
+	}
+	else
+	{
+		neighborBDistFromWall = E_RADIUS + EPS;
+	}
+
+	return currentBcmp < maxRCD;
+}
+
+bool	BC::BC_IsOutOfWallWeightRange(const double disFromWall)
+{
+	return this->_weights.back().x < disFromWall + EPS;
+}
+
+double	BC::BC_InterpolateWallWeight(const double interpolatedDis)
+{
+	Vec nextWeight;
+	for (size_t	i = 0; i + 1 < this->_weights.size(); ++i)
+	{
+		nextWeight = this->_weights[i + 1];
+		if (interpolatedDis <= nextWeight.x)
+		{
+			return	this->_weights[i].Interpolate2d(nextWeight, interpolatedDis);
+		}
+	}
+	Print::Err("_CalcWallWeight: weight");
+	return 0.0;
+}
+
+double	BC::BC_InterpolateDistFromWall(const Vec	 &pPos,
+									const size_t currentBX,
+									const size_t currentBY,
+									const size_t currentBZ)
+{
+	const size_t	distFromWall_000 = this->_GetDistFromWall(currentBX, currentBY, currentBZ);
+	double distFromWall_100;
+	double distFromWall_110 = -1.0;
+	double distFromWall_101 = -1.0;
+	double distFromWall_111 = -1.0;
+
+	double distFromWall_010;
+	// double distFromWall_110;
+	double distFromWall_011 = -1.0;
+	// double distFromWall_111;
+
+	double distFromWall_001;
+	// double distFromWall_101;
+	// double distFromWall_011;
+	// double distFromWall_111;
+
+	if (!this->_StoreEachCmpOfNeighborBDistFromWall(currentBX, currentBY, currentBZ, 'x', distFromWall_100))
+	{
+		distFromWall_110 = E_RADIUS + EPS;
+		distFromWall_101 = E_RADIUS + EPS;
+		distFromWall_111 = E_RADIUS + EPS;
+	}
+
+	if (!this->_StoreEachCmpOfNeighborBDistFromWall(currentBX, currentBY, currentBZ, 'y', distFromWall_010))
+	{
+		distFromWall_110 = E_RADIUS + EPS;
+		distFromWall_011 = E_RADIUS + EPS;
+		distFromWall_111 = E_RADIUS + EPS;
+	}
+	if (!this->_StoreEachCmpOfNeighborBDistFromWall(currentBX, currentBY, currentBZ, 'z', distFromWall_001))
+	{
+		distFromWall_101 = E_RADIUS + EPS;
+		distFromWall_011 = E_RADIUS + EPS;
+		distFromWall_111 = E_RADIUS + EPS;
+	}
+	if (distFromWall_110 == -1.0)
+	{
+		distFromWall_110 = this->_GetDistFromWall(currentBX + 1, currentBY + 1, currentBZ);
+	}
+	if (distFromWall_101 == -1.0)
+	{
+		distFromWall_101 = this->_GetDistFromWall(currentBX + 1, currentBY, currentBZ + 1);
+	}
+	if (distFromWall_011 == -1.0)
+	{
+		distFromWall_011 = this->_GetDistFromWall(currentBX, currentBY + 1, currentBZ + 1);
+	}
+	if (distFromWall_111 == -1.0)
+	{
+		distFromWall_111 = this->_GetDistFromWall(currentBX + 1, currentBY + 1, currentBZ + 1);
+	}
+	return	trilinear_interpolation(pPos, currentBX, currentBY, currentBZ, 
+									distFromWall_000, distFromWall_100, distFromWall_010, distFromWall_110, 
+									distFromWall_001, distFromWall_101, distFromWall_011, distFromWall_111);
 }
 
 void	BC::MoveVertexToMapCenterBs(const Vec &halfMapSize, const double midHeight)

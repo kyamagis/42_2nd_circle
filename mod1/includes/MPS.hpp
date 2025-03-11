@@ -34,7 +34,7 @@ class MPS: public BC
 
 		bool	_CheckOutOfRange(const Vec &pos);
 		
-		double	_CalcWallWeight(const double disFromWall);
+		double	_WallWeight(const double disFromWall);
 		void	_CalcOneOnOneViscosity(const Vec &oneselfVel, 
 										Vec &acceleration, 
 										const size_t particleIdx,
@@ -59,25 +59,12 @@ class MPS: public BC
 								Vec &acceleration, 
 								const size_t particleIdx,
 								double &ni);
-	
-		double	_SearchNeighborBDisFromWall(size_t currentBX,
-											size_t currentBY,
-											size_t currentBZ,
-											const unsigned char cmp);
-		bool	_StoreEachCmpOfNeighborBDisFromWall(const size_t currentBX, 
-													const size_t currentBY, 
-													const size_t currentBZ,
-													const unsigned char cmp,
-													double &neighborBDisFromWall);
-		void	_InterpolateDisformWall(const size_t oneself,
-										const size_t currentBX,
-										const size_t currentBY,
-										const size_t currentBZ);
+
 		void	_SwitchContributionFromWall(const size_t oneself, const e_operation e, 
 											const size_t currentBX,
 											const size_t currentBY,
 											const size_t currentBZ, 
-											const Vec &acceleration, const double ni);
+											Vec &acceleration, double &ni);
 		void	_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operation e, 
 												const Vec &acceleration, const double ni);
 

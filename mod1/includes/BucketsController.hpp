@@ -14,9 +14,9 @@ typedef struct s_bucket
 	double	disFromWall;
 	Vec		position;
 	Vec		center;
-	// size_t	bucketX;
-	// size_t	bucketY;
-	// size_t	bucketZ;
+	size_t	bucketX;
+	size_t	bucketY;
+	size_t	bucketZ;
 	// size_t	bucketIdx;
 } t_bucket;
 
@@ -50,18 +50,36 @@ class BC
 		
 		double	_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx);
 		void	_CalcDistanceFromWall(const Triangle &t);
+
+		double	_GetDistFromWall(const size_t currentBX,
+									const size_t currentBY,
+									const size_t currentBZ);
+		double	_SearchNeighborBDistFromWall(size_t currentBX,
+											size_t currentBY,
+											size_t currentBZ,
+											const unsigned char cmp);
 		
-		protected:
+		bool	_StoreEachCmpOfNeighborBDistFromWall(const size_t currentBX, 
+													const size_t currentBY, 
+													const size_t currentBZ,
+													const unsigned char cmp,
+													double &neighborBDistFromWall);
+		
+	protected:
 		size_t	_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
 		size_t	_CalcBucketIdx(const Vec &v);
 		void	_MakeBuckets(const std::deque<Particle> &ps);
 		void	_UpdateBuckets(const std::deque<Particle> &ps);
 
-		bool	_IsOutOfWallWeightRange(const double disFromWall);
-		double	_InterpolateWallWeight(const double interpolatedDis);
+		bool	BC_IsOutOfWallWeightRange(const double disFromWall);
+		double	BC_InterpolateWallWeight(const double interpolatedDis);
 		
 		void	_CalcAllDistanceFromWall(const std::deque<Triangle>	&ts);
 
+		double	BC_InterpolateDistFromWall(const Vec	 &pPos,
+										const size_t currentBX,
+										const size_t currentBY,
+										const size_t currentBZ);
 	public:
 
 		const size_t	bucketRow;

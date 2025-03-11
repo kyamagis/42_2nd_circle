@@ -135,20 +135,19 @@ size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 	return coor;
 }
 
-// double	MPS::_CalcWallWeight(const double disFromWall)
-// {
-// 	if (disFromWall < 0.0)
-// 	{
-// 		Print::Err("_CalcWallWeight: disFromWall");
-// 	}
-// 	if (this->_IsOutOfWallWeightRange(disFromWall))
-// 	{
-// 		return 0.0;
-// 	}
+double	MPS::_WallWeight(const double disFromWall)
+{
+	if (disFromWall < 0.0)
+	{
+		Print::Err("_CalcWallWeight: disFromWall");
+	}
+	if (this->BC_IsOutOfWallWeightRange(disFromWall))
+	{
+		return 0.0;
+	}
 
-// 	const double interpolatedDis;
-// 	return this->_InterpolateWallWeight(interpolatedDis);
-// }
+	return this->BC_InterpolateWallWeight(disFromWall);
+}
 
 void	MPS::_CalcOneOnOneViscosity(const Vec &oneselfVel, 
 									Vec &acceleration, 
@@ -270,116 +269,33 @@ void	MPS::_SwitchOperation(const e_operation e,
 	}
 }
 
-double	MPS::_SearchNeighborBDisFromWall(size_t currentBX,
-									size_t currentBY,
-									size_t currentBZ,
-									const unsigned char cmp)
-{
-	switch (cmp)
-	{
-		case 'x':
-			currentBX += 1;
-			break;
-		case 'y':
-			currentBY += 1;
-			break;
-		case 'z':
-			currentBZ += 1;
-			break;
-		default:
-		break;
-	}
-	const size_t	neighborBIdx = this->_CalcBucketIdx(currentBX, currentBY, currentBZ);
-	return this->buckets[neighborBIdx].disFromWall;
-}
-
-bool	MPS::_StoreEachCmpOfNeighborBDisFromWall(const size_t currentBX,
-											const size_t currentBY,
-											const size_t currentBZ,
-											const unsigned char cmp,
-											double &neighborBDisFromWall)
-{
-	size_t	currentBcmp;
-	size_t	maxRCD;
-
-	switch (cmp)
-	{
-		case 'x':
-			currentBcmp = currentBX;
-			maxRCD = this->bucketRow;
-			break;
-		case 'y':
-			currentBcmp = currentBY;
-			maxRCD = this->bucketColumn;
-			break;
-		case 'z':
-			currentBcmp = currentBZ;
-			maxRCD = this->bucketDepth;
-			break;
-		default:
-			break;
-	}
-
-	if (currentBcmp < maxRCD)
-	{
-		neighborBDisFromWall = 
-		this->_SearchNeighborBDisFromWall(currentBX, currentBY, currentBZ,
-											  cmp);
-	}
-	else
-	{
-		neighborBDisFromWall = E_RADIUS + EPS;
-	}
-
-	return currentBcmp < maxRCD;
-}
-
-void	MPS::_InterpolateDisformWall(const size_t oneself,
-									const size_t currentBX,
-									const size_t currentBY,
-									const size_t currentBZ)
-	{
-	const size_t	currentBIdx = this->_CalcBucketIdx(currentBX, currentBY, currentBZ);
-	const size_t	disFromWall_000 = this->buckets[currentBIdx].disFromWall;
-
-	const Vec	oneselfPos(this->ps[oneself].center);
-	double disFromWall_100;
-	double disFromWall_110;
-	double disFromWall_101;
-	double disFromWall_111;
-
-
-	this->_StoreEachCmpOfNeighborBDisFromWall(currentBX, currentBY, currentBZ, 'x', neighborBDisFromWall);
-
-	this->_StoreEachCmpOfNeighborBDisFromWall(currentBX, currentBY, currentBZ, 'y', neighborBDisFromWall);
-
-	this->_StoreEachCmpOfNeighborBDisFromWall(currentBX, currentBY, currentBZ, 'z', neighborBDisFromWall);
-	
-	const ru = ;
-}
-
 void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 										 const size_t currentBX,
 										 const size_t currentBY,
 										 const size_t currentBZ, 
-										 const Vec &acceleration, const double ni)
+										 Vec &acceleration, double &ni)
 {
-	
+	const double distFromWall = 
+	this->BC_InterpolateDistFromWall(this->ps[oneself].center, currentBX, currentBY, currentBZ);
+	if (E_RADIUS_SQ < distFromWall * distFromWall)
+	{
+		return ;
+	}
+	double	wallWeight;
 	switch (e)
 	{
 		case e_VISCOSITY:
-			// double	wallWeight  = this->buckets[bucketIdx].disFromWall;
-			// if (0.0 < wallWeight)
-			// {
-			// 	acceleration += (oneselfVel * -2.0) * wallWeight;
-			// }
+			wallWeight  = this->_WallWeight(distFromWall);
+			if (0.0 < wallWeight)
+			{
+				acceleration += (this->ps[oneself].velocity * -2.0) * wallWeight;
+			}
 			break;
 		case e_COLLISION:
 			this->ps[oneself].acceleration = acceleration;
 			break;
 		case e_PRESSURE:
-			this->ps[oneself].pressure = (this->n0 < ni) * (ni - this->n0) * 
-										 this->_cffPress * DENSITY_OF_PARTICLES;
+			ni += this->_WallWeight(distFromWall);
 			break;
 		case e_PGRADIENT2:
 			this->ps[oneself].acceleration = acceleration * 1 / DENSITY_OF_PARTICLES * this->_cffPGTerm;
