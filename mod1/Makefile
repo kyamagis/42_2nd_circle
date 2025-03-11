@@ -1,7 +1,7 @@
 NAME = mod1
 
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -Wshadow -MMD -MP -g -fsanitize=address -fsanitize=undefined
+CXXFLAGS = -Wall -Wextra -Werror -O3 -Wshadow -MMD -MP -g -fsanitize=address -fsanitize=undefined
 LIBS = -lglut -lGLU -lGL 
 DEBUGFLAGS = -g -DDEBUG
 

@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "../includes/MPS.hpp"
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
@@ -158,14 +159,11 @@ void	MPS::_CalcOneOnOneViscosity(const Vec &oneselfVel,
 	{
 		double	distanceP = sqrt(distanceSQP);
 		double	w;
-		if (distanceSQP < 0.1)
+		if (distanceP < 0.1)
 		{
-			w = WEIGHT(0.1);
+			distanceP = 0.1;
 		}
-		else
-		{
-			w = WEIGHT(distanceP);
-		}
+		w = WEIGHT(distanceP);
 		acceleration += (this->ps[particleIdx].velocity - oneselfVel) * w;
 	}
 }
@@ -288,6 +286,10 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 	switch (e)
 	{
 		case e_VISCOSITY:
+			// if (oneself == 0)
+			// {
+			// 	Print::OutWords(oneself, distFromWall, E_RADIUS);
+			// }
 			wallWeight  = this->_WallWeight(distFromWall);
 			if (0.0 < wallWeight)
 			{
@@ -307,9 +309,16 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 		case e_PRESSURE:
 			ni += this->_WallWeight(distFromWall);
 			break;
-		// case e_PGRADIENT2:
-		// 	this->ps[oneself].acceleration = acceleration * 1 / DENSITY_OF_PARTICLES * this->_cffPGTerm;
-		// 	break;
+		case e_PGRADIENT2:
+			nVector = this->buckets[currentBIdx].n;
+			wallWeight = this->_WallWeight(distFromWall);
+			
+			if (0.0 < wallWeight)
+			{
+				double pressureGrad = this->ps[oneself].pressure / (distFromWall * distFromWall);
+				
+				acceleration += nVector * pressureGrad * wallWeight;
+    	    }
 		default:
 			break;
 	}
@@ -324,11 +333,11 @@ void	MPS::_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operatio
 			this->ps[oneself].acceleration = acceleration * this->_cffVTerm;
 			break;
 		case e_COLLISION:
-			this->ps[oneself].acceleration = acceleration;
+			this->ps[oneself].velocity = acceleration;
 			break;
 		case e_PRESSURE:
 			this->ps[oneself].pressure = (this->n0 < ni) * (ni - this->n0) * 
-										 this->_cffPress * DENSITY_OF_PARTICLES;
+										  this->_cffPress * DENSITY_OF_PARTICLES;
 			break;
 		case e_PGRADIENT2:
 			this->ps[oneself].acceleration = acceleration * 1 / DENSITY_OF_PARTICLES * this->_cffPGTerm;
@@ -385,6 +394,10 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 		// 	}
 		// 	Print::OutWords(this->numOfBuckets, bucketIdx, this->ps[oneself].center, otherBX, otherBY, otherBZ);
 		// }
+		// if (this->numOfBuckets == bucketIdx)
+		// {
+		// 	Print::OutWords(this->numOfBuckets, bucketIdx, this->ps[oneself].center, otherBX, otherBY, otherBZ);
+		// }
 		particleIdx = this->buckets[bucketIdx].firstPrtIdx;
 		if (particleIdx == UINT64_MAX)
 		{
@@ -427,47 +440,6 @@ bool	MPS::_CheckOutOfRange(const Vec &pos)
 	return true;
 }
 
-void	MPS::_UpdateVPA1(void)
-{
-	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-	{
-		if (this->ps[i].validFlag)
-		{
-			// if (i == 2)
-			// {
-			// 	Print::OutWords("_UpdateVPA1", this->ps[i]);
-			// }
-			this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
-			this->ps[i].center += this->ps[i].velocity * DELTA_TIME;
-			// if (i == 2)
-			// {
-			// 	Print::OutWords("_UpdateVPA1", this->ps[i], this->ps[i].acceleration.x);
-			// }
-
-			this->ps[i].validFlag = this->_CheckOutOfRange(this->ps[i].center);
-			this->ps[i].acceleration = 0.0;
-		}
-		
-	}
-	// std::cout << this->ps[0] << std::endl;
-}
-
-void	MPS::_UpdateVPA2(void)
-{
-	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-	{
-		if (this->ps[i].validFlag)
-		{
-			this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
-			this->ps[i].center   += this->ps[i].acceleration * DELTA_TIME * DELTA_TIME;
-
-			this->ps[i].validFlag = this->_CheckOutOfRange(this->ps[i].center);
-			this->ps[i].acceleration = 0.0;
-		}
-	}
-	// std::cout << this->ps[0] << std::endl;
-}
-
 void	MPS::_ViscosityAndGravityTerm(void)
 {
 	double	noMeaning = 0;
@@ -477,6 +449,21 @@ void	MPS::_ViscosityAndGravityTerm(void)
 		{
 			this->_SearchNeighborParticles(i, e_VISCOSITY, noMeaning);
 			this->ps[i].acceleration += this->g;
+		}
+	}
+}
+
+void	MPS::_UpdateVPA1(void)
+{
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		if (this->ps[i].validFlag)
+		{
+			this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
+			this->ps[i].center   += this->ps[i].velocity * DELTA_TIME;
+
+			this->ps[i].validFlag = this->_CheckOutOfRange(this->ps[i].center);
+			this->ps[i].acceleration = 0.0;
 		}
 	}
 }
@@ -526,25 +513,47 @@ void	MPS::_PressureGradientTerm(void)
 	}
 }
 
+void	MPS::_UpdateVPA2(void)
+{
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		if (this->ps[i].validFlag)
+		{
+			this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
+			this->ps[i].center   += this->ps[i].acceleration * DELTA_TIME * DELTA_TIME;
+
+			this->ps[i].validFlag = this->_CheckOutOfRange(this->ps[i].center);
+			this->ps[i].acceleration = 0.0;
+		}
+	}
+	// std::cout << this->ps[0] << std::endl;
+}
+
 void	MPS::NavierStokesEquations(void)
 {
-	// for (double time = 0.0; time < 0.5; time += DELTA_TIME)
-	// {
-	// 	this->_UpdateBuckets(this->ps);
-	// 	this->_ViscosityAndGravityTerm();
-	// 	this->_UpdateVPA1();
-	// 	this->_CalcParticlesCollision();
-	// 	this->_CalcParticlesPressure();
-	// 	this->_PressureGradientTerm();
-	// 	this->_UpdateVPA2();
-	// }
-	this->_UpdateBuckets(this->ps);
-	this->_ViscosityAndGravityTerm();
-	this->_UpdateVPA1();
-	this->_CalcParticlesCollision();
-	this->_CalcParticlesPressure();
-	this->_PressureGradientTerm();
-	this->_UpdateVPA2();
+	// Print::OutWords(this->ps[0]);
+	for (double time = 0.0; time < 0.5; time += DELTA_TIME)
+	{
+		this->_UpdateBuckets(this->ps);
+		this->_ViscosityAndGravityTerm();
+		this->_UpdateVPA1();
+		this->_CalcParticlesCollision();
+		this->_CalcParticlesPressure();
+		this->_PressureGradientTerm();
+		this->_UpdateVPA2();
+		// std::cout <<std::fixed << std::setprecision(1)
+		// 		  << time / 0.5 * 100
+		// 		  << " %\r" << std::flush;
+	}
+	std::cout <<  std::endl;
+
+	// this->_UpdateBuckets(this->ps);
+	// this->_ViscosityAndGravityTerm();
+	// this->_UpdateVPA1();
+	// this->_CalcParticlesCollision();
+	// this->_CalcParticlesPressure();
+	// this->_PressureGradientTerm();
+	// this->_UpdateVPA2();
 
 	// this->_CalcParticlesPressure();
 	// for (size_t i = 0; i < NUM_OF_PARTICLES; ++i)

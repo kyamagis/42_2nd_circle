@@ -263,7 +263,7 @@ std::deque<Triangle>	DT::Calculation(void)
 				  << " %\r" << std::flush;
 	}
 
-	std::cout <<  std::endl << "Triangulation Done" << std::endl;
+	std::cout <<  std::endl << "Delaunay Triangulation Done" << std::endl;
 
 	this->_EraseTempTriangles();
 	this->_AddCube();

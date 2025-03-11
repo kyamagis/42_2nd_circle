@@ -74,7 +74,7 @@ class BC
 		void	_UpdateBuckets(const std::deque<Particle> &ps);
 
 		bool	BC_IsOutOfWallWeightRange(const double disFromWall);
-		double	BC_InterpolateWallWeight(const double interpolatedDis);
+		double	BC_InterpolateWallWeight(const double interpolatedDist);
 		
 
 		double	BC_InterpolateDistFromWall(const Vec	 &pPos,

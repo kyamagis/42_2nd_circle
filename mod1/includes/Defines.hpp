@@ -21,7 +21,7 @@
 #define DISTANCE_LIMIT_SQ (DISTANCE_LIMIT * DISTANCE_LIMIT)
 #define REPULSION_COEFFICIENT 1.2
 
-#define NUM_OF_PARTICLES 1
+#define NUM_OF_PARTICLES 10
 #define	D 3 // dimension number
 #define	GRADIENT  0
 #define LAPLACIAN 1
@@ -29,9 +29,9 @@
 #define	BUCKET_LENGTH  (E_RADIUS * (1.0 + COURANT_NUM))
 #define	NUM_OF_BUCKETS
 #define InvisibleSpace (2.0 * BUCKET_LENGTH)
-// #define DELTA_TIME 0.0005
 
-#define DELTA_TIME 1.0
+#define DELTA_TIME 0.0005
+// #define DELTA_TIME 0.05
 #define ONE_SECOUD 1.0
 
 #define X 0
