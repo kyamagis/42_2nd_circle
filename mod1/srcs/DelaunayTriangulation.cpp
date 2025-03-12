@@ -269,29 +269,3 @@ std::deque<Triangle>	DT::Calculation(void)
 	this->_AddCube();
 	return this->_triangles;
 }
-
-
-// void	DT::SideFlip(const size_t idx, const Triangle &t)
-// {
-// 	double cosAPB = cos_angle(t.a, this->_specificPoints[idx], t.b);
-// 	double cosBPC = cos_angle(t.b, this->_specificPoints[idx], t.c);
-// 	double cosCPA = cos_angle(t.c, this->_specificPoints[idx], t.a);
-
-// 	if (cosAPB <= cosBPC && cosAPB <= cosCPA) // c
-// 	{
-// 		std::cout << "side flip /" << this->_triangles.size() << std::endl;
-// 		this->_AddSegmentedTriangle(idx, t.b, t.c);
-// 		this->_AddSegmentedTriangle(idx, t.c, t.a);
-// 		std::cout << "side flip /" << this->_triangles.size() << std::endl;
-// 		return ;
-// 	}
-// 	if (cosBPC <= cosAPB && cosBPC <= cosCPA) // a
-// 	{
-// 		this->_AddSegmentedTriangle(idx, t.a, t.b);
-// 		this->_AddSegmentedTriangle(idx, t.c, t.a);
-// 		return ;
-// 	}
-// 	// b
-// 	this->_AddSegmentedTriangle(idx, t.a, t.b);
-// 	this->_AddSegmentedTriangle(idx, t.b, t.c);
-// }

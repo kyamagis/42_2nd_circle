@@ -36,9 +36,9 @@ void Circle::DrawCircle2d(const uint32_t mapSize[3],
 	glBegin(GL_LINE_LOOP);
 	glColor3f(0.0, 1.0, 0.0);
 
-	double	cx = double(this->center.x - halfMapSize.x) / mapSize[X];
-	double	cy = - 1.0 * (this->center.y - halfMapSize.y) / mapSize[Y];
-	double 	r2d = sqrt(this->r) / mapSize[X];
+	const double	cx = double(this->center.x - halfMapSize.x) / mapSize[X];
+	const double	cy = - 1.0 * (this->center.y - halfMapSize.y) / mapSize[Y];
+	const double	r2d = sqrt(this->r) / mapSize[X];
 
 	for (int i = 0; i < num_segments; i++) {
 		double theta = 2.0 * M_PI * double(i) / double(num_segments); // 角度
@@ -57,10 +57,10 @@ void Circle::DrawCircle3d(const uint32_t mapSize[3],
 	glBegin(GL_LINE_LOOP);
 	glColor3f(0.0, 1.0, 0.0);
 
-	double	cx = double(this->center.x - halfMapSize.x) / mapSize[X];
-	double	cy = - 1.0 * (this->center.y - halfMapSize.y) / mapSize[Y];
+	const double	cx = double(this->center.x - halfMapSize.x) / mapSize[X];
+	const double	cy = - 1.0 * (this->center.y - halfMapSize.y) / mapSize[Y];
 	// double	cz = double(this->center.z) / mapSize[Z];
-	double 	r2d = sqrt(this->r) / mapSize[X];
+	const double	r2d = sqrt(this->r) / mapSize[X];
 
 	for (int i = 0; i < num_segments; i++) {
 		double theta = 2.0 * M_PI * double(i) / double(num_segments); // 角度
@@ -90,6 +90,5 @@ Circle&	Circle::operator=(const Circle &c)
 std::ostream &operator<<(std::ostream &ostrm, const Circle &c)
 {
 	return ostrm << '(' << c.center << ", " 
-						<< c.r << ')' 
-						<< std::endl;
+						<< c.r << ')' ;
 }

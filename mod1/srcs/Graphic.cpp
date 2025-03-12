@@ -21,7 +21,6 @@ typedef struct s_data
 	double	shrinkageRatioX;
 	double	shrinkageRatioY;
 	Vec		rad;
-	Vec		prevRad;
 	Quaternion q;
 	double	scaling;
 	size_t	i;
@@ -33,7 +32,6 @@ typedef struct s_data
 	int		gWindowID;
 
 	unsigned char key;
-	unsigned char prevKey;
 
 } t_data;
 
@@ -62,8 +60,7 @@ void defaultkeyboard(unsigned char key, int x, int y)
 
 void	drawVertex(const Vec &vertex)
 {
-	Vec	rotatedPos = vertex.Rotate(g_data.key, g_data.q);
-	// Vec	rotatedPos = vertex.Rotate(g_data.rad);
+	Vec	rotatedPos = vertex.Rotate(g_data.q);
 
 	const double	coordinateX = rotatedPos.x / double(g_data.mapSize[X]);
 	const double	coordinateY =  - 1.0 * (rotatedPos.y / double(g_data.mapSize[Y]));
@@ -175,21 +172,21 @@ void keyboard(unsigned char key, int x, int y)
 {
 	(void)x;
 	(void)y;
-	g_data.prevKey = g_data.key;
-	g_data.prevRad = g_data.rad;
+	g_data.key = key;
 	switch (key)
 	{
 		case 'b':
 			g_data.visibleBucketsFlg = !g_data.visibleBucketsFlg;
 			break;
 		case 'c':
-			g_data.rad = 0.0;
+			g_data.q = 0.0;
 			g_data.circleFlg = !g_data.circleFlg;
 			break;
 		case 'i':
 			// g_data.rad.x = M_PI / 12.0 * 5.0;
 			// g_data.rad.y = 0.0;
 			// g_data.rad.z = M_PI_4;
+			g_data.q = 0.0;
 			g_data.q = calcQuaternion(g_data.q, RADIAN * 5.0, Vec(1,0,0));
 			g_data.scaling = SCALING;
 			break;
@@ -222,36 +219,28 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 		case 't':
 			g_data.q = 0.0;
-			g_data.rad = 0.0;
 			break;
 		case 'x':
 			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(1,0,0));
-			g_data.rad.x += M_PI / 12;
 			break;
 		case 'X':
 			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(1,0,0));
-			g_data.rad.x -= M_PI / 12;
 			break;
 		case 'y':
 			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(0,1,0));
-			g_data.rad.y += M_PI / 12;
 			break;
 		case 'Y':
 			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(0,1,0));
-			g_data.rad.y -= M_PI / 12;
 			break;
 		case 'z':
 			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(0,0,1));
-			g_data.rad.z += M_PI / 12;
 			break;
 		case 'Z':
 			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(0,0,1));
-			g_data.rad.z -= M_PI / 12;
 			break;			
 		default:
 			return ;
 	}
-	g_data.key = key;
 	glutPostRedisplay();
 }
 
@@ -328,7 +317,6 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.lineFlg = false;
 	g_data.visibleBucketsFlg = false;
 	g_data.key = 'i';
-	g_data.prevKey = 'z';
 }
 
 void	Graphic::KeyboardFunc(void (*func)(unsigned char key, int x, int y))

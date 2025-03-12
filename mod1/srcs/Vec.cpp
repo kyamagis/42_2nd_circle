@@ -105,47 +105,8 @@ double	Vec::Magnitude2d(void) const
 	return sqrt(this->MagnitudeSQ2d());
 }
 
-void	Vec::RotationZ(const double rad)
+Vec	Vec::Rotate(Quaternion &qGlobal) const
 {
-	double	tempX = this->x;
-	double	tempY = this->y;
-
-	this->x = tempX * cos(rad) - tempY * sin(rad);
-	this->y = tempX * sin(rad) + tempY * cos(rad);
-}
-
-void	Vec::RotationX(const double rad)
-{
-	double	tempY = this->y;
-	double	tempZ = this->z;
-
-	this->y =  tempY * cos(rad) - tempZ * sin(rad);
-	this->z =  tempY * sin(rad) + tempZ * cos(rad);
-}
-
-void	Vec::RotationY(const double rad)
-{
-	double	tempX = this->x;
-	double	tempZ = this->z;
-
-	this->x =  tempX * cos(rad) + tempZ * sin(rad);
-	this->z = -tempX * sin(rad) + tempZ * cos(rad);
-}
-
-Vec	Vec::Rotate(const unsigned key, Quaternion &qGlobal) const
-{
-	switch (key)
-	{
-		case 'x':
-		case 'X':
-		case 'y':
-		case 'Y':
-		case 'z':
-		case 'Z':
-			break;
-		default:
-			break;
-	}
 	if (qGlobal == 0.0)
 	{
 		return *this;
@@ -154,70 +115,6 @@ Vec	Vec::Rotate(const unsigned key, Quaternion &qGlobal) const
 	const Quaternion rotated = qGlobal * pos * qGlobal.conjugate();
 
 	return Vec(rotated.x, rotated.y, rotated.z);
-}
-
-Vec	Vec::Rotate(const Vec &rad, const unsigned key, const Vec &vertex) const
-{
-	const Quaternion qx(cos(rad.x / 2.0), Vec(1,0,0) * sin(rad.x / 2.0));
-	const Quaternion qy(cos(rad.y / 2.0), Vec(0,1,0) * sin(rad.y / 2.0));
-	const Quaternion qz(cos(rad.z / 2.0), Vec(0,0,1) * sin(rad.z / 2.0));
-
-	Quaternion q;
-
-	switch (key)
-	{
-		case 'x':
-		case 'X':
-			q = qx;
-			break;
-		case 'y':
-		case 'Y':
-			q = qy;
-			break;
-		case 'z':
-		case 'Z':
-			q = qz;
-			break;
-		default:
-			q = qz;
-			break;
-	}
-
-	const Quaternion pos(0.0, vertex);
-	const Quaternion rotated = q * pos * q.conjugate();
-
-	return Vec(rotated.x, rotated.y, rotated.z);
-}
-
-Vec	Vec::Rotate(const Vec &rad) const
-{
-	return this->Rotate(rad, 'z', *this);
-}
-
-Vec	Vec::Rotate(const Vec &rad, const Vec &prevRad, 
-				const unsigned key, const unsigned prevKey) const
-{
-	switch (key)
-	{
-		case 'x':
-		case 'y':
-		case 'z':
-		case 'X':
-		case 'Y':
-		case 'Z':
-
-			return this->Rotate(rad, key, *this);
-		default:
-			return this->Rotate(rad, key, *this);
-	}
-	if (key == prevKey)
-	{
-		return this->Rotate(rad, key, *this);
-	}
-
-	const Vec	prevPos = this->Rotate(prevRad, prevKey, *this);
-
-	return this->Rotate(rad - prevRad, key, prevPos);
 }
 
 Vec&	Vec::operator=(const Vec &vec)
