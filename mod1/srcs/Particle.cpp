@@ -64,6 +64,5 @@ std::ostream &operator<<(std::ostream &ostrm, const Particle &p)
 				 << "vel: "	<< p.velocity << ", " 
 				 << "acc: "	<< p.acceleration << ", "
 				 << "prs: "	<< p.pressure << ", "
-				 << "rad: "	<< p.r 
-				 << std::endl;
+				 << "rad: "	<< p.r ;
 }

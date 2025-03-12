@@ -79,7 +79,7 @@ void	RenderingAlgorithm()
 
 	if (g_data.visibleBucketsFlg)
 	{
-		g_data.mps->DrawDisFromWall(g_data.halfMapSize, g_data.midHeight);
+		g_data.mps->DrawDisFromWallSQ(g_data.halfMapSize, g_data.midHeight);
 	}
 	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
 	

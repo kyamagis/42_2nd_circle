@@ -33,8 +33,34 @@ MPS::~MPS()
 void	MPS::_InitBuckets(const std::deque<Triangle> &ts)
 {
 	this->BC_MakeBuckets(this->ps);
-	this->BC_CalcAllDistanceFromWall(ts);
+	this->BC_CalcAllDistanceFromWallSQ(ts);
 }
+
+// void	MPS::_InitParticlesWaterColumnCollapse(void)
+// {
+// 	this->ps.resize(NUM_OF_PARTICLES);
+// 	size_t	pIdx = 0;
+// 	const size_t	maxXIdx = this->totalMapSize.x / DIAMETER;
+// 	const size_t	maxYIdx = this->totalMapSize.y / DIAMETER;
+// 	const size_t	maxZIdx = (this->totalMapSize.z / DIAMETER);
+// 	const size_t	psSize  = this->ps.size();
+
+// 	for (size_t	yIdx = 0; yIdx < maxYIdx && pIdx < psSize; ++yIdx, ++pIdx)
+// 	{
+// 		ps[pIdx].center.y = RADIUS + yIdx * DIAMETER;
+// 		for (size_t	xIdx = 0; xIdx < maxXIdx && pIdx < psSize; ++xIdx, ++pIdx)
+// 		{
+// 			ps[pIdx].center.x = RADIUS + xIdx * DIAMETER;
+// 			for (size_t	zIdx = 0; zIdx < maxZIdx && pIdx < psSize; ++zIdx, ++pIdx)
+// 			{
+// 				ps[pIdx].center.z = RADIUS + zIdx * DIAMETER;
+// 				ps[pIdx].r = RADIUS;
+// 				ps[pIdx].velocity = 0.0;
+// 				ps[pIdx].acceleration = 0.0;
+// 			}
+// 		}
+// 	}
+// }
 
 void	MPS::_InitParticlesWaterColumnCollapse(void)
 {
@@ -44,20 +70,28 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 	const size_t	maxYIdx = this->totalMapSize.y / DIAMETER;
 	const size_t	maxZIdx = (this->totalMapSize.z / DIAMETER);
 	const size_t	psSize  = this->ps.size();
+	const double	radius  = RADIUS * 0.7;
+	const double	diameter  = radius * 2.0;
+	double			x = radius;
+	double			y = radius;
 
 	for (size_t	yIdx = 0; yIdx < maxYIdx && pIdx < psSize; ++yIdx, ++pIdx)
 	{
-		ps[pIdx].center.y = RADIUS + yIdx * DIAMETER;
-		for (size_t	xIdx = 0; xIdx < maxXIdx && pIdx < psSize; ++xIdx, ++pIdx)
+		y += yIdx * diameter;
+		ps[pIdx].center.y = y;
+		for (size_t	xIdx = 0; xIdx < maxXIdx && pIdx < psSize; ++xIdx, ++pIdx) 
 		{
-			ps[pIdx].center.x = RADIUS + xIdx * DIAMETER;
-			for (size_t	zIdx = 0; zIdx < maxZIdx && pIdx < psSize; ++zIdx, ++pIdx)
+			x += xIdx * diameter;
+			ps[pIdx].center.x = x;
+			for (size_t	zIdx = 0; zIdx < maxZIdx && pIdx < psSize; ++zIdx, ++pIdx) 
 			{
-				ps[pIdx].center.z = RADIUS + zIdx * DIAMETER;
+				ps[pIdx].center.x = x;
+				ps[pIdx].center.y = y;
+				ps[pIdx].center.z = radius + zIdx * diameter;
 				ps[pIdx].r = RADIUS;
 				ps[pIdx].velocity = 0.0;
 				ps[pIdx].acceleration = 0.0;
-			}
+			}	
 		}
 	}
 }
@@ -271,23 +305,20 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 										 Vec &acceleration, double &ni)
 {
 	const size_t	currentBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
-	double	distFromWall = 
-	this->BC_InterpolateDistFromWall(this->ps[oneself].center, currentBX, currentBY, currentBZ);
-	if (E_RADIUS_SQ < distFromWall * distFromWall)
+	double	distFromWallSQ = 
+	this->BC_InterpolateDistFromWallSQ(this->ps[oneself].center, currentBX, currentBY, currentBZ);
+	if (E_RADIUS_SQ < distFromWallSQ)
 	{
 		return ;
 	}
+	double	distFromWall;
 	double	wallWeight;
 	Vec		nVector;
 	double	closing;
 	switch (e)
 	{
 		case e_VISCOSITY:
-			// if (oneself == 0)
-			// {
-			// 	Print::OutWords(oneself, distFromWall, E_RADIUS);
-			// }
-			wallWeight  = this->_WallWeight(distFromWall);
+			wallWeight = this->_WallWeight(sqrt(distFromWallSQ));
 			if (0.0 < wallWeight)
 			{
 				acceleration += (this->ps[oneself].velocity * -2.0) * wallWeight;
@@ -303,11 +334,12 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_PRESSURE:
-			ni += this->_WallWeight(distFromWall);
+			ni += this->_WallWeight(sqrt(distFromWallSQ));
 			break;
 		case e_PGRADIENT2:
-			nVector = this->buckets[currentBIdx].n;
-			wallWeight = this->_WallWeight(distFromWall);
+			distFromWall = sqrt(distFromWallSQ);
+			wallWeight   = this->_WallWeight(distFromWall);
+			nVector      = this->buckets[currentBIdx].n;
 			
 			if (0.0 < wallWeight)
 			{
@@ -383,10 +415,8 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 		// 	switch (e)
 		// 	{
 		// 		case e_VISCOSITY:
-		// 			std::cout << "e_VISCOSITY" << " ";
 		// 			break;
 		// 		case e_COLLISION:
-		// 			std::cout << "e_COLLISION" << " ";
 		// 			break;
 		// 		default:
 		// 			break;
@@ -518,12 +548,6 @@ void	MPS::_UpdateVPA2(void)
 	{
 		if (this->ps[i].validFlag)
 		{
-			// if (i == 1)
-			// {
-			// 	// Print::OutWords(this->ps[0]);
-			// 	Print::OutWords(this->ps[1]);
-			// }
-
 			this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
 			this->ps[i].center   += this->ps[i].acceleration * DELTA_TIME * DELTA_TIME;
 
@@ -535,8 +559,8 @@ void	MPS::_UpdateVPA2(void)
 
 void	MPS::NavierStokesEquations(void)
 {
-	Print::OutWords(this->ps[1]);
-	for (double time = 0.0; time < 0.5; time += DELTA_TIME)
+	// Print::OutWords(this->ps.back());
+	for (double time = 0.0; time < 0.5; time += 0.5)
 	{
 		this->_UpdateBuckets(this->ps);
 		this->_ViscosityAndGravityTerm();
