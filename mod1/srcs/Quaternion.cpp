@@ -31,6 +31,22 @@ Quaternion Quaternion::conjugate() const
 	return	Quaternion(this->w, - this->x, - this->y, - this->z);
 }
 
+bool	Quaternion::operator==(const double &num) const
+{
+	return (this->w == num) && 
+		   (this->x == num) &&
+		   (this->y == num) &&
+		   (this->z == num);
+}
+
+void	Quaternion::operator=(const double &num)
+{
+	this->w = num;
+	this->x = num;
+	this->y = num;
+	this->z = num;
+}
+
 Quaternion&	Quaternion::operator=(const Quaternion &q)
 {
 	if (this != &q)

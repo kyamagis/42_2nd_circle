@@ -44,6 +44,7 @@
 
 #define OMMIT 10000
 
+#define RADIAN M_PI / 12
 #define SCALING 0.7
 #define DEPTH_SCALING 0.01f
 #define SCREEN_SIZE_X 1000

@@ -1,11 +1,12 @@
-#ifndef Quaternion_HPP
-# define Quaternion_HPP
+#ifndef QUATERNION_HPP
+# define QUATERNION_HPP
 
 #include <deque>
 #include <iostream>
 #include <string>
 #include "./Vec.hpp"
-#include "./Circle.hpp"
+
+class Vec;
 
 class Quaternion
 {
@@ -25,8 +26,10 @@ class Quaternion
 
 		Quaternion conjugate() const;
 
+		bool	operator==(const double &num) const;
 		Quaternion operator*(const Quaternion& q) const;
 		Quaternion&	operator=(const Quaternion &q);
+		void	operator=(const double &num);
 };
 
 std::ostream &operator<<(std::ostream &ostrm, const Quaternion &q);

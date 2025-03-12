@@ -1,9 +1,11 @@
-#ifndef Circle_HPP
-# define Circle_HPP
+#ifndef CIRCLE_HPP
+# define CIRCLE_HPP
 
 #include <iostream>
 #include <string>
 #include "./Vec.hpp"
+
+// class Vec;
 
 class Circle
 {

@@ -1,9 +1,11 @@
+#include <cmath>
+
 #include "../includes/Graphic.hpp"
 #include "../includes/Print.hpp"
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
+#include "../includes/Quaternion.hpp"
 
-#include <cmath>
 
 typedef struct s_data
 {
@@ -19,6 +21,8 @@ typedef struct s_data
 	double	shrinkageRatioX;
 	double	shrinkageRatioY;
 	Vec		rad;
+	Vec		prevRad;
+	Quaternion q;
 	double	scaling;
 	size_t	i;
 	size_t	count;
@@ -29,6 +33,8 @@ typedef struct s_data
 	int		gWindowID;
 
 	unsigned char key;
+	unsigned char prevKey;
+
 } t_data;
 
 static t_data g_data;
@@ -44,6 +50,7 @@ void defaultkeyboard(unsigned char key, int x, int y)
 	{
 		case 'q':
 		case 'Q':
+		case 3:
 		case '\033':  // ESC
 			glutDestroyWindow(g_data.gWindowID);
 			std::exit(EXIT_SUCCESS);
@@ -55,11 +62,12 @@ void defaultkeyboard(unsigned char key, int x, int y)
 
 void	drawVertex(const Vec &vertex)
 {
-	Vec		rotatedPos = vertex.Rotate(g_data.rad);
+	Vec	rotatedPos = vertex.Rotate(g_data.key, g_data.q);
+	// Vec	rotatedPos = vertex.Rotate(g_data.rad);
 
-	double	coordinateX = rotatedPos.x / double(g_data.mapSize[X]);
-	double	coordinateY =  - 1.0 * (rotatedPos.y / double(g_data.mapSize[Y]));
-	double	coordinateZ = rotatedPos.z / double(g_data.midHeight);
+	const double	coordinateX = rotatedPos.x / double(g_data.mapSize[X]);
+	const double	coordinateY =  - 1.0 * (rotatedPos.y / double(g_data.mapSize[Y]));
+	const double	coordinateZ = rotatedPos.z / double(g_data.midHeight);
 
 	glVertex3f(coordinateX * g_data.scaling, 
 			   coordinateY * g_data.scaling, 
@@ -148,13 +156,27 @@ void mouse(int button, int state, int x, int y)
 	// printf(" at (%d, %d)\n", x, y);
 }
 
+Quaternion	makeQuaternion(const double radian, const Vec &direction)
+{
+	return Quaternion(cos(radian / 2.0), direction * sin(radian / 2.0));
+}
+
+Quaternion calcQuaternion(const Quaternion &qGlobal, const double radian, const Vec &direction)
+{
+	Quaternion q = makeQuaternion(radian, direction);
+	if (qGlobal == 0.0)
+	{
+		return q;
+	}
+	return q * qGlobal;
+}
+
 void keyboard(unsigned char key, int x, int y)
 {
 	(void)x;
 	(void)y;
-
-	g_data.key = key;
-
+	g_data.prevKey = g_data.key;
+	g_data.prevRad = g_data.rad;
 	switch (key)
 	{
 		case 'b':
@@ -165,9 +187,10 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.circleFlg = !g_data.circleFlg;
 			break;
 		case 'i':
-			g_data.rad.x = M_PI / 12.0 * 5.0;
-			g_data.rad.y = 0.0;
-			g_data.rad.z = M_PI_4;
+			// g_data.rad.x = M_PI / 12.0 * 5.0;
+			// g_data.rad.y = 0.0;
+			// g_data.rad.z = M_PI_4;
+			g_data.q = calcQuaternion(g_data.q, RADIAN * 5.0, Vec(1,0,0));
 			g_data.scaling = SCALING;
 			break;
 		case 'l':
@@ -198,29 +221,37 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.mps->NavierStokesEquations();
 			break;
 		case 't':
+			g_data.q = 0.0;
 			g_data.rad = 0.0;
 			break;
 		case 'x':
+			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(1,0,0));
 			g_data.rad.x += M_PI / 12;
 			break;
 		case 'X':
+			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(1,0,0));
 			g_data.rad.x -= M_PI / 12;
 			break;
 		case 'y':
+			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(0,1,0));
 			g_data.rad.y += M_PI / 12;
 			break;
 		case 'Y':
+			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(0,1,0));
 			g_data.rad.y -= M_PI / 12;
 			break;
 		case 'z':
+			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(0,0,1));
 			g_data.rad.z += M_PI / 12;
 			break;
 		case 'Z':
+			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(0,0,1));
 			g_data.rad.z -= M_PI / 12;
 			break;			
 		default:
 			return ;
 	}
+	g_data.key = key;
 	glutPostRedisplay();
 }
 
@@ -289,6 +320,7 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.rad.x = 5.0 * M_PI / 12;
 	g_data.rad.y = 0.0;
 	g_data.rad.z = 0.0;
+	g_data.q = calcQuaternion(g_data.q, RADIAN * 5.0, Vec(1,0,0));
 	g_data.i = g_data.ts.size();
 	g_data.count = 0;
 	g_data.scaling = SCALING;
@@ -296,6 +328,7 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.lineFlg = false;
 	g_data.visibleBucketsFlg = false;
 	g_data.key = 'i';
+	g_data.prevKey = 'z';
 }
 
 void	Graphic::KeyboardFunc(void (*func)(unsigned char key, int x, int y))

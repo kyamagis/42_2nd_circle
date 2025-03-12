@@ -11,7 +11,7 @@
 
 BC::BC(const Vec &visibleMapSize_,
 	   const Vec &totalMapSize_)
-	   :_visibleMapSize(visibleMapSize_) ,
+	   :_visibleMapSize(visibleMapSize_),
 	    _totalMapSize(totalMapSize_),
 		_weights(init_wall_weight()),
 		_bucketLast(NULL),
@@ -90,8 +90,6 @@ void	BC::_CalcBucketsPos(const size_t i)
 
 	this->buckets[i].center += this->buckets[i].position +  BUCKET_LENGTH / 2.0;
 }
-
-
 
 void	BC::_UpdateBuckets(const std::deque<Particle> &ps)
 {
@@ -498,7 +496,6 @@ void	BC::DrawDisFromWall(const Vec &halfMapSize, const double midHeight)
 	}
 	glEnd();
 }
-
 
 // void	BC::_SearchNeighborParticle(const size_t i)
 // {

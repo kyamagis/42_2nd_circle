@@ -40,5 +40,3 @@ plt.grid(True)
 
 # グラフを画像として保存
 plt.savefig('./wall_weight.png')
-
-

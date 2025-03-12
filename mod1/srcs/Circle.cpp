@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "../includes/Circle.hpp"
+#include "../includes/Circle.hpp"
 
 Circle::Circle():center(0,0,0) ,r(0)
 {

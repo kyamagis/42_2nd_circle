@@ -5,6 +5,9 @@
 #include <string>
 
 #include "./Defines.hpp"
+#include "./Quaternion.hpp"
+
+class Quaternion;
 
 class Vec
 {
@@ -40,8 +43,11 @@ class Vec
 		void	RotationZ(const double rad);
 		void	RotationX(const double rad);
 		void	RotationY(const double rad);
+		Vec		Rotate(const unsigned key, Quaternion &q) const;
+		Vec		Rotate(const Vec &rad, const unsigned key, const Vec &vertex) const;
 		Vec		Rotate(const Vec &rad) const;
-		Vec		Rotate(const Vec &rad, const unsigned key) const;
+		Vec		Rotate(const Vec &rad, const Vec &prevRad, 
+					   const unsigned key, const unsigned prevKey) const;
 
 		bool	operator==(const Vec &vec) const;
 		Vec&	operator=(const Vec &vec);
