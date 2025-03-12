@@ -40,13 +40,10 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 {
 	this->ps.resize(NUM_OF_PARTICLES);
 	size_t	pIdx = 0;
-	size_t	maxXIdx = this->totalMapSize.x / DIAMETER;
-	size_t	maxYIdx = this->totalMapSize.y / DIAMETER;
-	size_t	maxZIdx = (this->totalMapSize.z / DIAMETER);
-
-	// std::cout << maxZIdx << std::endl;
-
-	size_t	psSize = this->ps.size();
+	const size_t	maxXIdx = this->totalMapSize.x / DIAMETER;
+	const size_t	maxYIdx = this->totalMapSize.y / DIAMETER;
+	const size_t	maxZIdx = (this->totalMapSize.z / DIAMETER);
+	const size_t	psSize  = this->ps.size();
 
 	for (size_t	yIdx = 0; yIdx < maxYIdx && pIdx < psSize; ++yIdx, ++pIdx)
 	{

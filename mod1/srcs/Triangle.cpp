@@ -38,8 +38,6 @@ void	calcMidPoint(const Vec &a, const Vec &b, double midPoint[2])
 {
 	midPoint[0]	= (a.x + b.x) / 2.0;
 	midPoint[1]	= (a.y + b.y) / 2.0;
-
-	// std::cout << "x " << midPoint[0]  << ", y " << midPoint[1] << std::endl;
 }
 
 void	calcLinearEquation(const Vec &a, const Vec &b, double	coeff[2], double &constNum)
@@ -53,13 +51,7 @@ void	calcLinearEquation(const Vec &a, const Vec &b, double	coeff[2], double &con
 	coeff[0] = -yCoeff;
 	coeff[1] = xCoeff;
 
-	// constNum = b.y * a.x - a.y * b.x;
-	// std::cout << xCoeff << "x - " << yCoeff << "y = " << constNum << std::endl;
-
 	constNum = coeff[0] * midPoint[0] + coeff[1] * midPoint[1];
-
-
-	// std::cout << coeff[0] << "x - " << coeff[1] << "y = " << constNum << std::endl;
 }
 
 void	Triangle::CalcCircumcircle()

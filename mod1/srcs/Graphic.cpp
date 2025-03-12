@@ -224,14 +224,6 @@ void keyboard(unsigned char key, int x, int y)
 	glutPostRedisplay();
 }
 
-// void	MoveOToMapCenter(std::deque<Triangle> &ts)
-// {
-// 	for (size_t	i = 0; i < ts.size(); ++i)
-// 	{
-// 		ts[i].MoveVertexToMapCenter(g_data.halfMapSize, g_data.midHeight);
-// 	}
-// }
-
 Graphic::Graphic()
 {
 	

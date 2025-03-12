@@ -44,11 +44,12 @@ Quaternion&	Quaternion::operator=(const Quaternion &q)
 }
 
 Quaternion Quaternion::operator*(const Quaternion& q) const {
-	return Quaternion(
-		w * q.w - x * q.x - y * q.y - z * q.z,
-		w * q.x + x * q.w + y * q.z - z * q.y,
-		w * q.y - x * q.z + y * q.w + z * q.x,
-		w * q.z + x * q.y - y * q.x + z * q.w
+	return Quaternion
+	(
+		this->w * q.w - this->x * q.x - this->y * q.y - this->z * q.z,
+		this->w * q.x + this->x * q.w + this->y * q.z - this->z * q.y,
+		this->w * q.y - this->x * q.z + this->y * q.w + this->z * q.x,
+		this->w * q.z + this->x * q.y - this->y * q.x + this->z * q.w
 	);
 }
 

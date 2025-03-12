@@ -20,5 +20,8 @@ main.cpp
 test.c
 test.cpp
 
+wall_weight.png
+WallWeight.csv
+
 glad
 glfw

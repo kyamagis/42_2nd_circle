@@ -8,11 +8,11 @@
 
 int64_t	cross_product_2d(const Vec &a, const Vec &b, const Vec &point)
 {
-	int64_t	a_to_bx = b.x - a.x;
-	int64_t	a_to_by = b.y - a.y;
+	const int64_t	a_to_bx = b.x - a.x;
+	const int64_t	a_to_by = b.y - a.y;
 
-	int64_t	b_to_px = point.x - b.x;
-	int64_t b_to_py = point.y - b.y;
+	const int64_t	b_to_px = point.x - b.x;
+	const int64_t b_to_py = point.y - b.y;
 
 	return (a_to_bx * b_to_py) - (a_to_by * b_to_px);
 }
