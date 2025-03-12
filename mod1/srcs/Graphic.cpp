@@ -189,6 +189,7 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 		case 'q':
 		case 'Q':
+		case 3:  // Ctrl + C
 		case '\033':  // ESC
 			glutDestroyWindow(g_data.gWindowID);
 			std::exit(EXIT_SUCCESS);

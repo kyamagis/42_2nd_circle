@@ -63,6 +63,7 @@ std::ostream &operator<<(std::ostream &ostrm, const Particle &p)
 	return ostrm << "pos: " << p.center << ", " 
 				 << "vel: "	<< p.velocity << ", " 
 				 << "acc: "	<< p.acceleration << ", "
+				 << "prs: "	<< p.pressure << ", "
 				 << "rad: "	<< p.r 
 				 << std::endl;
 }

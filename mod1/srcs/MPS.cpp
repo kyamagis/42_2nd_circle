@@ -140,7 +140,7 @@ double	MPS::_WallWeight(const double disFromWall)
 {
 	if (disFromWall < 0.0)
 	{
-		Print::Err("_CalcWallWeight: disFromWall");
+		Print::Err("_WallWeight: disFromWall");
 	}
 	if (this->BC_IsOutOfWallWeightRange(disFromWall))
 	{
@@ -274,7 +274,7 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 										 Vec &acceleration, double &ni)
 {
 	const size_t	currentBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
-	const double	distFromWall = 
+	double	distFromWall = 
 	this->BC_InterpolateDistFromWall(this->ps[oneself].center, currentBX, currentBY, currentBZ);
 	if (E_RADIUS_SQ < distFromWall * distFromWall)
 	{
@@ -303,7 +303,6 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			if (closing < 0.0)
 			{
 				acceleration += nVector * REPULSION_COEFFICIENT * (-closing);
-				Print::OutWords(oneself, nVector, closing, this->ps[oneself], acceleration);
 			}
 			break;
 		case e_PRESSURE:
@@ -315,8 +314,11 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			
 			if (0.0 < wallWeight)
 			{
+				if (distFromWall < 0.1)
+				{
+					distFromWall = 0.1;
+				}
 				double pressureGrad = this->ps[oneself].pressure / (distFromWall * distFromWall);
-				
 				acceleration += nVector * pressureGrad * wallWeight;
     	    }
 		default:
@@ -519,6 +521,12 @@ void	MPS::_UpdateVPA2(void)
 	{
 		if (this->ps[i].validFlag)
 		{
+			// if (i == 1)
+			// {
+			// 	// Print::OutWords(this->ps[0]);
+			// 	Print::OutWords(this->ps[1]);
+			// }
+
 			this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
 			this->ps[i].center   += this->ps[i].acceleration * DELTA_TIME * DELTA_TIME;
 
@@ -526,12 +534,11 @@ void	MPS::_UpdateVPA2(void)
 			this->ps[i].acceleration = 0.0;
 		}
 	}
-	// std::cout << this->ps[0] << std::endl;
 }
 
 void	MPS::NavierStokesEquations(void)
 {
-	// Print::OutWords(this->ps[0]);
+	Print::OutWords(this->ps[1]);
 	for (double time = 0.0; time < 0.5; time += DELTA_TIME)
 	{
 		this->_UpdateBuckets(this->ps);
@@ -541,9 +548,10 @@ void	MPS::NavierStokesEquations(void)
 		this->_CalcParticlesPressure();
 		this->_PressureGradientTerm();
 		this->_UpdateVPA2();
-		// std::cout <<std::fixed << std::setprecision(1)
-		// 		  << time / 0.5 * 100
-		// 		  << " %\r" << std::flush;
+		this->_CalcParticlesPressure();
+		std::cout <<std::fixed << std::setprecision(1)
+				  << time / 0.5 * 100
+				  << " %\r" << std::flush;
 	}
 	std::cout <<  std::endl;
 
@@ -554,6 +562,7 @@ void	MPS::NavierStokesEquations(void)
 	// this->_CalcParticlesPressure();
 	// this->_PressureGradientTerm();
 	// this->_UpdateVPA2();
+
 
 	// this->_CalcParticlesPressure();
 	// for (size_t i = 0; i < NUM_OF_PARTICLES; ++i)
