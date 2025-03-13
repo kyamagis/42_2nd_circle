@@ -88,27 +88,46 @@ size_t	to_bucket_coor(const double coordinate)
 	return size_t(coordinate / BUCKET_LENGTH);
 }
 
+Vec	gradation(const int64_t	maxHeight,
+				const int64_t minHeight,
+				const int64_t height)
+{
+	const double	midHeight = (maxHeight + minHeight) / 2.0;
+	double	ratio;
+	Vec		color;
+	if (height <= midHeight)
+	{
+		ratio = (height - minHeight) / (midHeight - minHeight);
+		color.x = 0.5f;
+		color.y = ratio;
+		color.z = 1.0f - ratio;
+	}
+	else if (height <= maxHeight)
+	{
+		ratio = (height - midHeight) / (maxHeight - midHeight);
+		color.x = ratio;
+		color.y = 1.0f - ratio;
+		color.z = 0.0f;
+	}
+	return color;
+}
+
 void	line_gradation(const int64_t	maxHeight,
 						const int64_t	minHeight,
 						const double	midHeight, 
 						const int64_t height)
 {
-	// double	ratio, ratio2;
 	double	ratio;
 
 	if (height <= midHeight)
 	{
-		ratio = height - minHeight / (midHeight - minHeight);
+		ratio = (height - minHeight) / (midHeight - minHeight);
 		glColor3f(0.0f, ratio, 1.0f - ratio);
 	}
 	else if (height <= maxHeight)
 	{
-		ratio = height - midHeight / (maxHeight - midHeight);
+		ratio = (height - midHeight) / (maxHeight - midHeight);
 		glColor3f(ratio, 1.0f - ratio, 0.0f);
-	}
-	else
-	{
-		glColor3f(1.0f , 1.0f, 1.0f);
 	}
 }
 
@@ -219,4 +238,116 @@ double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
 
 	// Z方向補間
 	return ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) * P0 + ((calibratedPPos.z) / (diagonalPoint.z)) * P1;
+}
+
+static void	add_bottom(std::deque<Triangle> &ts, const uint32_t mapSize[3])
+{
+	Vec	vertexA(0,0,-EPS);
+	Vec	vertexB(0, mapSize[Y] - 1,-EPS);
+	Vec	vertexC(mapSize[X] - 1,0,-EPS);
+
+	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = abs(ts.back().n.z);
+
+	vertexA = Vec(mapSize[X] - 1, mapSize[Y] - 1,-EPS);
+
+	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = abs(ts.back().n.z);
+}
+
+static void	add_top(std::deque<Triangle> &ts, const uint32_t mapSize[3])
+{
+	Vec	vertexA(0, 0,mapSize[Z] - 1);
+	Vec	vertexB(0, mapSize[Y] - 1,mapSize[Z] - 1);
+	Vec	vertexC(mapSize[X] - 1, 0,mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = -abs(ts.back().n.z);
+
+	vertexA = Vec(mapSize[X] - 1, mapSize[Y] - 1,mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = -abs(ts.back().n.z);
+}
+
+static void	add_leftSide(std::deque<Triangle> &ts, const uint32_t mapSize[3])
+{
+	Vec	vertexA(0, 0, 0);
+	Vec	vertexB(0, mapSize[Y] - 1, 0);
+	Vec	vertexC(0, 0, mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.x = abs(ts.back().n.x);
+
+	vertexA = Vec(0, mapSize[Y] - 1, mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.x = abs(ts.back().n.x);
+}
+
+static void	add_rightSide(std::deque<Triangle> &ts, const uint32_t mapSize[3])
+{
+	Vec	vertexA(mapSize[X] - 1, 0, 0);
+	Vec	vertexB(mapSize[X] - 1, mapSize[Y] - 1, 0);
+	Vec	vertexC(mapSize[X] - 1, 0, mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.x = -abs(ts.back().n.x);
+
+	vertexA = Vec(mapSize[X] - 1, mapSize[Y] - 1, mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.x = -abs(ts.back().n.x);
+}
+
+static void	add_deepInTheFront(std::deque<Triangle> &ts, const uint32_t mapSize[3])
+{
+	Vec	vertexA(0, 0, 0);
+	Vec	vertexB(mapSize[X] - 1, 0, 0);
+	Vec	vertexC(0, 0, mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.y = abs(ts.back().n.y);
+
+	vertexA = Vec(mapSize[X] - 1, 0, mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.y = abs(ts.back().n.y);
+}
+
+static void	add_front(std::deque<Triangle> &ts, const uint32_t mapSize[3])
+{
+	Vec	vertexA(0, mapSize[Y] - 1, 0);
+	Vec	vertexB(mapSize[X] - 1, mapSize[Y] - 1, 0);
+	Vec	vertexC(0, mapSize[Y] - 1, mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.y = -abs(ts.back().n.y);
+
+	vertexA = Vec(mapSize[X] - 1, mapSize[Y] - 1, mapSize[Z] - 1);
+
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.y = -abs(ts.back().n.y);
+}
+
+void	add_cube(std::deque<Triangle> &ts, const uint32_t mapSize[3])
+{
+	add_bottom(ts, mapSize);
+	add_top(ts, mapSize);
+	add_leftSide(ts, mapSize);
+	add_rightSide(ts, mapSize);
+	add_front(ts, mapSize);
+	add_deepInTheFront(ts, mapSize);
 }

@@ -91,19 +91,7 @@ void	BC::_CalcBucketsPos(const size_t i)
 	this->buckets[i].center += this->buckets[i].position + BUCKET_LENGTH / 2.0;
 }
 
-void	BC::_UpdateBuckets(const std::deque<Particle> &ps)
-{
-	for (size_t	i = 0; i < this->numOfBuckets; ++i)
-	{
-		this->buckets[i].firstPrtIdx     = UINT64_MAX;
-		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;		
-		if (i < NUM_OF_PARTICLES)
-		{
-			this->particleNextIdxs[i] = UINT64_MAX;
-		}
-	}
-	this->_UpdateParticlesInBuckets(ps);
-}
+
 
 Vec	BC::_MaxEachCoordinateOfVertex(const Vec &a, 
 									const Vec &b,
@@ -244,17 +232,20 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 	for (double	k = minCrd.z; size_t(k) <= size_t(maxCrd.z);) {
 				bucketIdx      = this->BC_CalcBucketIdx(bucketX, bucketY, bucketZ);
 				shortestDistSQ = this->_CalcShortestDistanceSQ(t, bucketIdx);
-				if (shortestDistSQ < this->buckets[bucketIdx].distFromWallSQ)
+				if (shortestDistSQ - EPS < this->buckets[bucketIdx].distFromWallSQ &&
+					this->buckets[bucketIdx].distFromWallSQ < shortestDistSQ + EPS)
+				{
+					this->buckets[bucketIdx].n += t.n;
+					if (shortestDistSQ < this->buckets[bucketIdx].distFromWallSQ)
+					{
+						this->buckets[bucketIdx].distFromWallSQ = shortestDistSQ;
+					}
+				}
+				else if (shortestDistSQ < this->buckets[bucketIdx].distFromWallSQ)
 				{
 					this->buckets[bucketIdx].n = t.n;
 					this->buckets[bucketIdx].distFromWallSQ = shortestDistSQ;
 				}
-				// else if (shortestDistSQ - EPS < this->buckets[bucketIdx].distFromWallSQ &&
-				// 		 this->buckets[bucketIdx].distFromWallSQ < shortestDistSQ + EPS)
-				// {
-				// 	this->buckets[bucketIdx].n += t.n;
-				// 	this->buckets[bucketIdx].n /= this->buckets[bucketIdx].n.Magnitude3d();
-				// }
 				k += BUCKET_LENGTH;
 				bucketZ = k / BUCKET_LENGTH;
 			}
@@ -265,6 +256,10 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 		bucketY = size_t(minCrd.y / BUCKET_LENGTH);
 		i += BUCKET_LENGTH;
 		bucketX = i / BUCKET_LENGTH;
+	}
+	for (size_t	i = 0; i < this->numOfBuckets; ++i)
+	{
+		this->buckets[bucketIdx].n /= this->buckets[bucketIdx].n.Magnitude3d();
 	}
 }
 
@@ -355,6 +350,20 @@ void	BC::BC_MakeBuckets(const std::deque<Particle> &ps)
 
 		this->_CalcBucketsPos(i);
 	
+		if (i < NUM_OF_PARTICLES)
+		{
+			this->particleNextIdxs[i] = UINT64_MAX;
+		}
+	}
+	this->_UpdateParticlesInBuckets(ps);
+}
+
+void	BC::BC_UpdateBuckets(const std::deque<Particle> &ps)
+{
+	for (size_t	i = 0; i < this->numOfBuckets; ++i)
+	{
+		this->buckets[i].firstPrtIdx     = UINT64_MAX;
+		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;		
 		if (i < NUM_OF_PARTICLES)
 		{
 			this->particleNextIdxs[i] = UINT64_MAX;

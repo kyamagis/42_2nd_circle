@@ -129,6 +129,10 @@ void	Triangle::CalcNormalVector()
 {
 	this->n = (this->b - this->a).CrossProduct3d(this->c - this->a);
 	this->n /= this->n.Magnitude3d();
+	if (this->n.z < 0.0)
+	{
+		this->n *= -1.0;
+	}
 	this->g = (this->a + this->b + this->c) / 3.0;
 }
 
@@ -164,7 +168,7 @@ void	Triangle::DrawTriangle(const int64_t	maxHeight,
 {
 	if (!this->visibleFlg)
 	{
-		// this->DrawFrame(midHeight, halfMapSize);
+		this->DrawFrame(midHeight, halfMapSize);
 		return ;
 	}
 	if (lineFlg || !this->visibleFlg)

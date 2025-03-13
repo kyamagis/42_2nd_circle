@@ -128,126 +128,14 @@ void	DT::_EraseTempTriangles(void)
 		else
 		{
 			(*itr).CalcNormalVector();
-			if ((*itr).n.z < 0.0)
-			{
-				(*itr).n *= -1.0;
-			}
 			++itr;
 		}
 	}
 }
 
-void	DT::_AddBottom(void)
-{
-	Vec	vertexA(0,0,-EPS);
-	Vec	vertexB(0, this->_mapSize[Y] - 1,-EPS);
-	Vec	vertexC(this->_mapSize[X] - 1,0,-EPS);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.z = abs(this->_triangles.back().n.z);
-
-	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1,-EPS);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.z = abs(this->_triangles.back().n.z);
-}
-
-void	DT::_AddTop(void)
-{
-	Vec	vertexA(0, 0,this->_mapSize[Z] - 1);
-	Vec	vertexB(0, this->_mapSize[Y] - 1,this->_mapSize[Z] - 1);
-	Vec	vertexC(this->_mapSize[X] - 1, 0,this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.z = -abs(this->_triangles.back().n.z);
-
-	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1,this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.z = -abs(this->_triangles.back().n.z);
-}
-
-
-void	DT::_AddLeftSide(void)
-{
-	Vec	vertexA(0, 0, 0);
-	Vec	vertexB(0, this->_mapSize[Y] - 1, 0);
-	Vec	vertexC(0, 0, this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.x = abs(this->_triangles.back().n.x);
-
-	vertexA = Vec(0, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.x = abs(this->_triangles.back().n.x);
-}
-
-void	DT::_AddRightSide(void)
-{
-	Vec	vertexA(this->_mapSize[X] - 1, 0, 0);
-	Vec	vertexB(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, 0);
-	Vec	vertexC(this->_mapSize[X] - 1, 0, this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.x = -abs(this->_triangles.back().n.x);
-
-	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.x = -abs(this->_triangles.back().n.x);
-}
-
-void	DT::_AddDeepInTheFront(void)
-{
-	Vec	vertexA(0, 0, 0);
-	Vec	vertexB(this->_mapSize[X] - 1, 0, 0);
-	Vec	vertexC(0, 0, this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.y = abs(this->_triangles.back().n.y);
-
-	vertexA = Vec(this->_mapSize[X] - 1, 0, this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.y = abs(this->_triangles.back().n.y);
-}
-
-void	DT::_AddFront(void)
-{
-	Vec	vertexA(0, this->_mapSize[Y] - 1, 0);
-	Vec	vertexB(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, 0);
-	Vec	vertexC(0, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.y = -abs(this->_triangles.back().n.y);
-
-	vertexA = Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, this->_mapSize[Z] - 1);
-
-	this->_triangles.push_back({vertexA, vertexB, vertexC, false, false});
-	this->_triangles.back().CalcNormalVector();
-	this->_triangles.back().n.y = -abs(this->_triangles.back().n.y);
-}
-
 void	DT::_AddCube(void)
 {
-	this->_AddBottom();
-	this->_AddTop();
-	this->_AddLeftSide();
-	this->_AddRightSide();
-	this->_AddFront();
-	this->_AddDeepInTheFront();
+	add_cube(this->_triangles, this->_mapSize);
 }
 
 std::deque<Triangle>	DT::Calculation(void)

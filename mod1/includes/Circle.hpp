@@ -13,6 +13,7 @@ class Circle
 
 	public:
 		Vec		center;
+		Vec		color;
 		double	r;
 		double	rSQ;
 

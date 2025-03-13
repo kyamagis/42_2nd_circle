@@ -51,10 +51,12 @@ bool	TerrestrialSimulation::SimulationStart(const int argc,
 		return false;
 	}
 
-	// std::deque<Triangle> cube = this->_CalcWeight(argc, argv);
-	DT	dT(this->_specificPoints, this->_mapSize, 
-		   this->_maxHeight, this->_minHeight);
-	std::deque<Triangle>	ts = dT.Calculation();
+	// DT	dT(this->_specificPoints, this->_mapSize, 
+	// 	   this->_maxHeight, this->_minHeight);
+	// std::deque<Triangle>	ts = dT.Calculation();
+
+	std::deque<Triangle>	ts;
+	add_cube(ts, this->_mapSize);
 
 	this->_DrawSimulation(argc, argv, ts);
 

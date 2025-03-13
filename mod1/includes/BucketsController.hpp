@@ -68,7 +68,7 @@ class BC
 		void	BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts);
 		size_t	BC_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);
 		size_t	BC_CalcBucketIdx(const Vec &v);
-		void	_UpdateBuckets(const std::deque<Particle> &ps);
+		void	BC_UpdateBuckets(const std::deque<Particle> &ps);
 
 		bool	BC_IsOutOfWallWeightRange(const double disFromWall);
 		double	BC_InterpolateWallWeight(const double interpolatedDist);

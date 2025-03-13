@@ -35,7 +35,7 @@ Particle::~Particle()
 
 void Particle::DrawParticle(const Vec &halfMapSize, const double midHeight)
 {
-	this->DrawCircle3d(halfMapSize, midHeight, 100);
+	this->DrawCircle3d(halfMapSize, midHeight, 50);
 }
 
 bool	Particle::operator==(const Particle &p) const

@@ -60,7 +60,7 @@ void defaultkeyboard(unsigned char key, int x, int y)
 
 void	drawVertex(const Vec &vertex)
 {
-	Vec	rotatedPos = vertex.Rotate(g_data.q);
+	const Vec	rotatedPos = vertex.Rotate(g_data.q);
 
 	const double	coordinateX = rotatedPos.x / double(g_data.mapSize[X]);
 	const double	coordinateY =  - 1.0 * (rotatedPos.y / double(g_data.mapSize[Y]));
@@ -182,11 +182,11 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.circleFlg = !g_data.circleFlg;
 			break;
 		case 'i':
-			// g_data.rad.x = M_PI / 12.0 * 5.0;
-			// g_data.rad.y = 0.0;
-			// g_data.rad.z = M_PI_4;
 			g_data.q = 0.0;
-			g_data.q = calcQuaternion(g_data.q, RADIAN * 5.0, Vec(1,0,0));
+			g_data.q = calcQuaternion(g_data.q, M_PI / 12 * 3, Vec(0,0,1));
+			g_data.q = calcQuaternion(g_data.q, M_PI / 12 * 5, Vec(1,0,0));
+			// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(1,0,0));
+			// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(0,1,0));
 			g_data.scaling = SCALING;
 			break;
 		case 'l':
@@ -241,6 +241,12 @@ void keyboard(unsigned char key, int x, int y)
 			return ;
 	}
 	glutPostRedisplay();
+}
+
+void	onWindowClose(void)
+{
+	glutDestroyWindow(g_data.gWindowID);
+	std::exit(EXIT_SUCCESS);
 }
 
 Graphic::Graphic()
@@ -305,10 +311,13 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.midHeight = (g_data.maxHeight + g_data.minHeight) / 2.0;
 	g_data.shrinkageRatioX = 1.0 / g_data.mapSize[X] * 2.0;
 	g_data.shrinkageRatioY = 1.0 / g_data.mapSize[Y] * 2.0;
-	g_data.rad.x = 5.0 * M_PI / 12;
+	g_data.rad.x = 0.0;
 	g_data.rad.y = 0.0;
 	g_data.rad.z = 0.0;
-	g_data.q = calcQuaternion(g_data.q, RADIAN * 5.0, Vec(1,0,0));
+	// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(1,0,0));
+	// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(0,1,0));
+	g_data.q = calcQuaternion(g_data.q, M_PI / 12 * 3, Vec(0,0,1));
+	g_data.q = calcQuaternion(g_data.q, M_PI / 12 * 5, Vec(1,0,0));
 	g_data.i = g_data.ts.size();
 	g_data.count = 0;
 	g_data.scaling = SCALING;
@@ -322,58 +331,3 @@ void	Graphic::KeyboardFunc(void (*func)(unsigned char key, int x, int y))
 {
 	glutKeyboardFunc(func);
 }
-
-
-void	onWindowClose(void)
-{
-	glutDestroyWindow(g_data.gWindowID);
-	std::exit(EXIT_SUCCESS);
-}
-
-
-// glShadeModel(GL_SMOOTH);
-// glBegin(GL_QUADS);
-// glColor3f(1.0f, 0.0f, 0.0f);
-// glVertex3f(-0.5, 0.5, 0);
-
-
-// glColor3f(0.0f, 1.0f, 0.0f);
-// glVertex3f(0.0, 0.0, 0);
-
-// glColor3f(0.0f, 0.0f, 1.0f);
-// glVertex3f(0.5, -0.5, 0);
-// glVertex3f(-0.5, -0.5, 0);
-// // glShadeModel(GL_SMOOTH);
-// // glBegin(GL_QUADS);
-
-
-
-
-// glColor3f(0.0f, 1.0f, 0.0f);
-// glVertex3f(0.0, 0.0, 0);
-
-
-// glEnd();
-
-
-// void drawCircle(double cx, double cy, double r, int num_segments) {
-// 	glBegin(GL_LINE_LOOP); // 円を線で描く
-// 	glColor3f(0.0, 1.0, 0.0);
-
-// 	cx = double(cx) / g_data.mapSize[X];
-// 	cy = - 1.0 * (double(cy) / g_data.mapSize[Y]);
-// 	r = sqrt(r) / g_data.mapSize[X];
-
-// 	for (int i = 0; i < num_segments; i++) {
-// 		double theta = 2.0 * M_PI * double(i) / double(num_segments); // 角度
-// 		double x = r * cos(theta); // X座標
-// 		double y = r * sin(theta); // Y座標
-// 		glVertex2d((cx + x) * g_data.scaling, (cy + y) * g_data.scaling);
-// 	}
-// 	glEnd();
-// }
-
-// void drawCircle(const Triangle &t, int num_segments) 
-// {
-// 	drawCircle(t.circumcircle.center.x, t.circumcircle.center.y, t.circumcircle.r, num_segments);
-// }

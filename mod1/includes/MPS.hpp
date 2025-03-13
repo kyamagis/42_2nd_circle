@@ -39,8 +39,7 @@ class MPS: public BC
 										Vec &acceleration, 
 										const size_t particleIdx,
 										const double distanceSQP);
-		void	_CalcOneOnOneCollision(const Vec &oneselfPos,
-										const Vec &oneselfVel,
+		void	_CalcOneOnOneCollision(const Vec &oneselfVel,
 										Vec &acceleration, 
 										const size_t particleIdx,
 										const Vec &dr,
@@ -75,6 +74,7 @@ class MPS: public BC
 		void	_PressureGradientTerm(void);
 		void	_UpdateVPA1(void);
 		void	_UpdateVPA2(void);
+		void	_UpdateVPA3(void);
 
 	public:
 		std::deque<Particle> ps;

@@ -1,6 +1,7 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 #include <cmath>
+#include <omp.h>
 
 #include "../includes/Circle.hpp"
 #include "../includes/Graphic.hpp"
@@ -64,7 +65,9 @@ void Circle::DrawCircle2d(const Vec &halfMapSize,
 	glEnd();
 }
 
-void drawSphere(float radius, int slices, int stacks) {
+void drawSphere(float radius, int slices, int stacks)
+{
+	#pragma omp for
     for (int i = 0; i < stacks; ++i) {
         float theta1 = i * M_PI / stacks;
         float theta2 = (i + 1) * M_PI / stacks;
@@ -99,7 +102,7 @@ void Circle::DrawCircle3d(const Vec &halfMapSize,
 	const size_t	halfSegments = num_segments / 2 + 1;
 
 	glBegin(GL_LINE_STRIP);
-	glColor3f(0.5, 0.5, 1);
+	glColor3f(this->color.x, this->color.y, this->color.z);
 
 	for (size_t i = 0; i < num_segments; ++i)
 	{
