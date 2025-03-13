@@ -87,9 +87,8 @@ void	RenderingAlgorithm()
 	{
 		if (g_data.circleFlg == true)
 		{
-			g_data.ts[i].circumcircle.DrawCircle2d(g_data.mapSize,
-													g_data.halfMapSize, 
-													g_data.scaling, 100);
+			g_data.ts[i].circumcircle.DrawCircle2d(g_data.halfMapSize, 
+													g_data.midHeight, 100);
 		}
 		// g_data.ts[i].DrawNormalVector(g_data.midHeight, g_data.halfMapSize);
 		g_data.ts[i].DrawTriangle(g_data.maxHeight,

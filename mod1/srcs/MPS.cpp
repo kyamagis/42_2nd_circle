@@ -75,15 +75,15 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 	double			x = radius;
 	double			y = radius;
 
-	for (size_t	yIdx = 0; yIdx < maxYIdx && pIdx < psSize; ++yIdx, ++pIdx)
+	for (size_t	yIdx = 0; yIdx < maxYIdx && pIdx < psSize; ++yIdx)
 	{
 		y += yIdx * diameter;
 		ps[pIdx].center.y = y;
-		for (size_t	xIdx = 0; xIdx < maxXIdx && pIdx < psSize; ++xIdx, ++pIdx) 
+		for (size_t	xIdx = 0; xIdx < maxXIdx && pIdx < psSize; ++xIdx) 
 		{
 			x += xIdx * diameter;
 			ps[pIdx].center.x = x;
-			for (size_t	zIdx = 0; zIdx < maxZIdx && pIdx < psSize; ++zIdx, ++pIdx) 
+			for (size_t	zIdx = 0; zIdx < maxZIdx && pIdx < psSize; ++zIdx) 
 			{
 				ps[pIdx].center.x = x;
 				ps[pIdx].center.y = y;
@@ -91,6 +91,7 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 				ps[pIdx].r = RADIUS;
 				ps[pIdx].velocity = 0.0;
 				ps[pIdx].acceleration = 0.0;
+				++pIdx;
 			}	
 		}
 	}
@@ -560,7 +561,7 @@ void	MPS::_UpdateVPA2(void)
 void	MPS::NavierStokesEquations(void)
 {
 	// Print::OutWords(this->ps.back());
-	for (double time = 0.0; time < 0.5; time += 0.5)
+	for (double time = 0.0; time < 0.5; time += DELTA_TIME)
 	{
 		this->_UpdateBuckets(this->ps);
 		this->_ViscosityAndGravityTerm();
@@ -592,16 +593,24 @@ void	MPS::NavierStokesEquations(void)
 	// }
 }
 
+// void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
+// {
+// 	glPointSize(2.0f);
+// 	glBegin(GL_POINTS);
+// 	glColor3f(0.5, 0.5, 1);
+// 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+// 	{
+// 		drawVertex(move_vec_to_map_center(this->ps[i].center, halfMapSize, midHeight));
+// 	}
+// 	glEnd();
+// }
+
 void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
 {
-	glPointSize(2.0f);
-	glBegin(GL_POINTS);
-	glColor3f(0.5, 0.5, 1);
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
-		drawVertex(move_vec_to_map_center(this->ps[i].center, halfMapSize, midHeight));
+		this->ps[i].DrawParticle(halfMapSize, midHeight);
 	}
-	glEnd();
 }
 
 // MPS::MPS(const MPS &mps): MPS

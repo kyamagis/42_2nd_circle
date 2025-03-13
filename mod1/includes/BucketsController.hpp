@@ -30,8 +30,6 @@ class BC
 		const Vec				_totalMapSize;
 		const std::deque<Vec>	_weights;
 		t_bucket				*_bucketLast;
-		
-
 	
 		void	_UpdateParticlesInBuckets(const std::deque<Particle> &ps);
 		Vec		_MaxEachCoordinateOfVertex(const Vec &a, 

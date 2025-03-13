@@ -30,7 +30,7 @@ double	Triangle::CalcDistanceFromCenterSQ(const Vec &point) const
 
 bool	Triangle::IsInsideCircumcircle(const Vec &point) const
 {
-	return  this->CalcDistanceFromCenterSQ(point) + EPS < this->circumcircle.r;
+	return  this->CalcDistanceFromCenterSQ(point) + EPS < this->circumcircle.rSQ;
 }
 
 
@@ -72,13 +72,14 @@ void	Triangle::CalcCircumcircle()
 		// std::cout << "det is 0" << std::endl;
 		this->circumcircle.center.x = 0.0;
 		this->circumcircle.center.y = 0.0;
-		this->circumcircle.r = 0.0;
+		this->circumcircle.rSQ = 0.0;
 		return;
 	}
 
 	this->circumcircle.center.x = (abConstNum * acCoeff[1] - acConstNum * abCoeff[1]) / det;
 	this->circumcircle.center.y = (abCoeff[0] * acConstNum - acCoeff[0] * abConstNum) / det;
-	this->circumcircle.r = this->a.MagnitudeSQ2d(this->circumcircle.center);
+	this->circumcircle.rSQ = this->a.MagnitudeSQ2d(this->circumcircle.center);
+	this->circumcircle.r   = sqrt(this->circumcircle.rSQ);
 }
 
 bool	Triangle::InternalAndExternalJudgments2d(const Vec &point) const

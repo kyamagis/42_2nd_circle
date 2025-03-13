@@ -14,20 +14,23 @@ class Circle
 	public:
 		Vec		center;
 		double	r;
+		double	rSQ;
 
 		Circle();
-		Circle(const double &cX, const double &cY, const double &cZ, const double &R);
+		Circle(const double &cX, const double &cY, const double &cZ, 
+			   const double &_r, const double &_rSQ);
 		Circle(const Circle &c);
 		virtual ~Circle();
 
-		void DrawCircle2d(const uint32_t mapSize[3], 
-							const Vec &halfMapSize,
-							const double scaling, 
-							const int num_segments);
-		void DrawCircle3d(const uint32_t mapSize[3], 
-							const Vec &halfMapSize,
-							const double scaling,
-							const int num_segments);
+		void _DrawCircle(const Vec &halfMapSize,
+						const double midHeight,
+						const size_t num_segments, Vec &c);
+		void DrawCircle2d(const Vec &halfMapSize,
+							const double midHeight,
+							const size_t num_segments);
+		void DrawCircle3d(const Vec &halfMapSize,
+							const double midHeight,
+							const size_t num_segments);
 		Circle&	operator=(const Circle &c);
 		bool	operator==(const Circle &c) const;
 };

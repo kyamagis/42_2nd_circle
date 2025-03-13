@@ -220,28 +220,3 @@ double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
 	// Z方向補間
 	return ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) * P0 + ((calibratedPPos.z) / (diagonalPoint.z)) * P1;
 }
-
-// int main() {
-//     // 補間したい点
-//     double x = 2.5, y = 2.5, z = 2.5;
-    
-//     // 格子点の座標
-//     double x1 = 2.0, x2 = 3.0;
-//     double y1 = 2.0, y2 = 3.0;
-//     double z1 = 2.0, z2 = 3.0;
-
-//     // 各格子点の値（仮のデータ）
-//     double Q000 = 1.0, Q100 = 2.0, Q010 = 1.5, Q110 = 2.5;
-//     double Q001 = 1.2, Q101 = 2.2, Q011 = 1.7, Q111 = 2.7;
-
-//     // 三線形補間を実行
-//     double interpolatedValue = trilinearInterpolation(x, y, z, 
-//                                                       x1, x2, y1, y2, z1, z2,
-//                                                       Q000, Q100, Q010, Q110, 
-//                                                       Q001, Q101, Q011, Q111);
-
-//     std::cout << "Interpolated Value at (" << x << ", " << y << ", " << z << "): " 
-//               << interpolatedValue << std::endl;
-
-//     return 0;
-// }

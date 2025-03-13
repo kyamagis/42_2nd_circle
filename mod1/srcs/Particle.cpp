@@ -10,14 +10,15 @@ Particle::Particle():Circle(), velocity(), acceleration(), pressure(0),  validFl
 Particle::Particle(const double &cX, 
 				   const double &cY, 
 				   const double &cZ, 
-				   const double &R):Circle(cX, cY, cZ, R), velocity(), acceleration(), pressure(0), validFlag(true)
+				   const double &R):Circle(cX, cY, cZ, R, R * R), velocity(), acceleration(), pressure(0), validFlag(true)
 {
 
 }
 
 Particle::Particle(const double &cX, 
 				   const double &cY, 
-				   const double &cZ):Circle(cX, cY, cZ, RADIUS), velocity(), acceleration(), pressure(0), validFlag(true)
+				   const double &cZ):Circle(cX, cY, cZ, RADIUS, RADIUS * RADIUS), 
+				   					 velocity(), acceleration(), pressure(0), validFlag(true)
 {
 
 }
@@ -32,9 +33,9 @@ Particle::~Particle()
 
 }
 
-void	Particle::MoveVertexToMapCenterP(const Vec &halfMapSize, const double midHeight)
+void Particle::DrawParticle(const Vec &halfMapSize, const double midHeight)
 {
-	move_vec_to_map_center(this->center, halfMapSize, midHeight);
+	this->DrawCircle3d(halfMapSize, midHeight, 100);
 }
 
 bool	Particle::operator==(const Particle &p) const

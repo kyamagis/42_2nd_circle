@@ -88,7 +88,7 @@ void	BC::_CalcBucketsPos(const size_t i)
 	this->buckets[i].bucketX = bucketXY % this->bucketColumn;
 	this->buckets[i].position.x = BUCKET_LENGTH * this->buckets[i].bucketX;
 
-	this->buckets[i].center += this->buckets[i].position +  BUCKET_LENGTH / 2.0;
+	this->buckets[i].center += this->buckets[i].position + BUCKET_LENGTH / 2.0;
 }
 
 void	BC::_UpdateBuckets(const std::deque<Particle> &ps)
