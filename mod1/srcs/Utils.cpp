@@ -235,6 +235,23 @@ double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
 	return ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) * P0 + ((calibratedPPos.z) / (diagonalPoint.z)) * P1;
 }
 
+// static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
+// {
+// 	Vec	vertexA(0,0,-EPS);
+// 	Vec	vertexB(0, mapSize.y - 1, -EPS);
+// 	Vec	vertexC(mapSize.x - 1, 0, -EPS);
+
+// 	ts.push_back({vertexA, vertexB, vertexC, false});
+// 	ts.back().CalcNormalVector();
+// 	ts.back().n.z = abs(ts.back().n.z);
+
+// 	vertexA = Vec(mapSize.x - 1, mapSize.y - 1, -EPS);
+
+// 	ts.push_back({vertexA, vertexB, vertexC, false});
+// 	ts.back().CalcNormalVector();
+// 	ts.back().n.z = abs(ts.back().n.z);
+// }
+
 static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(0,0,0);

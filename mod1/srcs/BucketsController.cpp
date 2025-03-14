@@ -388,14 +388,14 @@ void	BC::BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts)
 		{
 			this->buckets[i].n /= this->buckets[i].n.Magnitude3d();
 		}
-		if (this->buckets[i].bucketX == 8 &&
-			this->buckets[i].bucketZ == 0)
-		{
-			Print::OutWords("i: ", i, 
-							this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
-							sqrt(this->buckets[i].distFromWallSQ),
-							this->buckets[i].n, this->bucketColumn);
-		}
+		// if (this->buckets[i].bucketX == 8 &&
+		// 	this->buckets[i].bucketZ == 8)
+		// {
+		// 	Print::OutWords("i: ", i, 
+		// 					this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
+		// 					sqrt(this->buckets[i].distFromWallSQ),
+		// 					this->buckets[i].n, this->bucketColumn);
+		// }
 	}
 }
 

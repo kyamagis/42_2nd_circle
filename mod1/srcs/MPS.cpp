@@ -575,12 +575,13 @@ void	MPS::NavierStokesEquations(void)
 		this->_ViscosityAndGravityTerm();
 		this->_UpdateVPA1();
 		this->_CalcParticlesCollision();
-		this->_CalcParticlesPressure();
-		this->_PressureGradientTerm();
-		this->_UpdateVPA2();
+		// this->_CalcParticlesPressure();
+		// this->_PressureGradientTerm();
+		// this->_UpdateVPA2();
+	
 		// this->_CalcParticlesPressure();
 
-		// this->_UpdateVPA3();
+		this->_UpdateVPA3();
 		std::cout <<std::fixed << std::setprecision(1)
 				  << time / maxTime * 100
 				  << " %\r" << std::flush;

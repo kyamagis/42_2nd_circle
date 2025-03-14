@@ -292,10 +292,10 @@ void	Graphic::GraphicLoop(void)
 
 double	extend_map(const uint32_t mapSize)
 {	
-	const uint32_t	num = (uint32_t)(mapSize / BUCKET_LENGTH);
-	const double	diff = mapSize - num * BUCKET_LENGTH;
+	const uint32_t	num = (uint32_t)((mapSize - 1) / BUCKET_LENGTH);
+	const double	diff = mapSize - 1 - num * BUCKET_LENGTH;
 
-	return mapSize + BUCKET_LENGTH + BUCKET_LENGTH - diff;
+	return mapSize - 1 + BUCKET_LENGTH - diff;
 }
 
 void	Graphic::InitGraphicData(const std::deque<Triangle> &ts, 
@@ -303,13 +303,13 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 								 const int64_t maxHeight,
 								 const int64_t minHeight)
 {
-	// g_data.mapSize.x = extend_map(mapSize[X]);
-	// g_data.mapSize.y = extend_map(mapSize[Y]);
-	// g_data.mapSize.z = extend_map(mapSize[Z]);
+	g_data.mapSize.x = extend_map(mapSize[X]);
+	g_data.mapSize.y = extend_map(mapSize[Y]);
+	g_data.mapSize.z = extend_map(mapSize[Z]);
 
-	g_data.mapSize.x = mapSize[X];
-	g_data.mapSize.y = mapSize[Y];
-	g_data.mapSize.z = mapSize[Z];
+	// g_data.mapSize.x = mapSize[X];
+	// g_data.mapSize.y = mapSize[Y];
+	// g_data.mapSize.z = mapSize[Z];
 	g_data.halfMapSize.x = g_data.mapSize.x / 2.0;
 	g_data.halfMapSize.y = g_data.mapSize.y / 2.0;
 	g_data.halfMapSize.z = g_data.mapSize.z / 2.0;
