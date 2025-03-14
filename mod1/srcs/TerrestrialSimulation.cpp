@@ -56,7 +56,6 @@ bool	TerrestrialSimulation::SimulationStart(const int argc,
 	// std::deque<Triangle>	ts = dT.Calculation();
 
 	std::deque<Triangle>	ts;
-	add_cube(ts, this->_mapSize);
 
 	this->_DrawSimulation(argc, argv, ts);
 

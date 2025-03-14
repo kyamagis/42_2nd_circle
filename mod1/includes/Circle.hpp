@@ -5,8 +5,6 @@
 #include <string>
 #include "./Vec.hpp"
 
-// class Vec;
-
 class Circle
 {
 	private:

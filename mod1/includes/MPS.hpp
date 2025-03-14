@@ -83,7 +83,7 @@ class MPS: public BC
 		Vec			g;
 		double		n0;
 
-		MPS(const uint32_t mapSize[3], 
+		MPS(const Vec mapSize, 
 		   const std::deque<Triangle> &ts);
 		~MPS();
 		MPS(const MPS &mps);

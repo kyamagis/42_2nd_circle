@@ -16,7 +16,6 @@ double  max_of_3_elm(const double aX, const double bX, const double cX);
 double	min_of_3_elm(const double aX, const double bX, const double cX);
 void	assign_power_of_two(uint32_t &x, uint32_t &y, uint32_t &z);
 
-double	extend_map(const uint32_t mapSize);
 size_t	to_bucket_coor(const double coordinate);
 
 Vec		gradation(const int64_t	maxHeight,
@@ -37,6 +36,6 @@ double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
 								double dist_000, double dist_100, double dist_010, double dist_110, 
 								double dist_001, double dist_101, double dist_011, double dist_111);
 
-void	add_cube(std::deque<Triangle> &ts, const uint32_t mapSize[3]);
+void	add_cube(std::deque<Triangle> &ts, const Vec &mapSize);
 
 #endif

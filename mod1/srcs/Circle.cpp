@@ -67,7 +67,6 @@ void Circle::DrawCircle2d(const Vec &halfMapSize,
 
 void drawSphere(float radius, int slices, int stacks)
 {
-	#pragma omp for
     for (int i = 0; i < stacks; ++i) {
         float theta1 = i * M_PI / stacks;
         float theta2 = (i + 1) * M_PI / stacks;
@@ -126,7 +125,6 @@ void Circle::DrawCircle3d(const Vec &halfMapSize,
 			drawVertex(move_vec_to_map_center(south, halfMapSize, midHeight));
 		}
 	}
-	// Print::OutWords(this->center, north, south);
 	glEnd();
 }
 

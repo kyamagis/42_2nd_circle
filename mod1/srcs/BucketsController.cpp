@@ -388,14 +388,14 @@ void	BC::BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts)
 		{
 			this->buckets[i].n /= this->buckets[i].n.Magnitude3d();
 		}
-		// if (this->buckets[i].bucketX == 7 &&
-		// 	this->buckets[i].bucketZ == 0)
-		// {
-		// 	Print::OutWords("i: ", i, 
-		// 					this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
-		// 					sqrt(this->buckets[i].distFromWallSQ),
-		// 					this->buckets[i].n);
-		// }
+		if (this->buckets[i].bucketX == 8 &&
+			this->buckets[i].bucketZ == 0)
+		{
+			Print::OutWords("i: ", i, 
+							this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
+							sqrt(this->buckets[i].distFromWallSQ),
+							this->buckets[i].n, this->bucketColumn);
+		}
 	}
 }
 
@@ -512,21 +512,17 @@ void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
 	glBegin(GL_POINTS);
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		if (this->buckets[i].bucketX == 7 &&
-			this->buckets[i].bucketZ == 0)
+		if (this->buckets[i].distFromWallSQ < maxDis)
 		{
-			if (this->buckets[i].distFromWallSQ < maxDis)
+			if (this->buckets[i].distFromWallSQ < midDis)
 			{
-				if (this->buckets[i].distFromWallSQ < midDis)
-				{
-					glColor3f(0, this->buckets[i].distFromWallSQ / midDis, 1 - this->buckets[i].distFromWallSQ / midDis);
-				}
-				else
-				{
-					glColor3f(this->buckets[i].distFromWallSQ / midDis, 1 - this->buckets[i].distFromWallSQ / midDis, 0);
-				}
-				drawVertex(move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight));
+				glColor3f(0, this->buckets[i].distFromWallSQ / midDis, 1 - this->buckets[i].distFromWallSQ / midDis);
 			}
+			else
+			{
+				glColor3f(this->buckets[i].distFromWallSQ / midDis, 1 - this->buckets[i].distFromWallSQ / midDis, 0);
+			}
+			drawVertex(move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight));
 		}
 	}
 	glEnd();

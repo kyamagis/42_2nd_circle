@@ -31,13 +31,7 @@ class DT
 		void	_EraseTempTriangles(void);
 		void	_IntegrateTriangles(void);
 
-		void	_AddBottom(void);
-		void	_AddTop(void);
-		void	_AddLeftSide(void);
-		void	_AddRightSide(void);
-		void	_AddFront(void);
-		void	_AddDeepInTheFront(void);
-		void	_AddCube(void);
+		// void	_AddCube(void);
 
 	public:
 		DT(const std::deque<Vec> &specificPoints,

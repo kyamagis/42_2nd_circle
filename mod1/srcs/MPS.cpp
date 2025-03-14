@@ -14,11 +14,10 @@ static size_t g_o;
 
 // totalMapSize(extend_map(mapSize[X]), extend_map(mapSize[Y]), extend_map(mapSize[Z]))
 
-MPS::MPS(const uint32_t	mapSize[3], 
-		const std::deque<Triangle> &ts)
-		:BC(Vec(mapSize[X], mapSize[Y], mapSize[Z]), 
-			Vec(mapSize[X], mapSize[Y], mapSize[Z])), 
-		visibleMapSize(mapSize[X], mapSize[Y], mapSize[Z]) ,
+MPS::MPS(const Vec	mapSize, 
+		 const std::deque<Triangle> &ts)
+		:BC(Vec(mapSize), Vec(mapSize)), 
+		visibleMapSize(mapSize) ,
 		totalMapSize(this->visibleMapSize),
 		g(0, 0, -9.8)
 {
@@ -47,9 +46,6 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 	const size_t	maxZIdx = (this->totalMapSize.z / DIAMETER) / 2;
 	const size_t	psSize  = this->ps.size();
 	const double	initPos = DIAMETER * 2.0;
-	// const double	radius  = RADIUS * 0.7;
-	const double	radius  = RADIUS;
-	const double	diameter  =  radius * 2.0;
 	double			x;
 	double			y;
 
@@ -57,17 +53,17 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 
 	for (size_t	yIdx = 0; yIdx < maxYIdx && pIdx < psSize; ++yIdx) 
 	{
-		y = radius + yIdx * diameter;
+		y = RADIUS + yIdx * DIAMETER;
 		for (size_t	xIdx = 0; xIdx < maxXIdx && pIdx < psSize; ++xIdx)
 		{
-			x = radius + xIdx * diameter;
+			x = RADIUS + xIdx * DIAMETER;
 			for (size_t	zIdx = 0; zIdx < maxZIdx && pIdx < psSize; ++zIdx)
 			{
 				ps[pIdx].center.x = x;
 				ps[pIdx].center.y = y;
-				ps[pIdx].center.z = initPos + zIdx * diameter;
+				ps[pIdx].center.z = initPos + zIdx * DIAMETER;
 				ps[pIdx].r = RADIUS;
-				ps[pIdx].color = gradation(initPos + (maxZIdx - 1) * diameter, 
+				ps[pIdx].color = gradation(initPos + (maxZIdx - 1) * DIAMETER, 
 										   initPos, ps[pIdx].center.z);
 				ps[pIdx].velocity = 0.0;
 				ps[pIdx].acceleration = 0.0;
@@ -456,6 +452,8 @@ bool	MPS::_CheckOutOfRange(const Vec &pos)
 void	MPS::_ViscosityAndGravityTerm(void)
 {
 	double	noMeaning = 0;
+	#pragma omp parallel for schedule(dynamic, 64)
+
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -468,6 +466,8 @@ void	MPS::_ViscosityAndGravityTerm(void)
 
 void	MPS::_UpdateVPA1(void)
 {
+	#pragma omp parallel for
+
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -484,6 +484,8 @@ void	MPS::_UpdateVPA1(void)
 void	MPS::_CalcParticlesCollision(void)
 {
 	double	noMeaning = 0;
+	#pragma omp parallel for schedule(dynamic, 64)
+
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -503,6 +505,7 @@ void	MPS::_CalcParticlesCollision(void)
 void	MPS::_CalcParticlesPressure(void)
 {
 	double	noMeaning = 0;
+	#pragma omp parallel for schedule(dynamic, 64)
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -515,6 +518,8 @@ void	MPS::_CalcParticlesPressure(void)
 void	MPS::_PressureGradientTerm(void)
 {
 	double	minPressure;
+	#pragma omp parallel for schedule(dynamic, 64)
+
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -528,6 +533,8 @@ void	MPS::_PressureGradientTerm(void)
 
 void	MPS::_UpdateVPA2(void)
 {
+	#pragma omp parallel for
+
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -543,6 +550,8 @@ void	MPS::_UpdateVPA2(void)
 
 void	MPS::_UpdateVPA3(void)
 {
+	#pragma omp parallel for
+
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -558,7 +567,9 @@ void	MPS::_UpdateVPA3(void)
 
 void	MPS::NavierStokesEquations(void)
 {
-	for (double time = 0.0; time < 0.5; time += 0.5)
+	const double maxTime = ONE_SECOUD;
+
+	for (double time = 0.0; time < maxTime; time += DELTA_TIME)
 	{
 		this->BC_UpdateBuckets(this->ps);
 		this->_ViscosityAndGravityTerm();
@@ -571,7 +582,7 @@ void	MPS::NavierStokesEquations(void)
 
 		// this->_UpdateVPA3();
 		std::cout <<std::fixed << std::setprecision(1)
-				  << time / 0.5 * 100
+				  << time / maxTime * 100
 				  << " %\r" << std::flush;
 	}
 	std::cout <<  std::endl;
@@ -592,29 +603,20 @@ void	MPS::NavierStokesEquations(void)
 	// }
 }
 
-// void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
-// {
-// 	glPointSize(2.0f);
-// 	glBegin(GL_POINTS);
-// 	glColor3f(0.5, 0.5, 1);
-// 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-// 	{
-// 		drawVertex(move_vec_to_map_center(this->ps[i].center, halfMapSize, midHeight));
-// 	}
-// 	glEnd();
-// }
+// #include <GL/glut.h>
+// #include <GL/freeglut.h>
 
 void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
 {
+	// #pragma omp parallel for
+	// glBegin(GL_LINE_STRIP);
+	
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
-		// if(i == 224 || i == 231)
-		// {
-		// 	this->ps[i].DrawParticle(halfMapSize, midHeight);
-
-		// }
 		this->ps[i].DrawParticle(halfMapSize, midHeight);
 	}
+	// glEnd();
+
 }
 
 // MPS::MPS(const MPS &mps): MPS

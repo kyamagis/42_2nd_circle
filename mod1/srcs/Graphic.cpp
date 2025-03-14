@@ -9,8 +9,7 @@
 
 typedef struct s_data
 {
-	int64_t 				**map;
-	uint32_t				mapSize[3];
+	Vec						mapSize;
 	Vec						halfMapSize;
 	std::deque<Triangle>	ts;
 	MPS						*mps;
@@ -18,8 +17,6 @@ typedef struct s_data
 	int64_t	maxHeight;
 	int64_t	minHeight;
 	double	midHeight;
-	double	shrinkageRatioX;
-	double	shrinkageRatioY;
 	Vec		rad;
 	Quaternion q;
 	double	scaling;
@@ -62,9 +59,9 @@ void	drawVertex(const Vec &vertex)
 {
 	const Vec	rotatedPos = vertex.Rotate(g_data.q);
 
-	const double	coordinateX = rotatedPos.x / double(g_data.mapSize[X]);
-	const double	coordinateY =  - 1.0 * (rotatedPos.y / double(g_data.mapSize[Y]));
-	const double	coordinateZ = rotatedPos.z / double(g_data.midHeight);
+	const double	coordinateX = rotatedPos.x / g_data.mapSize.x;
+	const double	coordinateY =  - 1.0 * (rotatedPos.y / g_data.mapSize.y);
+	const double	coordinateZ = rotatedPos.z / g_data.midHeight;
 
 	glVertex3f(coordinateX * g_data.scaling, 
 			   coordinateY * g_data.scaling, 
@@ -293,24 +290,36 @@ void	Graphic::GraphicLoop(void)
 	glutMainLoop();
 }
 
+double	extend_map(const uint32_t mapSize)
+{	
+	const uint32_t	num = (uint32_t)(mapSize / BUCKET_LENGTH);
+	const double	diff = mapSize - num * BUCKET_LENGTH;
+
+	return mapSize + BUCKET_LENGTH + BUCKET_LENGTH - diff;
+}
+
 void	Graphic::InitGraphicData(const std::deque<Triangle> &ts, 
 								 const uint32_t mapSize[3],
 								 const int64_t maxHeight,
 								 const int64_t minHeight)
 {
+	// g_data.mapSize.x = extend_map(mapSize[X]);
+	// g_data.mapSize.y = extend_map(mapSize[Y]);
+	// g_data.mapSize.z = extend_map(mapSize[Z]);
+
+	g_data.mapSize.x = mapSize[X];
+	g_data.mapSize.y = mapSize[Y];
+	g_data.mapSize.z = mapSize[Z];
+	g_data.halfMapSize.x = g_data.mapSize.x / 2.0;
+	g_data.halfMapSize.y = g_data.mapSize.y / 2.0;
+	g_data.halfMapSize.z = g_data.mapSize.z / 2.0;
 	g_data.ts = ts;
-	g_data.mps = new MPS(mapSize, ts);
-	g_data.mapSize[X] = mapSize[X];
-	g_data.mapSize[Y] = mapSize[Y];
-	g_data.mapSize[Z] = mapSize[Z];
-	g_data.halfMapSize.x = mapSize[X] / 2.0;
-	g_data.halfMapSize.y = mapSize[Y] / 2.0;
-	g_data.halfMapSize.z = mapSize[Z] / 2.0;
+	add_cube(g_data.ts, g_data.mapSize);
+	g_data.mps = new MPS(g_data.mapSize, g_data.ts);
+
 	g_data.maxHeight = maxHeight;
 	g_data.minHeight = minHeight;
 	g_data.midHeight = (g_data.maxHeight + g_data.minHeight) / 2.0;
-	g_data.shrinkageRatioX = 1.0 / g_data.mapSize[X] * 2.0;
-	g_data.shrinkageRatioY = 1.0 / g_data.mapSize[Y] * 2.0;
 	g_data.rad.x = 0.0;
 	g_data.rad.y = 0.0;
 	g_data.rad.z = 0.0;

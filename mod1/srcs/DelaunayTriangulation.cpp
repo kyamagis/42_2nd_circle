@@ -133,10 +133,10 @@ void	DT::_EraseTempTriangles(void)
 	}
 }
 
-void	DT::_AddCube(void)
-{
-	add_cube(this->_triangles, this->_mapSize);
-}
+// void	DT::_AddCube(void)
+// {
+// 	add_cube(this->_triangles, this->_mapSize);
+// }
 
 std::deque<Triangle>	DT::Calculation(void)
 {
@@ -154,6 +154,5 @@ std::deque<Triangle>	DT::Calculation(void)
 	std::cout <<  std::endl << "Delaunay Triangulation Done" << std::endl;
 
 	this->_EraseTempTriangles();
-	this->_AddCube();
 	return this->_triangles;
 }
