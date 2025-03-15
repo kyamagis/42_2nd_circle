@@ -295,48 +295,22 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 		case e_COLLISION:
 			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
 			{
-				// nVector = this->buckets[currentBIdx].n;
 				nVector = calc_n_vec(distFromWallSQs);
 				closing = this->ps[oneself].velocity.DotProduct3d(nVector);
-
-				// if (oneself == 0)
-				// {
-				// 	Print::OutWords(oneself, this->ps[oneself].velocity, nVector, closing);
-				// }
 				if (closing < 0.0)
 				{
-					// Print::OutWords(oneself, this->ps[oneself].velocity, nVector, closing);
 					acceleration += nVector * REPULSION_COEFFICIENT * (-closing);
 				}
 			}
 			break;
 		case e_PRESSURE:
-			if (distFromWallSQ < E_RADIUS_SQ)
-			{
-				ni += this->_WallWeight(sqrt(distFromWallSQ));
-				// if (oneself == 0)
-				// {
-				// 	Print::OutWords(oneself, acceleration, this->n0, ni, this->_WallWeight(sqrt(distFromWallSQ)), sqrt(distFromWallSQ));
-				// }
-			}
 			break;
 		case e_PGRADIENT2:
-			if (distFromWallSQ < E_RADIUS_SQ)
+			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
 			{
 				distFromWall = sqrt(distFromWallSQ);
-				wallWeight   = this->_WallWeight(distFromWall);
-				// nVector      = this->buckets[currentBIdx].n;
 				nVector = calc_n_vec(distFromWallSQs);
-				
-				if (0.0 < wallWeight)
-				{
-					if (distFromWall < 0.1)
-					{
-						distFromWall = 0.1;
-					}
-					double pressureGrad = this->ps[oneself].pressure / (distFromWall * distFromWall);
-					acceleration += nVector * pressureGrad * wallWeight;
-				}
+				acceleration -= nVector * DENSITY_OF_PARTICLES * (E_RADIUS - distFromWall);
 			}
 		default:
 			break;
@@ -399,23 +373,6 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 	for (size_t	otherBY = otherBEdgeY; otherBY <= maxBY ; ++otherBY){
 	for (size_t	otherBZ = otherBEdgeZ; otherBZ <= maxBZ ; ++otherBZ){
 		bucketIdx   = this->BC_CalcBucketIdx(otherBX, otherBY, otherBZ);
-		// if (oneself == 2)
-		// {
-		// 	switch (e)
-		// 	{
-		// 		case e_VISCOSITY:
-		// 			break;
-		// 		case e_COLLISION:
-		// 			break;
-		// 		default:
-		// 			break;
-		// 	}
-		// 	Print::OutWords(this->numOfBuckets, bucketIdx, this->ps[oneself].center, otherBX, otherBY, otherBZ);
-		// }
-		// if (this->numOfBuckets == bucketIdx)
-		// {
-		// 	Print::OutWords(this->numOfBuckets, bucketIdx, this->ps[oneself].center, otherBX, otherBY, otherBZ);
-		// }
 		particleIdx = this->buckets[bucketIdx].firstPrtIdx;
 		if (particleIdx == UINT64_MAX)
 		{
