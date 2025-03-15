@@ -3,6 +3,7 @@
 #include <fstream>
 #include <cstdlib>
 
+#include "../includes/Defines.hpp"
 #include "../includes/Print.hpp"
 #include "../includes/Utils.hpp"
 
@@ -208,9 +209,7 @@ Vec	move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double 
 				vec.z - midHeight / 2.0);
 }
 
-
-// 三線形補間関数
-double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
+double trilinear_interpolation_dist(const Vec &pPos, const size_t currentBX,
 								const size_t currentBY,
 								const size_t currentBZ, 
 							double dist_000, double dist_100, double dist_010, double dist_110, 
@@ -222,17 +221,65 @@ double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
 							   pPos.y - currentBY * BUCKET_LENGTH, 
 							   pPos.z - currentBZ * BUCKET_LENGTH);
 
-	const double R00 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_000 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_100;
-	const double R01 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_010 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_110;
-	const double R10 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_001 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_101;
-	const double R11 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_011 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_111;
+	const double r_00 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_000 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_100;
+	const double r_01 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_010 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_110;
+	const double r_10 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_001 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_101;
+	const double r_11 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_011 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_111;
 
 	// Y方向補間
-	double P0 = ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) * R00 + ((calibratedPPos.y) / (diagonalPoint.y)) * R01;
-	double P1 = ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) * R10 + ((calibratedPPos.y) / (diagonalPoint.y)) * R11;
+	double p_0 = ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) * r_00 + ((calibratedPPos.y) / (diagonalPoint.y)) * r_01;
+	double p_1 = ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) * r_10 + ((calibratedPPos.y) / (diagonalPoint.y)) * r_11;
 
 	// Z方向補間
-	return ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) * P0 + ((calibratedPPos.z) / (diagonalPoint.z)) * P1;
+	return ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) * p_0 + ((calibratedPPos.z) / (diagonalPoint.z)) * p_1;
+}
+
+Vec trilinear_interpolation_nVec(const Vec &pPos, const size_t currentBX,
+								const size_t currentBY,
+								const size_t currentBZ, 
+								Vec dist_000, Vec dist_100, Vec dist_010, Vec dist_110, 
+								Vec dist_001, Vec dist_101, Vec dist_011, Vec dist_111)
+{
+	// const Vec	origin;
+	const Vec	diagonalPoint(BUCKET_LENGTH);
+	const Vec	calibratedPPos(pPos.x - currentBX * BUCKET_LENGTH, 
+							   pPos.y - currentBY * BUCKET_LENGTH, 
+							   pPos.z - currentBZ * BUCKET_LENGTH);
+
+	const Vec r_00 = dist_000 * ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) + dist_100 * ((calibratedPPos.x) / (diagonalPoint.x));
+	const Vec r_01 = dist_010 * ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) + dist_110 * ((calibratedPPos.x) / (diagonalPoint.x));
+	const Vec r_10 = dist_001 * ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) + dist_101 * ((calibratedPPos.x) / (diagonalPoint.x));
+	const Vec r_11 = dist_011 * ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) + dist_111 * ((calibratedPPos.x) / (diagonalPoint.x));
+
+	// Y方向補間
+	Vec p_0 = r_00 * ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) + r_01 * ((calibratedPPos.y) / (diagonalPoint.y));
+	Vec p_1 = r_10 * ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) + r_11 * ((calibratedPPos.y) / (diagonalPoint.y));
+
+	// Z方向補間
+	return p_0 * ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) + p_1 * ((calibratedPPos.z) / (diagonalPoint.z));
+}
+
+Vec	calc_n_vec(const double *distFromWallSQs)
+{
+	const double bl2 = 2.0 * BUCKET_LENGTH;
+	Vec	nVec;
+
+	nVec.x = (distFromWallSQs[e_100] - distFromWallSQs[e_000] + 
+			  distFromWallSQs[e_110] - distFromWallSQs[e_010] + 
+			  distFromWallSQs[e_101] - distFromWallSQs[e_001] + 
+			  distFromWallSQs[e_111] - distFromWallSQs[e_011]) / (bl2);
+
+	nVec.y = (distFromWallSQs[e_010] - distFromWallSQs[e_000] +
+			  distFromWallSQs[e_110] - distFromWallSQs[e_100] +
+			  distFromWallSQs[e_011] - distFromWallSQs[e_001] +
+			  distFromWallSQs[e_111] - distFromWallSQs[e_101]) / (bl2);
+
+	nVec.z = (distFromWallSQs[e_001] - distFromWallSQs[e_000] +
+			  distFromWallSQs[e_101] - distFromWallSQs[e_100] +
+			  distFromWallSQs[e_011] - distFromWallSQs[e_010] +
+			  distFromWallSQs[e_111] - distFromWallSQs[e_110]) / (bl2);
+
+	return nVec / nVec.Magnitude3d();
 }
 
 // static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
@@ -241,13 +288,13 @@ double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
 // 	Vec	vertexB(0, mapSize.y - 1, -EPS);
 // 	Vec	vertexC(mapSize.x - 1, 0, -EPS);
 
-// 	ts.push_back({vertexA, vertexB, vertexC, false});
+// 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 // 	ts.back().CalcNormalVector();
 // 	ts.back().n.z = abs(ts.back().n.z);
 
 // 	vertexA = Vec(mapSize.x - 1, mapSize.y - 1, -EPS);
 
-// 	ts.push_back({vertexA, vertexB, vertexC, false});
+// 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 // 	ts.back().CalcNormalVector();
 // 	ts.back().n.z = abs(ts.back().n.z);
 // }
@@ -255,14 +302,14 @@ double trilinear_interpolation(const Vec &pPos, const size_t currentBX,
 static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(0,0,0);
-	Vec	vertexB(0, mapSize.y - 1, 0);
-	Vec	vertexC(mapSize.x - 1, 0, 0);
+	Vec	vertexB(0, mapSize.y, 0);
+	Vec	vertexC(mapSize.x, 0, 0);
 
 	ts.push_back({vertexA, vertexB, vertexC, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.z = abs(ts.back().n.z);
 
-	vertexA = Vec(mapSize.x - 1, mapSize.y - 1, 0);
+	vertexA = Vec(mapSize.x, mapSize.y, 0);
 
 	ts.push_back({vertexA, vertexB, vertexC, false});
 	ts.back().CalcNormalVector();
@@ -271,15 +318,15 @@ static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
 
 static void	add_top(std::deque<Triangle> &ts, const Vec &mapSize)
 {
-	Vec	vertexA(0, 0, mapSize.z - 1);
-	Vec	vertexB(0, mapSize.y - 1, mapSize.z - 1);
-	Vec	vertexC(mapSize.x - 1, 0, mapSize.z - 1);
+	Vec	vertexA(mapSize.x, 0, mapSize.z);
+	Vec	vertexB(mapSize.x, mapSize.y, mapSize.z);
+	Vec	vertexC(0, 0, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.z = -abs(ts.back().n.z);
 
-	vertexA = Vec(mapSize.x - 1, mapSize.y - 1, mapSize.z - 1);
+	vertexA = Vec(0, mapSize.y, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
@@ -289,14 +336,14 @@ static void	add_top(std::deque<Triangle> &ts, const Vec &mapSize)
 static void	add_leftSide(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(0, 0, 0);
-	Vec	vertexB(0, mapSize.y - 1, 0);
-	Vec	vertexC(0, 0, mapSize.z - 1);
+	Vec	vertexB(0, mapSize.y, 0);
+	Vec	vertexC(0, 0, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.x = abs(ts.back().n.x);
 
-	vertexA = Vec(0, mapSize.y - 1, mapSize.z - 1);
+	vertexA = Vec(0, mapSize.y, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
@@ -305,15 +352,15 @@ static void	add_leftSide(std::deque<Triangle> &ts, const Vec &mapSize)
 
 static void	add_rightSide(std::deque<Triangle> &ts, const Vec &mapSize)
 {
-	Vec	vertexA(mapSize.x - 1, 0, 0);
-	Vec	vertexB(mapSize.x - 1, mapSize.y - 1, 0);
-	Vec	vertexC(mapSize.x - 1, 0, mapSize.z - 1);
+	Vec	vertexA(mapSize.x, 0, mapSize.z);
+	Vec	vertexB(mapSize.x, 0, 0);
+	Vec	vertexC(mapSize.x, mapSize.y, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.x = -abs(ts.back().n.x);
 
-	vertexA = Vec(mapSize.x - 1, mapSize.y - 1, mapSize.z - 1);
+	vertexA = Vec(mapSize.x, mapSize.y, 0);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
@@ -323,14 +370,14 @@ static void	add_rightSide(std::deque<Triangle> &ts, const Vec &mapSize)
 static void	add_deepInTheFront(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(0, 0, 0);
-	Vec	vertexB(mapSize.x - 1, 0, 0);
-	Vec	vertexC(0, 0, mapSize.z - 1);
+	Vec	vertexB(mapSize.x, 0, 0);
+	Vec	vertexC(0, 0, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.y = abs(ts.back().n.y);
 
-	vertexA = Vec(mapSize.x - 1, 0, mapSize.z - 1);
+	vertexA = Vec(mapSize.x, 0, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
@@ -339,15 +386,15 @@ static void	add_deepInTheFront(std::deque<Triangle> &ts, const Vec &mapSize)
 
 static void	add_front(std::deque<Triangle> &ts, const Vec &mapSize)
 {
-	Vec	vertexA(0, mapSize.y - 1, 0);
-	Vec	vertexB(mapSize.x - 1, mapSize.y - 1, 0);
-	Vec	vertexC(0, mapSize.y - 1, mapSize.z - 1);
+	Vec	vertexA(0, mapSize.y, mapSize.z);
+	Vec	vertexB(mapSize.x, mapSize.y, mapSize.z);
+	Vec	vertexC(0, mapSize.y, 0);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.y = -abs(ts.back().n.y);
 
-	vertexA = Vec(mapSize.x - 1, mapSize.y - 1, mapSize.z - 1);
+	vertexA = Vec(mapSize.x, mapSize.y, 0);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();

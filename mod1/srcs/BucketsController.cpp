@@ -233,25 +233,31 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 	for (double	k = minCrd.z; size_t(k) <= size_t(maxCrd.z);) {
 				bucketIdx      = this->BC_CalcBucketIdx(bucketX, bucketY, bucketZ);
 				shortestDistSQ = this->_CalcShortestDistanceSQ(t, bucketIdx);
-				if (shortestDistSQ - EPS < this->buckets[bucketIdx].distFromWallSQ &&
-					this->buckets[bucketIdx].distFromWallSQ < shortestDistSQ + EPS)
+				// if (shortestDistSQ - EPS < this->buckets[bucketIdx].distFromWallSQ &&
+				// 	this->buckets[bucketIdx].distFromWallSQ < shortestDistSQ + EPS)
+				// {
+				// 	this->buckets[bucketIdx].n += t.n;
+				// 	if (shortestDistSQ < this->buckets[bucketIdx].distFromWallSQ)
+				// 	{
+				// 		this->buckets[bucketIdx].distFromWallSQ = shortestDistSQ;
+				// 	}
+				// }
+				if (shortestDistSQ == this->buckets[bucketIdx].distFromWallSQ)
 				{
 					this->buckets[bucketIdx].n += t.n;
-					if (shortestDistSQ < this->buckets[bucketIdx].distFromWallSQ)
-					{
-						this->buckets[bucketIdx].distFromWallSQ = shortestDistSQ;
-					}
 				}
-				else if (shortestDistSQ <= this->buckets[bucketIdx].distFromWallSQ)
+				else if (shortestDistSQ < this->buckets[bucketIdx].distFromWallSQ)
 				{
 					this->buckets[bucketIdx].n = t.n;
 					this->buckets[bucketIdx].distFromWallSQ = shortestDistSQ;
-				}
-				// if (this->buckets[bucketIdx].bucketX == 7 &&
-				// 	this->buckets[bucketIdx].bucketY == 7)
+				
+				// if (this->buckets[bucketIdx].bucketX == 8 &&
+				// 	this->buckets[bucketIdx].bucketY == 8 &&
+				// 	this->buckets[bucketIdx].bucketZ)
 				// {
-				// 	Print::OutWords();
+				// 	Print::OutWords(this->buckets[bucketIdx].n, t.n);
 				// }
+				}
 				k += BUCKET_LENGTH;
 				bucketZ = k / BUCKET_LENGTH;
 			}
@@ -272,6 +278,14 @@ double	BC::_GetDistFromWallSQ(const size_t currentBX,
 	const size_t	neighborBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
 	return this->buckets[neighborBIdx].distFromWallSQ;
 }
+
+// Vec	BC::_GetDistAndNVec(const size_t currentBX,
+// 						 	   const size_t currentBY,
+// 						 	   const size_t currentBZ)
+// {
+// 	const size_t	neighborBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
+// 	return this->buckets[neighborBIdx].distFromWallSQ;
+// }
 
 double	BC::_SearchNeighborBDistFromWallSQ(size_t currentBX,
 										   size_t currentBY,
@@ -388,14 +402,14 @@ void	BC::BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts)
 		{
 			this->buckets[i].n /= this->buckets[i].n.Magnitude3d();
 		}
-		// if (this->buckets[i].bucketX == 8 &&
-		// 	this->buckets[i].bucketZ == 8)
-		// {
-		// 	Print::OutWords("i: ", i, 
-		// 					this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
-		// 					sqrt(this->buckets[i].distFromWallSQ),
-		// 					this->buckets[i].n, this->bucketColumn);
-		// }
+		if (this->buckets[i].bucketY == 8 &&
+			this->buckets[i].bucketZ == 8)
+		{
+			Print::OutWords("i: ", i, 
+							this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
+							sqrt(this->buckets[i].distFromWallSQ),
+							this->buckets[i].n, this->bucketColumn);
+		}
 	}
 }
 
@@ -490,9 +504,64 @@ double	BC::BC_InterpolateDistFromWallSQ(const Vec	 &pPos,
 	{
 		distFromWallSQ_111 = this->_GetDistFromWallSQ(currentBX + 1, currentBY + 1, currentBZ + 1);
 	}
-	return	trilinear_interpolation(pPos, currentBX, currentBY, currentBZ, 
+	return	trilinear_interpolation_dist(pPos, currentBX, currentBY, currentBZ, 
 									distFromWallSQ_000, distFromWallSQ_100, distFromWallSQ_010, distFromWallSQ_110, 
 									distFromWallSQ_001, distFromWallSQ_101, distFromWallSQ_011, distFromWallSQ_111);
+}
+
+double	BC::BC_InterpolateDistFromWallSQ(const Vec	 &pPos,
+										const size_t currentBX,
+										const size_t currentBY,
+										const size_t currentBZ,
+										double *distFromWallSQs)
+{
+	distFromWallSQs[e_000] = this->_GetDistFromWallSQ(currentBX, currentBY, currentBZ);
+	distFromWallSQs[e_110] = -1.0;
+	distFromWallSQs[e_101] = -1.0;
+	distFromWallSQs[e_111] = -1.0;
+	distFromWallSQs[e_011] = -1.0;
+
+	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
+														'x', distFromWallSQs[e_100]))
+	{
+		distFromWallSQs[e_110] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_101] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_111] = E_RADIUS_SQ + EPS;
+	}
+
+	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
+														'y', distFromWallSQs[e_010]))
+	{
+		distFromWallSQs[e_110] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_011] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_111] = E_RADIUS_SQ + EPS;
+	}
+	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
+														'z', distFromWallSQs[e_001]))
+	{
+		distFromWallSQs[e_101] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_011] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_111] = E_RADIUS_SQ + EPS;
+	}
+	if (distFromWallSQs[e_110] == -1.0)
+	{
+		distFromWallSQs[e_110] = this->_GetDistFromWallSQ(currentBX + 1, currentBY + 1, currentBZ);
+	}
+	if (distFromWallSQs[e_101] == -1.0)
+	{
+		distFromWallSQs[e_101] = this->_GetDistFromWallSQ(currentBX + 1, currentBY, currentBZ + 1);
+	}
+	if (distFromWallSQs[e_011] == -1.0)
+	{
+		distFromWallSQs[e_011] = this->_GetDistFromWallSQ(currentBX, currentBY + 1, currentBZ + 1);
+	}
+	if (distFromWallSQs[e_111] == -1.0)
+	{
+		distFromWallSQs[e_111] = this->_GetDistFromWallSQ(currentBX + 1, currentBY + 1, currentBZ + 1);
+	}
+	return	trilinear_interpolation_dist(pPos, currentBX, currentBY, currentBZ, 
+									distFromWallSQs[e_000], distFromWallSQs[e_100], distFromWallSQs[e_010], distFromWallSQs[e_110], 
+									distFromWallSQs[e_001], distFromWallSQs[e_101], distFromWallSQs[e_011], distFromWallSQs[e_111]);
 }
 
 void	BC::MoveVertexToMapCenterBs(const Vec &halfMapSize, const double midHeight)
@@ -564,19 +633,6 @@ void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
 // 			}
 // 		}
 // 	}}}
-// }
-
-// void	BC::_SearchNeighborParticles(const size_t oneself)
-// {
-// 	// size_t	bucketX = this->ps[oneself].center.x / BUCKET_LENGTH;
-// 	// size_t	bucketY = this->ps[oneself].center.y / BUCKET_LENGTH;
-// 	// size_t	bucketZ = this->ps[oneself].center.z / BUCKET_LENGTH;
-
-// 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-// 	{
-// 		this->_SearchNeighborParticle(i);
-
-// 	}
 // }
 
 // BC::BC(const BC &BC)

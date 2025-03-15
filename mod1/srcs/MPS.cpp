@@ -270,9 +270,12 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 										 const size_t currentBZ, 
 										 Vec &acceleration, double &ni)
 {
-	const size_t	currentBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
+	// const size_t	currentBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
+	double	distFromWallSQs[8];
 	double	distFromWallSQ = 
-	this->BC_InterpolateDistFromWallSQ(this->ps[oneself].center, currentBX, currentBY, currentBZ);
+	this->BC_InterpolateDistFromWallSQ(this->ps[oneself].center, 
+										currentBX, currentBY, currentBZ,
+										distFromWallSQs);
 	double	distFromWall;
 	double	wallWeight;
 	Vec		nVector;
@@ -290,9 +293,11 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_COLLISION:
-			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
+			// if (distFromWallSQ < DISTANCE_LIMIT_SQ)
+			if (distFromWallSQ < E_RADIUS_SQ)
 			{
-				nVector = this->buckets[currentBIdx].n;
+				// nVector = this->buckets[currentBIdx].n;
+				nVector = calc_n_vec(distFromWallSQs);
 				closing = this->ps[oneself].velocity.DotProduct3d(nVector);
 
 				// if (oneself == 0)
@@ -317,7 +322,8 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			{
 				distFromWall = sqrt(distFromWallSQ);
 				wallWeight   = this->_WallWeight(distFromWall);
-				nVector      = this->buckets[currentBIdx].n;
+				// nVector      = this->buckets[currentBIdx].n;
+				nVector = calc_n_vec(distFromWallSQs);
 				
 				if (0.0 < wallWeight)
 				{

@@ -6,7 +6,6 @@
 #include "../includes/Defines.hpp"
 #include "../includes/Quaternion.hpp"
 
-
 typedef struct s_data
 {
 	Vec						mapSize;
@@ -70,7 +69,6 @@ void	drawVertex(const Vec &vertex)
 
 void	RenderingAlgorithm()
 {
-	// std::cout << "RenderingAlgorithm " << g_data.radY++ << std::endl;
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
 
@@ -146,7 +144,6 @@ void mouse(int button, int state, int x, int y)
 	}
 
 	glutPostRedisplay();
-	// printf(" at (%d, %d)\n", x, y);
 }
 
 Quaternion	makeQuaternion(const double radian, const Vec &direction)

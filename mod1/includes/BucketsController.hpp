@@ -52,6 +52,10 @@ class BC
 		double	_GetDistFromWallSQ(const size_t currentBX,
 									const size_t currentBY,
 									const size_t currentBZ);
+		Vec		_GetNVEC(const size_t currentBX,
+						 	   const size_t currentBY,
+						 	   const size_t currentBZ);
+		
 		double	_SearchNeighborBDistFromWallSQ(size_t currentBX,
 											size_t currentBY,
 											size_t currentBZ,
@@ -78,6 +82,13 @@ class BC
 										const size_t currentBX,
 										const size_t currentBY,
 										const size_t currentBZ);
+
+		double	BC_InterpolateDistFromWallSQ(const Vec	 &pPos,
+										const size_t currentBX,
+										const size_t currentBY,
+										const size_t currentBZ,
+										double *distFromWallSQs);
+										
 	public:
 
 		const size_t	bucketRow;
