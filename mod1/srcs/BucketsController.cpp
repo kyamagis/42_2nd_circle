@@ -233,15 +233,7 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 	for (double	k = minCrd.z; size_t(k) <= size_t(maxCrd.z);) {
 				bucketIdx      = this->BC_CalcBucketIdx(bucketX, bucketY, bucketZ);
 				shortestDistSQ = this->_CalcShortestDistanceSQ(t, bucketIdx);
-				// if (shortestDistSQ - EPS < this->buckets[bucketIdx].distFromWallSQ &&
-				// 	this->buckets[bucketIdx].distFromWallSQ < shortestDistSQ + EPS)
-				// {
-				// 	this->buckets[bucketIdx].n += t.n;
-				// 	if (shortestDistSQ < this->buckets[bucketIdx].distFromWallSQ)
-				// 	{
-				// 		this->buckets[bucketIdx].distFromWallSQ = shortestDistSQ;
-				// 	}
-				// }
+
 				if (shortestDistSQ == this->buckets[bucketIdx].distFromWallSQ)
 				{
 					this->buckets[bucketIdx].n += t.n;
@@ -250,14 +242,13 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 				{
 					this->buckets[bucketIdx].n = t.n;
 					this->buckets[bucketIdx].distFromWallSQ = shortestDistSQ;
-				
+				}
 				// if (this->buckets[bucketIdx].bucketX == 8 &&
 				// 	this->buckets[bucketIdx].bucketY == 8 &&
 				// 	this->buckets[bucketIdx].bucketZ)
 				// {
 				// 	Print::OutWords(this->buckets[bucketIdx].n, t.n);
 				// }
-				}
 				k += BUCKET_LENGTH;
 				bucketZ = k / BUCKET_LENGTH;
 			}
@@ -402,14 +393,14 @@ void	BC::BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts)
 		{
 			this->buckets[i].n /= this->buckets[i].n.Magnitude3d();
 		}
-		if (this->buckets[i].bucketY == 8 &&
-			this->buckets[i].bucketZ == 8)
-		{
-			Print::OutWords("i: ", i, 
-							this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
-							sqrt(this->buckets[i].distFromWallSQ),
-							this->buckets[i].n, this->bucketColumn);
-		}
+		// if (this->buckets[i].bucketY == 8 &&
+		// 	this->buckets[i].bucketZ == 8)
+		// {
+		// 	Print::OutWords("i: ", i, 
+		// 					this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
+		// 					sqrt(this->buckets[i].distFromWallSQ),
+		// 					this->buckets[i].n, this->bucketColumn);
+		// }
 	}
 }
 
@@ -433,12 +424,13 @@ bool	BC::BC_IsOutOfWallWeightRange(const double disFromWall)
 double	BC::BC_InterpolateWallWeight(const double interpolatedDist)
 {
 	Vec nextWeight;
+
 	for (size_t	i = 0; i + 1 < this->_weights.size(); ++i)
 	{
 		nextWeight = this->_weights[i + 1];
 		if (interpolatedDist <= nextWeight.x)
 		{
-			return	this->_weights[i].Interpolate2d(nextWeight, interpolatedDist);
+			return 2 * this->_weights[i].Interpolate2d(nextWeight, interpolatedDist);
 		}
 	}
 	Print::Err("BC_InterpolateWallWeight: weight");

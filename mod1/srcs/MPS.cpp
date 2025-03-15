@@ -293,8 +293,7 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_COLLISION:
-			// if (distFromWallSQ < DISTANCE_LIMIT_SQ)
-			if (distFromWallSQ < E_RADIUS_SQ)
+			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
 			{
 				// nVector = this->buckets[currentBIdx].n;
 				nVector = calc_n_vec(distFromWallSQs);
@@ -315,6 +314,10 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			if (distFromWallSQ < E_RADIUS_SQ)
 			{
 				ni += this->_WallWeight(sqrt(distFromWallSQ));
+				// if (oneself == 0)
+				// {
+				// 	Print::OutWords(oneself, acceleration, this->n0, ni, this->_WallWeight(sqrt(distFromWallSQ)), sqrt(distFromWallSQ));
+				// }
 			}
 			break;
 		case e_PGRADIENT2:
@@ -581,13 +584,13 @@ void	MPS::NavierStokesEquations(void)
 		this->_ViscosityAndGravityTerm();
 		this->_UpdateVPA1();
 		this->_CalcParticlesCollision();
-		// this->_CalcParticlesPressure();
-		// this->_PressureGradientTerm();
-		// this->_UpdateVPA2();
+		this->_CalcParticlesPressure();
+		this->_PressureGradientTerm();
+		this->_UpdateVPA2();
 	
 		// this->_CalcParticlesPressure();
 
-		this->_UpdateVPA3();
+		// this->_UpdateVPA3();
 		std::cout <<std::fixed << std::setprecision(1)
 				  << time / maxTime * 100
 				  << " %\r" << std::flush;
@@ -615,15 +618,10 @@ void	MPS::NavierStokesEquations(void)
 
 void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
 {
-	// #pragma omp parallel for
-	// glBegin(GL_LINE_STRIP);
-	
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		this->ps[i].DrawParticle(halfMapSize, midHeight);
 	}
-	// glEnd();
-
 }
 
 // MPS::MPS(const MPS &mps): MPS
