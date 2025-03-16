@@ -24,7 +24,8 @@ class Particle: public Circle
 		Particle(const Particle &p);
 		~Particle();
 
-		void DrawParticle(const Vec &halfMapSize, const double midHeight);
+		void	DrawParticle(const Vec &halfMapSize, const double midHeight);
+		void	DrawPoint(const Vec &halfMapSize, const double midHeight);
 
 		Particle&	operator=(const Particle &p);
 		bool		operator==(const Particle &p) const;

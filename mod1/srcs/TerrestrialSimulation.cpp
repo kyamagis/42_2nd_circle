@@ -7,17 +7,17 @@
 #include "../includes/MPS.hpp"
 #include "../includes/Quadrangle.hpp"
 
-TerrestrialSimulation::TerrestrialSimulation()
+TS::TS()
 {
 
 }
 
-TerrestrialSimulation::~TerrestrialSimulation()
+TS::~TS()
 {
 
 }
 
-bool	TerrestrialSimulation::_ReadMapData(const std::string &fileName)
+bool	TS::_ReadMapData(const std::string &fileName)
 {
 	RMD	rmd(fileName);
 
@@ -32,18 +32,16 @@ bool	TerrestrialSimulation::_ReadMapData(const std::string &fileName)
 	return	true;
 }
 
-void	TerrestrialSimulation::_DrawSimulation(const int argc, 
-												const char** argv, 
-												const std::deque<Triangle> &ts)
+void	TS::_DrawSimulation(const int argc, const char** argv, 
+							const std::deque<Triangle> &ts)
 {
 	Graphic g = Graphic(argc, argv, SCREEN_SIZE_X, SCREEN_SIZE_Y,
 						ts, this->_mapSize, this->_maxHeight, this->_minHeight);
 	g.GraphicLoop();
 }
 
-bool	TerrestrialSimulation::SimulationStart(const int argc, 
-											   const char** argv, 
-											   const std::string &fileName)
+bool	TS::SimulationStart(const int argc, const char** argv, 
+							const std::string &fileName)
 {
 	if (this->_ReadMapData(fileName) == false)
 	{
@@ -62,7 +60,7 @@ bool	TerrestrialSimulation::SimulationStart(const int argc,
 	return true;
 }
 
-void	TerrestrialSimulation::PrintSpecificPoints()
+void	TS::PrintSpecificPoints()
 {
 	for (size_t i = 0; i < this->_specificPoints.size(); ++i)
 	{

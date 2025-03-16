@@ -50,7 +50,7 @@ double	max(const double aX, const double bX)
 
 double	max_of_3_elm(const double aX, const double bX, const double cX)
 {
-	double	biggerX = max(aX, bX);
+	const double	biggerX = max(aX, bX);
 
 	if (biggerX < cX)
 	{
@@ -70,7 +70,7 @@ double	min(const double aX, const double bX)
 
 double	min_of_3_elm(const double aX, const double bX, const double cX)
 {
-	double	smallerX = min(aX, bX);
+	const double	smallerX = min(aX, bX);
 
 	if (smallerX < cX)
 	{
@@ -125,6 +125,15 @@ void	line_gradation(const int64_t	maxHeight,
 		ratio = (height - midHeight) / (maxHeight - midHeight);
 		glColor3f(ratio, 1.0f - ratio, 0.0f);
 	}
+}
+
+double	calibrate_dist(const double dist)
+{
+	if (dist < 0.1)
+	{
+		return	0.1;
+	}
+	return	dist;
 }
 
 static void	init_ps(std::deque<Particle> &ps)
@@ -279,6 +288,10 @@ Vec	calc_n_vec(const double *distFromWallSQs)
 			  distFromWallSQs[e_011] - distFromWallSQs[e_010] +
 			  distFromWallSQs[e_111] - distFromWallSQs[e_110]) / (bl2);
 
+	if (nVec == 0.0)
+	{
+		return nVec;
+	}
 	return nVec / nVec.Magnitude3d();
 }
 
@@ -302,8 +315,8 @@ Vec	calc_n_vec(const double *distFromWallSQs)
 static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(0,0,0);
-	Vec	vertexB(0, mapSize.y, 0);
-	Vec	vertexC(mapSize.x, 0, 0);
+	const Vec	vertexB(0, mapSize.y, 0);
+	const Vec	vertexC(mapSize.x, 0, 0);
 
 	ts.push_back({vertexA, vertexB, vertexC, false});
 	ts.back().CalcNormalVector();
@@ -319,8 +332,8 @@ static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
 static void	add_top(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(mapSize.x, 0, mapSize.z);
-	Vec	vertexB(mapSize.x, mapSize.y, mapSize.z);
-	Vec	vertexC(0, 0, mapSize.z);
+	const Vec	vertexB(mapSize.x, mapSize.y, mapSize.z);
+	const Vec	vertexC(0, 0, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
@@ -336,8 +349,8 @@ static void	add_top(std::deque<Triangle> &ts, const Vec &mapSize)
 static void	add_leftSide(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(0, 0, 0);
-	Vec	vertexB(0, mapSize.y, 0);
-	Vec	vertexC(0, 0, mapSize.z);
+	const Vec	vertexB(0, mapSize.y, 0);
+	const Vec	vertexC(0, 0, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
@@ -353,8 +366,8 @@ static void	add_leftSide(std::deque<Triangle> &ts, const Vec &mapSize)
 static void	add_rightSide(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(mapSize.x, 0, mapSize.z);
-	Vec	vertexB(mapSize.x, 0, 0);
-	Vec	vertexC(mapSize.x, mapSize.y, mapSize.z);
+	const Vec	vertexB(mapSize.x, 0, 0);
+	const Vec	vertexC(mapSize.x, mapSize.y, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
@@ -370,8 +383,8 @@ static void	add_rightSide(std::deque<Triangle> &ts, const Vec &mapSize)
 static void	add_deepInTheFront(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(0, 0, 0);
-	Vec	vertexB(mapSize.x, 0, 0);
-	Vec	vertexC(0, 0, mapSize.z);
+	const Vec	vertexB(mapSize.x, 0, 0);
+	const Vec	vertexC(0, 0, mapSize.z);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
@@ -387,8 +400,8 @@ static void	add_deepInTheFront(std::deque<Triangle> &ts, const Vec &mapSize)
 static void	add_front(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(0, mapSize.y, mapSize.z);
-	Vec	vertexB(mapSize.x, mapSize.y, mapSize.z);
-	Vec	vertexC(0, mapSize.y, 0);
+	const Vec	vertexB(mapSize.x, mapSize.y, mapSize.z);
+	const Vec	vertexC(0, mapSize.y, 0);
 
 	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();

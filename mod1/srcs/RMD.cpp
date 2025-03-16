@@ -225,8 +225,13 @@ bool	RMD::_ParseModFile(void)
 
 void	RMD::_DecideMapSize(void)
 {
-	this->_mapSize[X] += 1 + this->_mapSize[X] / 4;
-	this->_mapSize[Y] += 1 + this->_mapSize[Y] / 4;
+	const uint32_t	particleZone = 2.0 * BUCKET_LENGTH + 1;
+	const uint32_t	extendMapSize = 2.0 * particleZone;
+	const uint32_t	tempMapSizeX = this->_mapSize[X];
+	const uint32_t	tempMapSizeY = this->_mapSize[Y];
+
+	this->_mapSize[X] += extendMapSize;
+	this->_mapSize[Y] += extendMapSize;
 	this->_mapSize[Z] = this->_maxHeight;
 	if (this->_minHeight < 0)
 	{
@@ -255,6 +260,14 @@ void	RMD::_DecideMapSize(void)
 							this->_mapSize[X], 
 							this->_mapSize[Y]);
 	}
+
+	const double calibrationX = (this->_mapSize[X] - tempMapSizeX) / 2.0;
+	const double calibrationY = (this->_mapSize[Y] - tempMapSizeY) / 2.0;
+	for (size_t	i = 0; i < this->_specificPoints.size(); ++i)
+	{
+		this->_specificPoints[i].x += calibrationX;
+		this->_specificPoints[i].y += calibrationY;
+	}
 }
 
 void	RMD::_CalibrateHeight(void)
@@ -264,7 +277,7 @@ void	RMD::_CalibrateHeight(void)
 		return ;
 	}
 
-	int64_t	calibrationHeight = abs(this->_minHeight);
+	const int64_t	calibrationHeight = abs(this->_minHeight);
 
 	for (size_t	i = 0; i < this->_specificPoints.size(); ++i)
 	{
@@ -310,7 +323,7 @@ bool	RMD::ReadStart(void)
 	{
 		return false;
 	}
-		
+	
 	this->_DecideMapSize();
 	this->_CalibrateHeight();
 	this->_AddEndPoints();

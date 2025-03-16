@@ -15,6 +15,9 @@ BC::BC(const Vec &visibleMapSize_,
 	    _totalMapSize(totalMapSize_ + BUCKET_LENGTH),
 		_weights(init_wall_weight()),
 		_bucketLast(NULL),
+		bc_bucketLength(BUCKET_LENGTH),
+		bc_radius_effective(E_RADIUS),
+		bc_radius_effectiveSQ(E_RADIUS_SQ),
 		bucketRow(to_bucket_coor(this->_totalMapSize.x) + 1),
 		bucketColumn(to_bucket_coor(this->_totalMapSize.y) + 1),
 		bucketDepth(to_bucket_coor(this->_totalMapSize.z) + 1),
@@ -56,9 +59,9 @@ void	BC::_UpdateParticlesInBuckets(const std::deque<Particle> &ps)
 		{
 			continue;
 		}
-		bucketX = size_t(ps[i].center.x / BUCKET_LENGTH);
-		bucketY = size_t(ps[i].center.y / BUCKET_LENGTH);
-		bucketZ = size_t(ps[i].center.z / BUCKET_LENGTH);
+		bucketX = size_t(ps[i].center.x / this->bc_bucketLength);
+		bucketY = size_t(ps[i].center.y / this->bc_bucketLength);
+		bucketZ = size_t(ps[i].center.z / this->bc_bucketLength);
 
 		bucketIdx = this->BC_CalcBucketIdx(bucketX, bucketY, bucketZ);
 		nextIdx = this->_bucketLast[bucketIdx].firstPrtIdx;
@@ -79,16 +82,16 @@ void	BC::_CalcBucketsPos(const size_t i)
 	size_t	bucketXY;
 
 	this->buckets[i].bucketZ = i / this->_columnMultiplDepth;
-	this->buckets[i].position.z = BUCKET_LENGTH * this->buckets[i].bucketZ;
+	this->buckets[i].position.z = this->bc_bucketLength * this->buckets[i].bucketZ;
 
 	bucketXY = i % this->_columnMultiplDepth;	
 	this->buckets[i].bucketY = bucketXY / this->bucketColumn;
-	this->buckets[i].position.y = BUCKET_LENGTH * this->buckets[i].bucketY;
+	this->buckets[i].position.y = this->bc_bucketLength * this->buckets[i].bucketY;
 	
 	this->buckets[i].bucketX = bucketXY % this->bucketColumn;
-	this->buckets[i].position.x = BUCKET_LENGTH * this->buckets[i].bucketX;
+	this->buckets[i].position.x = this->bc_bucketLength * this->buckets[i].bucketX;
 
-	this->buckets[i].center += this->buckets[i].position + BUCKET_LENGTH / 2.0;
+	this->buckets[i].center += this->buckets[i].position + this->bc_bucketLength / 2.0;
 }
 
 
@@ -103,17 +106,17 @@ Vec	BC::_MaxEachCoordinateOfVertex(const Vec &a,
 	maxCoordinate.y = max_of_3_elm(a.y, b.y, c.y);
 	maxCoordinate.z = max_of_3_elm(a.z, b.z, c.z);
 
-	if (maxCoordinate.x + E_RADIUS < this->_totalMapSize.x)
+	if (maxCoordinate.x + this->bc_radius_effective < this->_totalMapSize.x)
 	{
-		maxCoordinate.x += E_RADIUS;
+		maxCoordinate.x += this->bc_radius_effective;
 	}
-	if (maxCoordinate.y + E_RADIUS < this->_totalMapSize.y)
+	if (maxCoordinate.y + this->bc_radius_effective < this->_totalMapSize.y)
 	{
-		maxCoordinate.y += E_RADIUS;
+		maxCoordinate.y += this->bc_radius_effective;
 	}
-	if (maxCoordinate.z + E_RADIUS< this->_totalMapSize.z)
+	if (maxCoordinate.z + this->bc_radius_effective< this->_totalMapSize.z)
 	{
-		maxCoordinate.z += E_RADIUS;
+		maxCoordinate.z += this->bc_radius_effective;
 	}
 
 	return maxCoordinate;
@@ -129,17 +132,17 @@ Vec	BC::_MinEachCoordinateOfVertex(const Vec &a,
 	minCoordinate.y = min_of_3_elm(a.y, b.y, c.y);
 	minCoordinate.z = min_of_3_elm(a.z, b.z, c.z);
 
-	if (E_RADIUS < minCoordinate.x)
+	if (this->bc_radius_effective < minCoordinate.x)
 	{
-		minCoordinate.x -= E_RADIUS;
+		minCoordinate.x -= this->bc_radius_effective;
 	}
-	if (E_RADIUS < minCoordinate.y)
+	if (this->bc_radius_effective < minCoordinate.y)
 	{
-		minCoordinate.y -= E_RADIUS;
+		minCoordinate.y -= this->bc_radius_effective;
 	}
-	if (E_RADIUS < minCoordinate.z)
+	if (this->bc_radius_effective < minCoordinate.z)
 	{
-		minCoordinate.z -= E_RADIUS;
+		minCoordinate.z -= this->bc_radius_effective;
 	}
 
 	return minCoordinate;
@@ -173,7 +176,7 @@ double	BC::_CalcDistanceFromSideSQ(const Vec &a,
 		return (this->buckets[bucketIdx].position - projectivePoint).MagnitudeSQ3d();
 	}
 		
-	return 2.0 * BUCKET_LENGTH * 2.0 * BUCKET_LENGTH;
+	return 2.0 * this->bc_bucketLength * 2.0 * this->bc_bucketLength;
 }
 
 double	BC::_CalcShortestDistanceFromSideSQ(const Triangle &t, const size_t bucketIdx)
@@ -196,7 +199,7 @@ double	BC::_CalcDistanceFromTriangleSQ(const Triangle &t, const size_t bucketIdx
 	{
 		return orientVec.MagnitudeSQ3d();
 	}
-	return 2.0 * BUCKET_LENGTH * 2.0 * BUCKET_LENGTH;
+	return 2.0 * this->bc_bucketLength * 2.0 * this->bc_bucketLength;
 }
 
 double	BC::_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx)
@@ -221,9 +224,9 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 	const Vec	maxCrd = this->_MaxEachCoordinateOfVertex(t.a, t.b, t.c);
 	const Vec	minCrd = this->_MinEachCoordinateOfVertex(t.a, t.b, t.c);
 
-	size_t	bucketX = size_t(minCrd.x / BUCKET_LENGTH);
-	size_t	bucketY = size_t(minCrd.y / BUCKET_LENGTH);
-	size_t	bucketZ = size_t(minCrd.z / BUCKET_LENGTH);
+	size_t	bucketX = size_t(minCrd.x / this->bc_bucketLength);
+	size_t	bucketY = size_t(minCrd.y / this->bc_bucketLength);
+	size_t	bucketZ = size_t(minCrd.z / this->bc_bucketLength);
 	size_t	bucketIdx;
 
 	double	shortestDistSQ;
@@ -249,16 +252,16 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 				// {
 				// 	Print::OutWords(this->buckets[bucketIdx].n, t.n);
 				// }
-				k += BUCKET_LENGTH;
-				bucketZ = k / BUCKET_LENGTH;
+				k += this->bc_bucketLength;
+				bucketZ = k / this->bc_bucketLength;
 			}
-			bucketZ = size_t(minCrd.z / BUCKET_LENGTH);
-			j += BUCKET_LENGTH;
-			bucketY = j / BUCKET_LENGTH;
+			bucketZ = size_t(minCrd.z / this->bc_bucketLength);
+			j += this->bc_bucketLength;
+			bucketY = j / this->bc_bucketLength;
 		}
-		bucketY = size_t(minCrd.y / BUCKET_LENGTH);
-		i += BUCKET_LENGTH;
-		bucketX = i / BUCKET_LENGTH;
+		bucketY = size_t(minCrd.y / this->bc_bucketLength);
+		i += this->bc_bucketLength;
+		bucketX = i / this->bc_bucketLength;
 	}
 }
 
@@ -269,14 +272,6 @@ double	BC::_GetDistFromWallSQ(const size_t currentBX,
 	const size_t	neighborBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
 	return this->buckets[neighborBIdx].distFromWallSQ;
 }
-
-// Vec	BC::_GetDistAndNVec(const size_t currentBX,
-// 						 	   const size_t currentBY,
-// 						 	   const size_t currentBZ)
-// {
-// 	const size_t	neighborBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
-// 	return this->buckets[neighborBIdx].distFromWallSQ;
-// }
 
 double	BC::_SearchNeighborBDistFromWallSQ(size_t currentBX,
 										   size_t currentBY,
@@ -335,7 +330,7 @@ bool	BC::_StoreEachCmpOfNeighborBDistFromWallSQ(const size_t currentBX,
 	}
 	else
 	{
-		neighborBDistFromWallSQ = E_RADIUS_SQ + EPS;
+		neighborBDistFromWallSQ = this->bc_radius_effectiveSQ + EPS;
 	}
 
 	return currentBcmp < maxRCD;
@@ -351,7 +346,7 @@ void	BC::BC_MakeBuckets(const std::deque<Particle> &ps)
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
 		this->buckets[i].firstPrtIdx     = UINT64_MAX;
-		this->buckets[i].distFromWallSQ  = E_RADIUS_SQ + EPS;
+		this->buckets[i].distFromWallSQ  = this->bc_radius_effectiveSQ + EPS;
 		// this->buckets[i].bucketIdx       = i;
 		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
 
@@ -461,24 +456,24 @@ double	BC::BC_InterpolateDistFromWallSQ(const Vec	 &pPos,
 	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
 														'x', distFromWallSQ_100))
 	{
-		distFromWallSQ_110 = E_RADIUS_SQ + EPS;
-		distFromWallSQ_101 = E_RADIUS_SQ + EPS;
-		distFromWallSQ_111 = E_RADIUS_SQ + EPS;
+		distFromWallSQ_110 = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQ_101 = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQ_111 = this->bc_radius_effectiveSQ + EPS;
 	}
 
 	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
 														'y', distFromWallSQ_010))
 	{
-		distFromWallSQ_110 = E_RADIUS_SQ + EPS;
-		distFromWallSQ_011 = E_RADIUS_SQ + EPS;
-		distFromWallSQ_111 = E_RADIUS_SQ + EPS;
+		distFromWallSQ_110 = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQ_011 = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQ_111 = this->bc_radius_effectiveSQ + EPS;
 	}
 	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
 														'z', distFromWallSQ_001))
 	{
-		distFromWallSQ_101 = E_RADIUS_SQ + EPS;
-		distFromWallSQ_011 = E_RADIUS_SQ + EPS;
-		distFromWallSQ_111 = E_RADIUS_SQ + EPS;
+		distFromWallSQ_101 = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQ_011 = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQ_111 = this->bc_radius_effectiveSQ + EPS;
 	}
 	if (distFromWallSQ_110 == -1.0)
 	{
@@ -516,24 +511,24 @@ double	BC::BC_InterpolateDistFromWallSQ(const Vec	 &pPos,
 	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
 														'x', distFromWallSQs[e_100]))
 	{
-		distFromWallSQs[e_110] = E_RADIUS_SQ + EPS;
-		distFromWallSQs[e_101] = E_RADIUS_SQ + EPS;
-		distFromWallSQs[e_111] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_110] = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQs[e_101] = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQs[e_111] = this->bc_radius_effectiveSQ + EPS;
 	}
 
 	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
 														'y', distFromWallSQs[e_010]))
 	{
-		distFromWallSQs[e_110] = E_RADIUS_SQ + EPS;
-		distFromWallSQs[e_011] = E_RADIUS_SQ + EPS;
-		distFromWallSQs[e_111] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_110] = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQs[e_011] = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQs[e_111] = this->bc_radius_effectiveSQ + EPS;
 	}
 	if (!this->_StoreEachCmpOfNeighborBDistFromWallSQ(currentBX, currentBY, currentBZ,
 														'z', distFromWallSQs[e_001]))
 	{
-		distFromWallSQs[e_101] = E_RADIUS_SQ + EPS;
-		distFromWallSQs[e_011] = E_RADIUS_SQ + EPS;
-		distFromWallSQs[e_111] = E_RADIUS_SQ + EPS;
+		distFromWallSQs[e_101] = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQs[e_011] = this->bc_radius_effectiveSQ + EPS;
+		distFromWallSQs[e_111] = this->bc_radius_effectiveSQ + EPS;
 	}
 	if (distFromWallSQs[e_110] == -1.0)
 	{
@@ -566,7 +561,7 @@ void	BC::MoveVertexToMapCenterBs(const Vec &halfMapSize, const double midHeight)
 
 void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
 {
-	const double	maxDis = E_RADIUS_SQ;
+	const double	maxDis = this->bc_radius_effectiveSQ;
 	const double	midDis = maxDis / 2.0;
 
 	glPointSize(2.0f);

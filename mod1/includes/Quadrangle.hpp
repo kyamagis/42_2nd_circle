@@ -13,9 +13,7 @@ class Quadrangle
 
 	public:
 		Vec	vertex[4];
-
 		Vec	n;
-
 
 		Quadrangle();
 		~Quadrangle();

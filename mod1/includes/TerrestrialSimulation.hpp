@@ -7,7 +7,7 @@
 #include "./Vec.hpp"
 #include "./Defines.hpp"
 
-class TerrestrialSimulation
+class TS
 {
 	private:
 		std::deque<Vec> _specificPoints;
@@ -21,8 +21,8 @@ class TerrestrialSimulation
 								const std::deque<Triangle> &ts);
 
 	public:
-		TerrestrialSimulation();
-		~TerrestrialSimulation();
+		TS();
+		~TS();
 	
 		bool	SimulationStart(const int argc, 
 								const char** argv, 

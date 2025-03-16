@@ -19,12 +19,10 @@ class Graphic
 								const int64_t minHeight);
 		
 	public:
-		Graphic(const int argc, const char** argv, int	sizeX, int	sizeY);
-		Graphic(const int argc, const char** argv, int	sizeX, int	sizeY, 
-							const std::deque<Triangle> &ts, 
-							const uint32_t mapSize[3],
-							const int64_t maxHeight,
-							const int64_t minHeight);
+		Graphic(const int argc, const char** argv, const int sizeX, const int sizeY);
+		Graphic(const int argc, const char** argv, const int sizeX, const int sizeY, 
+				const std::deque<Triangle> &ts, const uint32_t mapSize[3],
+				const int64_t maxHeight, const int64_t minHeight);
 		~Graphic();
 
 		void	GraphicLoop(void (*func)(void));

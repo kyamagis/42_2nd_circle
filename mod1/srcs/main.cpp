@@ -6,18 +6,18 @@
 
 int	main(int argc, char **argv)
 {
-	TerrestrialSimulation	TS;
+	TS	tS;
 
 	switch (argc)
 	{
 		case 1:
-			if (TS.SimulationStart(argc, const_cast<const char**>(argv), DEFAULT_FILE_NAME) == false)
+			if (tS.SimulationStart(argc, const_cast<const char**>(argv), DEFAULT_FILE_NAME) == false)
 			{
 				return EXIT_FAILURE;
 			}
 			return EXIT_SUCCESS;
 		case 2:
-			if (TS.SimulationStart(argc, const_cast<const char**>(argv), argv[1]) == false)
+			if (tS.SimulationStart(argc, const_cast<const char**>(argv), argv[1]) == false)
 			{
 				return EXIT_FAILURE;
 			}

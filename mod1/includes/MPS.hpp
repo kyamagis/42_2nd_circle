@@ -73,7 +73,7 @@ class MPS: public BC
 											const size_t currentBX,
 											const size_t currentBY,
 											const size_t currentBZ, 
-											Vec &acceleration, double &ni);
+											Vec &acceleration);
 		void	_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operation e, 
 												const Vec &acceleration, const double ni);
 
@@ -93,8 +93,6 @@ class MPS: public BC
 		std::deque<Particle> ps;
 		const Vec	visibleMapSize;
 		const Vec	totalMapSize;
-		
-
 
 		MPS(const Vec mapSize, 
 		   const std::deque<Triangle> &ts);
@@ -104,7 +102,9 @@ class MPS: public BC
 
 		void	DrawParticles(const Vec &halfMapSize, const double midHeight);
 		void	DrawParticles(const Vec &halfMapSize, const double midHeight, 
-								   const size_t elapsedTime);
+								const size_t elapsedTime);
+		void	DrawPoints(const Vec &halfMapSize, const double midHeight, 
+							const size_t elapsedTime);
 
 		// bool	operator==(const MPS &mps) const;
 };

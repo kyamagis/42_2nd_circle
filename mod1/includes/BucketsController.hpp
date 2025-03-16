@@ -68,6 +68,10 @@ class BC
 													double &neighborBDistFromWall);
 		
 	protected:
+		const double	bc_bucketLength;
+		const double	bc_radius_effective;
+		const double	bc_radius_effectiveSQ;
+
 		void	BC_MakeBuckets(const std::deque<Particle> &ps);
 		void	BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts);
 		size_t	BC_CalcBucketIdx(size_t bucketX, size_t bucketY, size_t bucketz);

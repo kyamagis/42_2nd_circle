@@ -32,7 +32,7 @@ Circle::~Circle()
 
 }
 
-void Circle::_DrawCircle(const Vec &halfMapSize,
+void	Circle::_DrawCircle(const Vec &halfMapSize,
 						const double midHeight,
 						const size_t num_segments, Vec &c)
 {
@@ -51,7 +51,7 @@ void Circle::_DrawCircle(const Vec &halfMapSize,
 	}
 }
 
-void Circle::DrawCircle2d(const Vec &halfMapSize,
+void	Circle::DrawCircle2d(const Vec &halfMapSize,
 							const double midHeight,
 							const size_t num_segments) 
 {
@@ -65,32 +65,7 @@ void Circle::DrawCircle2d(const Vec &halfMapSize,
 	glEnd();
 }
 
-void drawSphere(float radius, int slices, int stacks)
-{
-    for (int i = 0; i < stacks; ++i) {
-        float theta1 = i * M_PI / stacks;
-        float theta2 = (i + 1) * M_PI / stacks;
-
-        glBegin(GL_TRIANGLE_STRIP);
-        for (int j = 0; j <= slices; ++j) {
-            float phi = j * 2.0f * M_PI / slices;
-
-            float x1 = radius * sin(theta1) * cos(phi);
-            float y1 = radius * cos(theta1);
-            float z1 = radius * sin(theta1) * sin(phi);
-
-            float x2 = radius * sin(theta2) * cos(phi);
-            float y2 = radius * cos(theta2);
-            float z2 = radius * sin(theta2) * sin(phi);
-
-            glVertex3f(x1, y1, z1);
-            glVertex3f(x2, y2, z2);
-        }
-        glEnd();
-    }
-}
-
-void Circle::DrawCircle3d(const Vec &halfMapSize,
+void	Circle::DrawCircle3d(const Vec &halfMapSize,
 							const double midHeight,
 							const size_t num_segments) 
 {
@@ -101,7 +76,7 @@ void Circle::DrawCircle3d(const Vec &halfMapSize,
 	const size_t	halfSegments = num_segments / 2 + 1;
 
 	glBegin(GL_LINE_STRIP);
-	glColor3f(this->color.x, this->color.y, this->color.z);
+	glColor4f(this->color.x, this->color.y, this->color.z, 0.6f);
 
 	for (size_t i = 0; i < num_segments; ++i)
 	{
@@ -128,6 +103,11 @@ void Circle::DrawCircle3d(const Vec &halfMapSize,
 	glEnd();
 }
 
+void	Circle::DrawPoint3d(const Vec &halfMapSize, const double midHeight)
+{
+	drawVertex(move_vec_to_map_center(this->center, halfMapSize, midHeight));
+}
+
 bool	Circle::operator==(const Circle &c) const
 {
 	return (this->center == c.center) &&
@@ -146,7 +126,7 @@ Circle&	Circle::operator=(const Circle &c)
 	return *this;
 }
 
-std::ostream &operator<<(std::ostream &ostrm, const Circle &c)
+std::ostream	&operator<<(std::ostream &ostrm, const Circle &c)
 {
 	return ostrm << '(' << c.center << ", " 
 						<< c.r << ')' ;

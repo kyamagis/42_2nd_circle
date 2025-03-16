@@ -45,11 +45,11 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 {
 	this->ps.resize(NUM_OF_PARTICLES);
 	size_t	pIdx = 0;
-	const size_t	maxXIdx = this->totalMapSize.x / DIAMETER;
-	const size_t	maxYIdx = this->totalMapSize.y / DIAMETER;
-	const size_t	maxZIdx = (this->totalMapSize.z / DIAMETER) / 2;
-	const size_t	psSize  = this->ps.size();
 	const double	initPos = DIAMETER * 2.0;
+	const size_t	maxXIdx = (this->totalMapSize.x - initPos) / DIAMETER;
+	const size_t	maxYIdx = (this->totalMapSize.y - initPos) / DIAMETER;
+	const size_t	maxZIdx = (this->totalMapSize.z - initPos) / DIAMETER * (3.0 / 4.0);
+	const size_t	psSize  = this->ps.size();
 	double			x;
 	double			y;
 
@@ -57,10 +57,10 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 
 	for (size_t	yIdx = 0; yIdx < maxYIdx && pIdx < psSize; ++yIdx) 
 	{
-		y = RADIUS + yIdx * DIAMETER;
+		y = initPos + yIdx * DIAMETER;
 		for (size_t	xIdx = 0; xIdx < maxXIdx && pIdx < psSize; ++xIdx)
 		{
-			x = RADIUS + xIdx * DIAMETER;
+			x = initPos + xIdx * DIAMETER;
 			for (size_t	zIdx = 0; zIdx < maxZIdx && pIdx < psSize; ++zIdx)
 			{
 				ps[pIdx].center.x = x;
@@ -97,7 +97,7 @@ void	MPS::_InitTermCoefficient(void)
 		{
 			continue;
 		}
-		if (distanceSQ <= E_RADIUS_SQ)
+		if (distanceSQ <= this->bc_radius_effectiveSQ)
 		{
 			distance = sqrt(distanceSQ);
 			this->_n0 += WEIGHT(distance);
@@ -153,16 +153,10 @@ void	MPS::_CalcOneOnOneViscosity(const Vec &oneselfVel,
 									const size_t particleIdx,
 									const double distanceSQP)
 {
-	if (distanceSQP < E_RADIUS_SQ) 
+	if (distanceSQP < this->bc_radius_effectiveSQ) 
 	{
-		double	distanceP = sqrt(distanceSQP);
-		double	w;
-		if (distanceP < 0.1)
-		{
-			// Print::OutWords(particleIdx, distanceP);
-			distanceP = 0.1;
-		}
-		w = WEIGHT(distanceP);
+		const double	distanceP = sqrt(distanceSQP);
+		const double	w = WEIGHT(calibrate_dist(distanceP));
 		acceleration += (this->ps[particleIdx].velocity - oneselfVel) * w;
 	}
 }
@@ -179,14 +173,7 @@ void	MPS::_CalcOneOnOneCollision(const Vec &oneselfVel,
 
 		if (closing < 0.0)
 		{
-			if (distanceSQP < 0.01)
-			{
-				closing *= REPULSION_COEFFICIENT / (2 * 0.01);
-			}
-			else
-			{
-				closing *= REPULSION_COEFFICIENT / (2 * distanceSQP);
-			}
+			closing *= REPULSION_COEFFICIENT / (2 * calibrate_dist(distanceSQP));
 			acceleration += dr * closing; // KOKO
 		}
 	}
@@ -194,21 +181,18 @@ void	MPS::_CalcOneOnOneCollision(const Vec &oneselfVel,
 
 void	MPS::_CalcOneOnOnePressure(const double distanceSQP, double &ni)
 {
-	if (distanceSQP < E_RADIUS_SQ)
+	if (distanceSQP < this->bc_radius_effectiveSQ)
 	{
 		double distance = sqrt(distanceSQP);
-		if (distance < 0.1)
-		{
-			distance = 0.1;
-		}
-		const double w = WEIGHT(distance);
+		const double w = WEIGHT(calibrate_dist(distance));
 		ni += w;
 	}
 }
 
-void	MPS::_SmallerPressure(double &minPressure, const size_t particleIdx, const double distanceSQP)
+void	MPS::_SmallerPressure(double &minPressure, const size_t particleIdx, 
+								const double distanceSQP)
 {
-	if (distanceSQP < E_RADIUS_SQ)
+	if (distanceSQP < this->bc_radius_effectiveSQ)
 	{
 		if(this->ps[particleIdx].pressure < minPressure)
 		{
@@ -223,9 +207,9 @@ void	MPS::_CalcOneOnOnePressureGradient(double &minPressure,
 											const Vec &dr,
 											const double distanceSQP)
 {
-	if (distanceSQP < E_RADIUS_SQ)
+	if (distanceSQP < this->bc_radius_effectiveSQ)
 	{
-		double distance = sqrt(distanceSQP);
+		double distance = sqrt(calibrate_dist(distanceSQP));
 		double w = WEIGHT(distance);
 		w *= (this->ps[particleIdx].pressure - minPressure) / distanceSQP;
 		acceleration += dr * w;
@@ -272,7 +256,7 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 										 const size_t currentBX,
 										 const size_t currentBY,
 										 const size_t currentBZ, 
-										 Vec &acceleration, double &ni)
+										 Vec &acceleration)
 {
 	// const size_t	currentBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
 	double	distFromWallSQs[8];
@@ -287,9 +271,9 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 	switch (e)
 	{
 		case e_VISCOSITY:
-			if (distFromWallSQ < E_RADIUS_SQ)
+			if (distFromWallSQ < this->bc_radius_effectiveSQ)
 			{
-				wallWeight = this->_WallWeight(sqrt(distFromWallSQ));
+				wallWeight = this->_WallWeight(calibrate_dist(sqrt(distFromWallSQ)));
 				if (0.0 < wallWeight)
 				{
 					acceleration += (this->ps[oneself].velocity * -2.0) * wallWeight;
@@ -308,14 +292,13 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_PRESSURE:
-			(void)ni;
 			break;
 		case e_PGRADIENT2:
 			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
 			{
 				distFromWall = sqrt(distFromWallSQ);
 				nVector = calc_n_vec(distFromWallSQs);
-				acceleration -= nVector * DENSITY_OF_PARTICLES * (E_RADIUS - distFromWall);
+				acceleration -= nVector * 2.0 * DENSITY_OF_PARTICLES * (this->bc_radius_effective - distFromWall);
 			}
 		default:
 			break;
@@ -348,9 +331,9 @@ void	MPS::_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operatio
 void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, double &minPressure)
 {
 	g_i = oneself;
-	const size_t	currentBX = size_t(this->ps[oneself].center.x / BUCKET_LENGTH);
-	const size_t	currentBY = size_t(this->ps[oneself].center.y / BUCKET_LENGTH);
-	const size_t	currentBZ = size_t(this->ps[oneself].center.z / BUCKET_LENGTH);
+	const size_t	currentBX = size_t(this->ps[oneself].center.x / this->bc_bucketLength);
+	const size_t	currentBY = size_t(this->ps[oneself].center.y / this->bc_bucketLength);
+	const size_t	currentBZ = size_t(this->ps[oneself].center.z / this->bc_bucketLength);
 
 	const Vec	oneselfPos(this->ps[oneself].center);
 	const Vec	oneselfVel(this->ps[oneself].velocity);
@@ -399,7 +382,7 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 		}
 	}}}
 	this->_SwitchContributionFromWall(oneself, e, currentBX, currentBY, currentBZ, 
-									  acceleration, ni);
+									  acceleration);
 	this->_SwitchAssignmentOfAcceleration(oneself, e, acceleration, ni);
 }
 
@@ -456,7 +439,6 @@ void	MPS::_CalcParticlesCollision(void)
 {
 	double	noMeaning = 0;
 	#pragma omp parallel for schedule(dynamic, 64)
-
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -464,6 +446,7 @@ void	MPS::_CalcParticlesCollision(void)
 			this->_SearchNeighborParticles(i, e_COLLISION, noMeaning);
 		}
 	}
+	#pragma omp parallel for
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		if (this->ps[i].validFlag)
@@ -527,7 +510,6 @@ void	MPS::_UpdateVPA3(void)
 	{
 		if (this->ps[i].validFlag)
 		{
-			// this->ps[i].velocity += this->ps[i].acceleration * DELTA_TIME;
 			this->ps[i].center += this->ps[i].velocity * DELTA_TIME;
 
 			this->ps[i].validFlag = this->_CheckOutOfRange(this->ps[i].center);
@@ -600,6 +582,25 @@ void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight,
 	}
 }
 
+void	MPS::DrawPoints(const Vec &halfMapSize, const double midHeight,
+						const size_t elapsedTime)
+{
+	if (SIMULATION_TIME < elapsedTime + 1)
+	{
+		Print::Err("DrawParticles: elapsedTime");
+		return;
+	}
+	glEnable(GL_POINT_SMOOTH);
+	glPointSize(10.0f);
+    glBegin(GL_POINTS);
+	glColor4f(0.0f, 1.0f, 1.0f, 0.4f);
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		this->_logs[elapsedTime].ps[i].DrawPoint(halfMapSize, midHeight);
+	}
+	glEnd();
+	glDisable(GL_POINT_SMOOTH);
+}
 
 // MPS::MPS(const MPS &mps): MPS
 // {

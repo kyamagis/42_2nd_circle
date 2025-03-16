@@ -41,6 +41,9 @@ Vec trilinear_interpolation_nVec(const Vec &pPos, const size_t currentBX,
 								Vec dist_001, Vec dist_101, Vec dist_011, Vec dist_111);
 
 Vec	calc_n_vec(const double *distFromWallSQs);
+
+double	calibrate_dist(const double dist);
+
 void	add_cube(std::deque<Triangle> &ts, const Vec &mapSize);
 
 #endif

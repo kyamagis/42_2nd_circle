@@ -68,36 +68,6 @@ void	drawVertex(const Vec &vertex)
 			   -coordinateZ * DEPTH_SCALING * g_data.scaling);
 }
 
-void	RenderingAlgorithm()
-{
-	glEnable(GL_DEPTH_TEST);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
-
-	if (g_data.visibleBucketsFlg)
-	{
-		g_data.mps->DrawDisFromWallSQ(g_data.halfMapSize, g_data.midHeight);
-	}
-	// g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
-	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
-	for (size_t	i = 0; i < g_data.i; ++i)
-	{
-		if (g_data.circleFlg == true)
-		{
-			g_data.ts[i].circumcircle.DrawCircle2d(g_data.halfMapSize, 
-													g_data.midHeight, 100);
-		}
-		// g_data.ts[i].DrawNormalVector(g_data.midHeight, g_data.halfMapSize);
-		g_data.ts[i].DrawTriangle(g_data.maxHeight,
-									g_data.minHeight,
-									g_data.midHeight,
-									g_data.halfMapSize,
-									g_data.lineFlg);
-	
-	}
-	g_data.key = 0;
-	glFlush();
-}
-
 void mouseWheel(int button, int dir, int x, int y)
 {
 	(void)button;
@@ -248,6 +218,36 @@ void keyboard(unsigned char key, int x, int y)
 	glutPostRedisplay();
 }
 
+void	RenderingAlgorithm()
+{
+	glEnable(GL_DEPTH_TEST);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
+
+	if (g_data.visibleBucketsFlg)
+	{
+		g_data.mps->DrawDisFromWallSQ(g_data.halfMapSize, g_data.midHeight);
+	}
+	// g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
+	g_data.mps->DrawPoints(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
+	for (size_t	i = 0; i < g_data.i; ++i)
+	{
+		if (g_data.circleFlg == true)
+		{
+			g_data.ts[i].circumcircle.DrawCircle2d(g_data.halfMapSize, 
+													g_data.midHeight, 100);
+		}
+		// g_data.ts[i].DrawNormalVector(g_data.midHeight, g_data.halfMapSize);
+		g_data.ts[i].DrawTriangle(g_data.maxHeight,
+									g_data.minHeight,
+									g_data.midHeight,
+									g_data.halfMapSize,
+									g_data.lineFlg);
+	
+	}
+	g_data.key = 0;
+	glFlush();
+}
+
 void	onWindowClose(void)
 {
 	glutDestroyWindow(g_data.gWindowID);
@@ -259,7 +259,7 @@ Graphic::Graphic()
 	
 }
 
-Graphic::Graphic(const int argc, const char** argv, int	sizeX, int	sizeY)
+Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int sizeY)
 {
 	glutInit(const_cast<int*>(&argc), const_cast<char**>(argv));
 
@@ -273,11 +273,9 @@ Graphic::Graphic(const int argc, const char** argv, int	sizeX, int	sizeY)
 	glutWMCloseFunc(onWindowClose);
 }
 
-Graphic::Graphic(const int argc, const char** argv, int	sizeX, int	sizeY, 
-				const std::deque<Triangle> &ts, 
-				const uint32_t mapSize[3],
-				const int64_t maxHeight,
-				const int64_t minHeight)
+Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int sizeY, 
+				const std::deque<Triangle> &ts, const uint32_t mapSize[3],
+				const int64_t maxHeight, const int64_t minHeight)
 {
 	glutInit(const_cast<int*>(&argc), const_cast<char**>(argv));
 

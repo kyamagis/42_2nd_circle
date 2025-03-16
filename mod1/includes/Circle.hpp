@@ -21,15 +21,17 @@ class Circle
 		Circle(const Circle &c);
 		virtual ~Circle();
 
-		void _DrawCircle(const Vec &halfMapSize,
+		void	_DrawCircle(const Vec &halfMapSize,
 						const double midHeight,
 						const size_t num_segments, Vec &c);
-		void DrawCircle2d(const Vec &halfMapSize,
+		void	DrawCircle2d(const Vec &halfMapSize,
 							const double midHeight,
 							const size_t num_segments);
-		void DrawCircle3d(const Vec &halfMapSize,
+		void	DrawCircle3d(const Vec &halfMapSize,
 							const double midHeight,
 							const size_t num_segments);
+		void	DrawPoint3d(const Vec &halfMapSize, const double midHeight);
+
 		Circle&	operator=(const Circle &c);
 		bool	operator==(const Circle &c) const;
 };
