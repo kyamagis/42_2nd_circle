@@ -139,6 +139,7 @@ Circle&	Circle::operator=(const Circle &c)
 	if (this != &c)
 	{
 		this->center = c.center;
+		this->color = c.color;
 		this->r = c.r;
 		this->rSQ = c.rSQ;
 	}

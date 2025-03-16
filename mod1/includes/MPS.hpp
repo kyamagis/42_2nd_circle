@@ -18,12 +18,22 @@ enum	e_operation
 	e_PGRADIENT2,
 };
 
+typedef struct s_log
+{
+	size_t		time;
+	std::deque<Particle>	ps;
+} t_log;
+
 class MPS: public BC
 {
 	private:
 		double	_cffVTerm;
 		double	_cffPress;
 		double	_cffPGTerm;
+
+		const Vec	_g;
+		double		_n0;
+		t_log		_logs[SIMULATION_TIME];
 
 		MPS();
 		void	_InitBuckets(const std::deque<Triangle> &ts);
@@ -75,13 +85,16 @@ class MPS: public BC
 		void	_UpdateVPA1(void);
 		void	_UpdateVPA2(void);
 		void	_UpdateVPA3(void);
+		void	_NavierStokesEquations(void);
+		void	_Simulation(void);
+
 
 	public:
 		std::deque<Particle> ps;
 		const Vec	visibleMapSize;
 		const Vec	totalMapSize;
-		Vec			g;
-		double		n0;
+		
+
 
 		MPS(const Vec mapSize, 
 		   const std::deque<Triangle> &ts);
@@ -89,9 +102,9 @@ class MPS: public BC
 		MPS(const MPS &mps);
 		MPS&	operator=(const MPS &mps);
 
-		double	W(const size_t i, const size_t oneself, bool gradientFlg);
-		void	NavierStokesEquations(void);
 		void	DrawParticles(const Vec &halfMapSize, const double midHeight);
+		void	DrawParticles(const Vec &halfMapSize, const double midHeight, 
+								   const size_t elapsedTime);
 
 		// bool	operator==(const MPS &mps) const;
 };

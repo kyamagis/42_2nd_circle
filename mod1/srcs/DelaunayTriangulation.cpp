@@ -133,11 +133,6 @@ void	DT::_EraseTempTriangles(void)
 	}
 }
 
-// void	DT::_AddCube(void)
-// {
-// 	add_cube(this->_triangles, this->_mapSize);
-// }
-
 std::deque<Triangle>	DT::Calculation(void)
 {
 	const size_t	size = this->_specificPoints.size();

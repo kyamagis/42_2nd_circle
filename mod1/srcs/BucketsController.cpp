@@ -430,7 +430,7 @@ double	BC::BC_InterpolateWallWeight(const double interpolatedDist)
 		nextWeight = this->_weights[i + 1];
 		if (interpolatedDist <= nextWeight.x)
 		{
-			return 2 * this->_weights[i].Interpolate2d(nextWeight, interpolatedDist);
+			return this->_weights[i].Interpolate2d(nextWeight, interpolatedDist);
 		}
 	}
 	Print::Err("BC_InterpolateWallWeight: weight");

@@ -43,8 +43,9 @@ enum	e_coor
 #define InvisibleSpace (2.0 * BUCKET_LENGTH)
 
 // #define DELTA_TIME 0.0005
-#define DELTA_TIME 0.05
+#define DELTA_TIME 0.1
 #define ONE_SECOUD 1.0
+#define SIMULATION_TIME 100
 
 #define X 0
 #define Y 1

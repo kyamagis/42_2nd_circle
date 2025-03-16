@@ -30,9 +30,9 @@ SRCS =	main.cpp \
 B_SRCS =	
 
 OBJS = $(addprefix $(OBJDIR)/, $(SRCS:.cpp=.o))
+DEPS = $(OBJS:.o=.d)
 B_OBJDIR = ./b_obj
 B_OBJS = $(addprefix $(B_OBJDIR)/, $(B_SRCS:.cpp=.o))
-
 
 export LIBGL_ALWAYS_INDIRECT=0
 
@@ -54,6 +54,9 @@ clean :
 	$(RM) -rf $(B_OBJDIR)
 	$(RM) return.txt
 	$(RM) return_debug.txt
+	$(RM) wall_weight.png
+	$(RM) WallWeight.csv
+
 
 fclean : clean
 	$(RM) $(NAME) $(B_NAME)

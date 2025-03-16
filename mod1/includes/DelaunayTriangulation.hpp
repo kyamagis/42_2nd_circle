@@ -31,8 +31,6 @@ class DT
 		void	_EraseTempTriangles(void);
 		void	_IntegrateTriangles(void);
 
-		// void	_AddCube(void);
-
 	public:
 		DT(const std::deque<Vec> &specificPoints,
 		   const uint32_t mapSize[3], 

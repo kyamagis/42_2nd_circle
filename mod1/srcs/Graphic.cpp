@@ -27,7 +27,8 @@ typedef struct s_data
 	bool	visibleBucketsFlg;
 	int		gWindowID;
 
-	unsigned char key;
+	unsigned char	key;
+	size_t			elapsedTime;
 
 } t_data;
 
@@ -76,8 +77,8 @@ void	RenderingAlgorithm()
 	{
 		g_data.mps->DrawDisFromWallSQ(g_data.halfMapSize, g_data.midHeight);
 	}
-	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
-	
+	// g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight);
+	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
@@ -182,6 +183,7 @@ void keyboard(unsigned char key, int x, int y)
 			// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(1,0,0));
 			// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(0,1,0));
 			g_data.scaling = SCALING;
+			g_data.elapsedTime = 0;
 			break;
 		case 'l':
 			g_data.lineFlg = !g_data.lineFlg;
@@ -208,7 +210,16 @@ void keyboard(unsigned char key, int x, int y)
 			std::exit(EXIT_SUCCESS);
 			return;
 		case 's':
-			g_data.mps->NavierStokesEquations();
+			if(g_data.elapsedTime + 1 < SIMULATION_TIME)
+			{
+				++g_data.elapsedTime;
+			}
+			break;
+		case 'S':
+			if(0 < g_data.elapsedTime)
+			{
+				--g_data.elapsedTime;
+			}
 			break;
 		case 't':
 			g_data.q = 0.0;
@@ -259,7 +270,26 @@ Graphic::Graphic(const int argc, const char** argv, int	sizeX, int	sizeY)
 
 	g_data.gWindowID = glutCreateWindow("mod1");
 	glClearColor(0.0, 0.0, 0.0, 1.0);
-	// glutKeyboardFunc(defaultkeyboard);
+	glutWMCloseFunc(onWindowClose);
+}
+
+Graphic::Graphic(const int argc, const char** argv, int	sizeX, int	sizeY, 
+				const std::deque<Triangle> &ts, 
+				const uint32_t mapSize[3],
+				const int64_t maxHeight,
+				const int64_t minHeight)
+{
+	glutInit(const_cast<int*>(&argc), const_cast<char**>(argv));
+
+	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
+	// glutInitDisplayMode(GLUT_SINGLE);
+	glutInitWindowSize(sizeX, sizeY);
+	glutInitWindowPosition(300, 50);
+
+	this->_InitGraphicData(ts, mapSize, maxHeight, minHeight);
+
+	g_data.gWindowID = glutCreateWindow("mod1");
+	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glutWMCloseFunc(onWindowClose);
 }
 
@@ -295,7 +325,7 @@ double	extend_map(const uint32_t mapSize)
 	return mapSize - 1 + BUCKET_LENGTH - diff;
 }
 
-void	Graphic::InitGraphicData(const std::deque<Triangle> &ts, 
+void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts, 
 								 const uint32_t mapSize[3],
 								 const int64_t maxHeight,
 								 const int64_t minHeight)
@@ -331,6 +361,7 @@ void	Graphic::InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.lineFlg = false;
 	g_data.visibleBucketsFlg = false;
 	g_data.key = 'i';
+	g_data.elapsedTime = 0;
 }
 
 void	Graphic::KeyboardFunc(void (*func)(unsigned char key, int x, int y))

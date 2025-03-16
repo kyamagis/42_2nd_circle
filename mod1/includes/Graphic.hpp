@@ -12,18 +12,25 @@ class Graphic
 {
 	private:
 		Graphic();
+
+		void	_InitGraphicData(const std::deque<Triangle> &ts, 
+								const uint32_t mapSize[3],
+								const int64_t maxHeight,
+								const int64_t minHeight);
 		
-		public:
+	public:
 		Graphic(const int argc, const char** argv, int	sizeX, int	sizeY);
+		Graphic(const int argc, const char** argv, int	sizeX, int	sizeY, 
+							const std::deque<Triangle> &ts, 
+							const uint32_t mapSize[3],
+							const int64_t maxHeight,
+							const int64_t minHeight);
 		~Graphic();
 
 		void	GraphicLoop(void (*func)(void));
 		void	GraphicLoop(void);
 		void	KeyboardFunc(void (*func)(unsigned char key, int x, int y));
-		void	InitGraphicData(const std::deque<Triangle> &ts, 
-								const uint32_t mapSize[3],
-								const int64_t maxHeight,
-								const int64_t minHeight);
+		
 		// void	RenderingAlgorithm();
 };
 void	drawVertex(const Vec &vertex);

@@ -151,7 +151,7 @@ static void	calc_wall_weight(std::deque<Vec> &weights, std::deque<Particle> &ps)
 	std::ofstream outputfile("WallWeight.csv");
 	if (outputfile.fail())
 	{
-		Print::Err("_InitWallWeight");
+		Print::Err("calc_wall_weight");
 		std::exit(EXIT_FAILURE);
 	}
 	std::deque<Particle>::iterator	it;

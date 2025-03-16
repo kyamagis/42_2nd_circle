@@ -36,9 +36,8 @@ void	TerrestrialSimulation::_DrawSimulation(const int argc,
 												const char** argv, 
 												const std::deque<Triangle> &ts)
 {
-	Graphic g = Graphic(argc, argv, SCREEN_SIZE_X, SCREEN_SIZE_Y);
-
-	g.InitGraphicData(ts, this->_mapSize, this->_maxHeight, this->_minHeight);
+	Graphic g = Graphic(argc, argv, SCREEN_SIZE_X, SCREEN_SIZE_Y,
+						ts, this->_mapSize, this->_maxHeight, this->_minHeight);
 	g.GraphicLoop();
 }
 

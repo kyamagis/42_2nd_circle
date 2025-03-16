@@ -1,4 +1,7 @@
 #include <iomanip>
+#include <iostream>
+#include <fstream>
+
 #include "../includes/MPS.hpp"
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
@@ -16,14 +19,15 @@ static size_t g_o;
 
 MPS::MPS(const Vec	mapSize, 
 		 const std::deque<Triangle> &ts)
-		:BC(Vec(mapSize), Vec(mapSize)), 
+		 :BC(Vec(mapSize), Vec(mapSize)), 
+		 _g(0, 0, -9.8),
 		visibleMapSize(mapSize) ,
-		totalMapSize(this->visibleMapSize),
-		g(0, 0, -9.8)
+		totalMapSize(this->visibleMapSize)
 {
 	this->_InitParticlesWaterColumnCollapse();
 	this->_InitBuckets(ts);
 	this->_SetParameter();
+	this->_Simulation();
 }
 
 MPS::~MPS()
@@ -96,15 +100,15 @@ void	MPS::_InitTermCoefficient(void)
 		if (distanceSQ <= E_RADIUS_SQ)
 		{
 			distance = sqrt(distanceSQ);
-			this->n0 += WEIGHT(distance);
+			this->_n0 += WEIGHT(distance);
 			tempLambda += distanceSQ * WEIGHT(distance);
 		}
 	}}}
 
-	lambda =  tempLambda / this->n0;
-	this->_cffVTerm  = 2.0 * KINEMATIC_VISCOSITY * D / this->n0 / lambda;
-	this->_cffPress  = SPEED_OF_SOUND * SPEED_OF_SOUND / this->n0;
-	this->_cffPGTerm = - D / this->n0;
+	lambda =  tempLambda / this->_n0;
+	this->_cffVTerm  = 2.0 * KINEMATIC_VISCOSITY * D / this->_n0 / lambda;
+	this->_cffPress  = SPEED_OF_SOUND * SPEED_OF_SOUND / this->_n0;
+	this->_cffPGTerm = - D / this->_n0;
 }
 
 void	MPS::_SetParameter(void)
@@ -272,7 +276,7 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 {
 	// const size_t	currentBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
 	double	distFromWallSQs[8];
-	double	distFromWallSQ = 
+	const double	distFromWallSQ = 
 	this->BC_InterpolateDistFromWallSQ(this->ps[oneself].center, 
 										currentBX, currentBY, currentBZ,
 										distFromWallSQs);
@@ -304,6 +308,7 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_PRESSURE:
+			(void)ni;
 			break;
 		case e_PGRADIENT2:
 			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
@@ -329,7 +334,7 @@ void	MPS::_SwitchAssignmentOfAcceleration(const size_t oneself, const e_operatio
 			this->ps[oneself].acceleration = acceleration;
 			break;
 		case e_PRESSURE:
-			this->ps[oneself].pressure = (this->n0 < ni) * (ni - this->n0) * 
+			this->ps[oneself].pressure = (this->_n0 < ni) * (ni - this->_n0) * 
 										  this->_cffPress * DENSITY_OF_PARTICLES;
 			break;
 		case e_PGRADIENT2:
@@ -425,7 +430,7 @@ void	MPS::_ViscosityAndGravityTerm(void)
 		if (this->ps[i].validFlag)
 		{
 			this->_SearchNeighborParticles(i, e_VISCOSITY, noMeaning);
-			this->ps[i].acceleration += this->g;
+			this->ps[i].acceleration += this->_g;
 		}
 	}
 }
@@ -531,55 +536,70 @@ void	MPS::_UpdateVPA3(void)
 	}
 }
 
-void	MPS::NavierStokesEquations(void)
+void	MPS::_NavierStokesEquations(void)
 {
-	const double maxTime = ONE_SECOUD;
-
-	for (double time = 0.0; time < maxTime; time += DELTA_TIME)
-	{
-		this->BC_UpdateBuckets(this->ps);
-		this->_ViscosityAndGravityTerm();
-		this->_UpdateVPA1();
-		this->_CalcParticlesCollision();
-		this->_CalcParticlesPressure();
-		this->_PressureGradientTerm();
-		this->_UpdateVPA2();
-	
-		// this->_CalcParticlesPressure();
-
-		// this->_UpdateVPA3();
-		std::cout <<std::fixed << std::setprecision(1)
-				  << time / maxTime * 100
-				  << " %\r" << std::flush;
-	}
-	std::cout <<  std::endl;
-
-	// this->_UpdateBuckets(this->ps);
-	// this->_ViscosityAndGravityTerm();
-	// this->_UpdateVPA1();
-	// this->_CalcParticlesCollision();
-	// this->_CalcParticlesPressure();
-	// this->_PressureGradientTerm();
-	// this->_UpdateVPA2();
-
-
-	// this->_CalcParticlesPressure();
-	// for (size_t i = 0; i < NUM_OF_PARTICLES; ++i)
-	// {
-	// 	this->pressureLog[i] += this->ps[i].pressure;
-	// }
+	this->BC_UpdateBuckets(this->ps);
+	this->_ViscosityAndGravityTerm();
+	this->_UpdateVPA1();
+	this->_CalcParticlesCollision();
+	this->_CalcParticlesPressure();
+	this->_PressureGradientTerm();
+	this->_UpdateVPA2();
+	this->_CalcParticlesPressure();
 }
 
-// #include <GL/glut.h>
-// #include <GL/freeglut.h>
+void	MPS::_Simulation(void)
+{
+	// std::ofstream outputfile("particles_log");
+	// if (outputfile.fail())
+	// {
+	// 	Print::Err("calc_wall_weight");
+	// 	std::exit(EXIT_FAILURE);
+	// }
+	const double maxTime = ONE_SECOUD;
+
+	for (size_t elapsedTime = 0; elapsedTime < SIMULATION_TIME; elapsedTime += maxTime)
+	{
+		this->_logs[elapsedTime].ps = this->ps;
+		for (double time = 0.0; time < maxTime; time += DELTA_TIME) {
+			this->_NavierStokesEquations();
+			// for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+			// {
+			// 	outputfile << elapsedTime << ", "
+			// 			   << this->ps[i] << std::endl;
+			// }
+		}
+		std::cout << elapsedTime << " / " << SIMULATION_TIME
+		<< "\r" << std::flush;
+	}
+	std::cout <<  std::endl;
+	// outputfile.close();
+
+}
 
 void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
 {
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		this->ps[i].DrawParticle(halfMapSize, midHeight);
+		Print::OutWords(i, this->ps[i]);
 	}
 }
+
+void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight, 
+						   const size_t elapsedTime)
+{
+	if (SIMULATION_TIME < elapsedTime + 1)
+	{
+		Print::Err("DrawParticles: elapsedTime");
+		return;
+	}
+	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
+	{
+		this->_logs[elapsedTime].ps[i].DrawParticle(halfMapSize, midHeight);
+	}
+}
+
 
 // MPS::MPS(const MPS &mps): MPS
 // {
