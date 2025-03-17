@@ -48,11 +48,11 @@ bool	TS::SimulationStart(const int argc, const char** argv,
 		return false;
 	}
 
-	// DT	dT(this->_specificPoints, this->_mapSize, 
-	// 	   this->_maxHeight, this->_minHeight);
-	// std::deque<Triangle>	ts = dT.Calculation();
+	DT	dT(this->_specificPoints, this->_mapSize, 
+		   this->_maxHeight, this->_minHeight);
+	std::deque<Triangle>	ts = dT.Calculation();
 
-	std::deque<Triangle>	ts;
+	// std::deque<Triangle>	ts;
 
 	this->_DrawSimulation(argc, argv, ts);
 

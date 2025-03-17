@@ -25,8 +25,8 @@ enum	e_coor
 #define	DIAMETER	(E_RADIUS / 2.0)
 #define	RADIUS		(DIAMETER / 2.0)
 #define WEIGHT(distance) ((E_RADIUS/distance) - 1.0)
-// #define KINEMATIC_VISCOSITY 0.000001
-#define KINEMATIC_VISCOSITY 0.000001 * I_DISTANCE / 0.02 
+#define KINEMATIC_VISCOSITY 0.000001
+// #define KINEMATIC_VISCOSITY 0.000001 * I_DISTANCE / 0.02
 #define SPEED_OF_SOUND 22.0
 #define DENSITY_OF_PARTICLES 1000
 #define DISTANCE_LIMIT (I_DISTANCE * 0.9)
@@ -45,7 +45,7 @@ enum	e_coor
 // #define DELTA_TIME 0.0005
 #define DELTA_TIME 0.1
 #define ONE_SECOUD 1.0
-#define SIMULATION_TIME 250
+#define SIMULATION_TIME 200
 
 #define X 0
 #define Y 1

@@ -1,3 +1,5 @@
+#include <omp.h>
+
 #include "../includes/Print.hpp"
 #include "../includes/TerrestrialSimulation.hpp"
 #include "../includes/Graphic.hpp"
@@ -7,6 +9,8 @@
 int	main(int argc, char **argv)
 {
 	TS	tS;
+
+	omp_set_num_threads(8);
 
 	switch (argc)
 	{

@@ -65,7 +65,7 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 			{
 				ps[pIdx].center.x = x;
 				ps[pIdx].center.y = y;
-				ps[pIdx].center.z = initPos + zIdx * DIAMETER;
+				ps[pIdx].center.z = RADIUS + zIdx * DIAMETER;
 				ps[pIdx].r = RADIUS;
 				ps[pIdx].color = gradation(initPos + (maxZIdx - 1) * DIAMETER, 
 										   initPos, ps[pIdx].center.z);
@@ -527,7 +527,7 @@ void	MPS::_NavierStokesEquations(void)
 	this->_CalcParticlesPressure();
 	this->_PressureGradientTerm();
 	this->_UpdateVPA2();
-	this->_CalcParticlesPressure();
+	// this->_CalcParticlesPressure();
 }
 
 void	MPS::_Simulation(void)
@@ -591,7 +591,7 @@ void	MPS::DrawPoints(const Vec &halfMapSize, const double midHeight,
 		return;
 	}
 	glEnable(GL_POINT_SMOOTH);
-	glPointSize(10.0f);
+	glPointSize(20.0f);
     glBegin(GL_POINTS);
 	glColor4f(0.0f, 1.0f, 1.0f, 0.4f);
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
