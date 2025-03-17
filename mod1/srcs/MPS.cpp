@@ -183,8 +183,8 @@ void	MPS::_CalcOneOnOnePressure(const double distanceSQP, double &ni)
 {
 	if (distanceSQP < this->bc_radius_effectiveSQ)
 	{
-		double distance = sqrt(distanceSQP);
-		const double w = WEIGHT(calibrate_dist(distance));
+		const double	distance = sqrt(distanceSQP);
+		const double	w = WEIGHT(calibrate_dist(distance));
 		ni += w;
 	}
 }
@@ -209,7 +209,7 @@ void	MPS::_CalcOneOnOnePressureGradient(double &minPressure,
 {
 	if (distanceSQP < this->bc_radius_effectiveSQ)
 	{
-		double distance = sqrt(calibrate_dist(distanceSQP));
+		const double distance = sqrt(distanceSQP);
 		double w = WEIGHT(distance);
 		w *= (this->ps[particleIdx].pressure - minPressure) / distanceSQP;
 		acceleration += dr * w;
@@ -244,9 +244,9 @@ void	MPS::_SwitchOperation(const e_operation e,
 			this->_SmallerPressure(minPressure, particleIdx, distanceSQP);
 			break;
 		case e_PGRADIENT2:
-			break;
 			this->_CalcOneOnOnePressureGradient(minPressure, acceleration, 
 												particleIdx, dr, distanceSQP);
+			break;
 		default:
 			break;
 	}
