@@ -41,10 +41,10 @@ int32_t &pos)
 }
 
 static bool	ExtractNumber(const std::string &getLine, 
-const size_t line, 
-size_t &i,
-int32_t &pos, 
-char delimiter)
+							const size_t line, 
+							size_t &i,
+							int32_t &pos, 
+							char delimiter)
 {
 	for (; isblank(getLine[i]); ++i);
 	if (StringToNum(getLine, line, i, pos) == false)

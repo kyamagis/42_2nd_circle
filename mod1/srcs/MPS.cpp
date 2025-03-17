@@ -9,6 +9,8 @@
 
 static size_t g_i;
 static size_t g_o;
+static size_t g_t;
+static Vec g_n;
 
 // MPS::MPS()
 // {
@@ -45,7 +47,8 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 {
 	this->ps.resize(NUM_OF_PARTICLES);
 	size_t	pIdx = 0;
-	const double	initPos = DIAMETER * 2.0;
+	// const double	initPos = BUCKET_LENGTH;
+	const double	initPos = RADIUS;
 	const size_t	maxXIdx = (this->totalMapSize.x - initPos) / DIAMETER;
 	const size_t	maxYIdx = (this->totalMapSize.y - initPos) / DIAMETER;
 	const size_t	maxZIdx = (this->totalMapSize.z - initPos) / DIAMETER * (3.0 / 4.0);
@@ -67,10 +70,12 @@ void	MPS::_InitParticlesWaterColumnCollapse(void)
 				ps[pIdx].center.y = y;
 				ps[pIdx].center.z = RADIUS + zIdx * DIAMETER;
 				ps[pIdx].r = RADIUS;
+				ps[pIdx].rSQ = 0;
 				ps[pIdx].color = gradation(initPos + (maxZIdx - 1) * DIAMETER, 
 										   initPos, ps[pIdx].center.z);
 				ps[pIdx].velocity = 0.0;
 				ps[pIdx].acceleration = 0.0;
+				ps[pIdx].pressure = 0.0;
 				++pIdx;
 			}
 		}
@@ -281,9 +286,16 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_COLLISION:
-			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
+			
+			if (distFromWallSQ < this->bc_radius_effectiveSQ)
 			{
+				// size_t	currentBIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
+				// nVector = this->buckets[currentBIdx].n;
 				nVector = calc_n_vec(distFromWallSQs);
+				// if (605 <= g_i && g_i <= 610 && 119 <= g_t && g_t <= 121)
+				// {
+				// 	Print::OutWords(g_i, g_t, nVector);
+				// }
 				closing = this->ps[oneself].velocity.DotProduct3d(nVector);
 				if (closing < 0.0)
 				{
@@ -297,8 +309,9 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
 			{
 				distFromWall = sqrt(distFromWallSQ);
+				// nVector = this->buckets[currentBIdx].n;
 				nVector = calc_n_vec(distFromWallSQs);
-				acceleration -= nVector * 2.0 * DENSITY_OF_PARTICLES * (this->bc_radius_effective - distFromWall);
+				acceleration -= nVector * 2.0 * DENSITY_OF_PARTICLES * (I_DISTANCE - distFromWall);
 			}
 		default:
 			break;
@@ -551,6 +564,7 @@ void	MPS::_Simulation(void)
 			// 			   << this->ps[i] << std::endl;
 			// }
 		}
+		g_t = elapsedTime;
 		std::cout << elapsedTime << " / " << SIMULATION_TIME
 		<< "\r" << std::flush;
 	}
@@ -596,7 +610,13 @@ void	MPS::DrawPoints(const Vec &halfMapSize, const double midHeight,
 	glColor4f(0.0f, 1.0f, 1.0f, 0.4f);
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
+		// && i <= 610
 		this->_logs[elapsedTime].ps[i].DrawPoint(halfMapSize, midHeight);
+		// if ( i <= 610)
+		// {
+		// 	this->_logs[elapsedTime].ps[i].DrawPoint(halfMapSize, midHeight);
+		// 	// Print::OutWords(elapsedTime, this->_logs[elapsedTime].ps[i]);
+		// }
 	}
 	glEnd();
 	glDisable(GL_POINT_SMOOTH);

@@ -203,7 +203,6 @@ std::deque<Vec>	init_wall_weight(void)
 
 	const char* script = "python3 ./srcs/WallWeight.py";
 
-    // Pythonスクリプトを実行
 	if (std::system(script) != 0)
 	{
 		Print::Err("std::system");
@@ -292,6 +291,10 @@ Vec	calc_n_vec(const double *distFromWallSQs)
 	{
 		return nVec;
 	}
+	if (nVec.z < 0)
+	{
+		nVec *= -1.0;
+	}
 	return nVec / nVec.Magnitude3d();
 }
 
@@ -329,7 +332,7 @@ static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
 	ts.back().n.z = abs(ts.back().n.z);
 }
 
-static void	add_top(std::deque<Triangle> &ts, const Vec &mapSize)
+void	add_top(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	Vec	vertexA(mapSize.x, 0, mapSize.z);
 	const Vec	vertexB(mapSize.x, mapSize.y, mapSize.z);
@@ -417,7 +420,7 @@ static void	add_front(std::deque<Triangle> &ts, const Vec &mapSize)
 void	add_cube(std::deque<Triangle> &ts, const Vec &mapSize)
 {
 	add_bottom(ts, mapSize);
-	add_top(ts, mapSize);
+	// add_top(ts, mapSize);
 	add_leftSide(ts, mapSize);
 	add_rightSide(ts, mapSize);
 	add_front(ts, mapSize);

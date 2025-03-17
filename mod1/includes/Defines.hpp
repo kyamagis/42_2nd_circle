@@ -19,7 +19,7 @@ enum	e_coor
 #define	MIN_COORDINATE 0
 
 // #define I_DISTANCE	0.02 // interparticle distance
-#define I_DISTANCE	500 // interparticle distance
+#define I_DISTANCE	500.0 // interparticle distance
 #define E_RADIUS	(2.1 * I_DISTANCE) // effective radius
 #define E_RADIUS_SQ (E_RADIUS * E_RADIUS)
 #define	DIAMETER	(E_RADIUS / 2.0)
