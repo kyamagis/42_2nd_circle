@@ -15,6 +15,7 @@ typedef struct s_bucket
 	Vec		position;
 	Vec		center;
 	Vec		n;
+	Vec		nInterpolation;
 	size_t	bucketX;
 	size_t	bucketY;
 	size_t	bucketZ;

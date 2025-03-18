@@ -14,9 +14,12 @@ class Particle: public Circle
 	public:
 		Vec	velocity;
 		Vec	acceleration;
+		Vec	n;
 		double	pressure;
-
 		bool	validFlag;
+		size_t	bucketX;
+		size_t	bucketY;
+		size_t	bucketZ;
 
 		Particle();
 		Particle(const double &cX, const double &cY, const double &cZ);

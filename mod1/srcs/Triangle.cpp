@@ -156,7 +156,7 @@ void	Triangle::DrawNormalVector(const double midHeight, const Vec &halfMapSize)
 	glBegin(GL_LINES);
 	glColor3f(1.0f, 1.0f, 1.0f);
 	drawVertex(move_vec_to_map_center(this->g, halfMapSize, midHeight));
-	drawVertex(move_vec_to_map_center(this->g + this->n * 10000, halfMapSize, midHeight));
+	drawVertex(move_vec_to_map_center(this->g + this->n * 10, halfMapSize, midHeight));
 	glEnd();
 }
 

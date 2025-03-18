@@ -227,8 +227,8 @@ void	RenderingAlgorithm()
 	{
 		g_data.mps->DrawDisFromWallSQ(g_data.halfMapSize, g_data.midHeight);
 	}
-	// g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
-	g_data.mps->DrawPoints(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
+	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
+	// g_data.mps->DrawPoints(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
@@ -266,7 +266,7 @@ Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int s
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
 	// glutInitDisplayMode(GLUT_SINGLE);
 	glutInitWindowSize(sizeX, sizeY);
-	glutInitWindowPosition(300, 50);
+	glutInitWindowPosition(300, 100);
 
 	g_data.gWindowID = glutCreateWindow("mod1");
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -282,7 +282,7 @@ Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int s
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
 	// glutInitDisplayMode(GLUT_SINGLE);
 	glutInitWindowSize(sizeX, sizeY);
-	glutInitWindowPosition(300, 50);
+	glutInitWindowPosition(300, 100);
 
 	this->_InitGraphicData(ts, mapSize, maxHeight, minHeight);
 
@@ -317,10 +317,11 @@ void	Graphic::GraphicLoop(void)
 
 double	extend_map(const uint32_t mapSize)
 {	
-	const uint32_t	num = (uint32_t)((mapSize - 1) / BUCKET_LENGTH);
-	const double	diff = mapSize - 1 - num * BUCKET_LENGTH;
+	const size_t	maxIdx = mapSize - 1;
+	const uint32_t	num = (uint32_t)((maxIdx) / BUCKET_LENGTH);
+	const double	diff = maxIdx - num * BUCKET_LENGTH;
 
-	return mapSize - 1 + BUCKET_LENGTH - diff;
+	return maxIdx + BUCKET_LENGTH - diff + 4 * BUCKET_LENGTH;
 }
 
 void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts, 
@@ -331,14 +332,19 @@ void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.mapSize.x = extend_map(mapSize[X]);
 	g_data.mapSize.y = extend_map(mapSize[Y]);
 	g_data.mapSize.z = extend_map(mapSize[Z]);
-
-	// g_data.mapSize.x = mapSize[X];
-	// g_data.mapSize.y = mapSize[Y];
-	// g_data.mapSize.z = mapSize[Z];
 	g_data.halfMapSize.x = g_data.mapSize.x / 2.0;
 	g_data.halfMapSize.y = g_data.mapSize.y / 2.0;
 	g_data.halfMapSize.z = g_data.mapSize.z / 2.0;
 	g_data.ts = ts;
+	for (size_t	i = 0; i < g_data.ts.size(); ++i)
+	{
+		g_data.ts[i].a.x += 2.0 * BUCKET_LENGTH;
+		g_data.ts[i].a.y += 2.0 * BUCKET_LENGTH;
+		g_data.ts[i].b.x += 2.0 * BUCKET_LENGTH;
+		g_data.ts[i].b.y += 2.0 * BUCKET_LENGTH;
+		g_data.ts[i].c.x += 2.0 * BUCKET_LENGTH;
+		g_data.ts[i].c.y += 2.0 * BUCKET_LENGTH;
+	}
 	add_cube(g_data.ts, g_data.mapSize);
 	g_data.mps = new MPS(g_data.mapSize, g_data.ts);
 

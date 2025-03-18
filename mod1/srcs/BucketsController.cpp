@@ -236,7 +236,6 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 	for (double	k = minCrd.z; size_t(k) <= size_t(maxCrd.z);) {
 				bucketIdx      = this->BC_CalcBucketIdx(bucketX, bucketY, bucketZ);
 				shortestDistSQ = this->_CalcShortestDistanceSQ(t, bucketIdx);
-
 				if (shortestDistSQ == this->buckets[bucketIdx].distFromWallSQ)
 				{
 					this->buckets[bucketIdx].n += t.n;
@@ -333,7 +332,7 @@ bool	BC::_StoreEachCmpOfNeighborBDistFromWallSQ(const size_t currentBX,
 		neighborBDistFromWallSQ = this->bc_radius_effectiveSQ + EPS;
 	}
 
-	return currentBcmp < maxRCD;
+	return currentBcmp + 1 < maxRCD;
 }
 
 void	BC::BC_MakeBuckets(const std::deque<Particle> &ps)
@@ -381,6 +380,8 @@ void	BC::BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts)
 		this->_CalcDistanceFromWallSQ(ts[i]);
 	}
 	double	nVecMagnitude;
+	double	distFromWallSQs[8];
+
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
 		nVecMagnitude = this->buckets[i].n.Magnitude3d();
@@ -388,14 +389,10 @@ void	BC::BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts)
 		{
 			this->buckets[i].n /= this->buckets[i].n.Magnitude3d();
 		}
-		// if (this->buckets[i].bucketY == 8 &&
-		// 	this->buckets[i].bucketZ == 8)
-		// {
-		// 	Print::OutWords("i: ", i, 
-		// 					this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
-		// 					sqrt(this->buckets[i].distFromWallSQ),
-		// 					this->buckets[i].n, this->bucketColumn);
-		// }
+		this->BC_InterpolateDistFromWallSQ(this->buckets[i].center, 
+			this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ,
+			distFromWallSQs);
+		this->buckets[i].nInterpolation = calc_n_vec(distFromWallSQs);
 	}
 }
 
@@ -563,13 +560,13 @@ void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
 {
 	const double	maxDis = this->bc_radius_effectiveSQ;
 	const double	midDis = maxDis / 2.0;
-
-	glPointSize(2.0f);
-	glBegin(GL_POINTS);
+	
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
 		if (this->buckets[i].distFromWallSQ < maxDis)
 		{
+			glPointSize(5.0f);
+			glBegin(GL_POINTS);
 			if (this->buckets[i].distFromWallSQ < midDis)
 			{
 				glColor3f(0, this->buckets[i].distFromWallSQ / midDis, 1 - this->buckets[i].distFromWallSQ / midDis);
@@ -579,9 +576,52 @@ void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
 				glColor3f(this->buckets[i].distFromWallSQ / midDis, 1 - this->buckets[i].distFromWallSQ / midDis, 0);
 			}
 			drawVertex(move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight));
+			glEnd();
 		}
+
+		glShadeModel(GL_SMOOTH);
+		glBegin(GL_LINES);
+		glColor3f(1.0f, 1.0f, 1.0f);
+		// drawVertex(move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight));
+		// drawVertex(move_vec_to_map_center(this->buckets[i].position + this->buckets[i].n * 1000, halfMapSize, midHeight));
+		drawVertex(move_vec_to_map_center(this->buckets[i].center, halfMapSize, midHeight));
+		glColor3f(0.5f, 0.0f, 0.0f);
+		drawVertex(move_vec_to_map_center(this->buckets[i].center + this->buckets[i].nInterpolation * 1000, halfMapSize, midHeight));
+		Print::OutWords(this->buckets[i].nInterpolation);
+		glEnd();
+
+		// if (this->buckets[i].bucketX == 13 &&
+		// 	this->buckets[i].bucketY == 12 &&
+		// 	this->buckets[i].bucketZ == 0)
+		// {
+		// 	if (this->buckets[i].distFromWallSQ < maxDis)
+		// 	{
+		// 		glPointSize(5.0f);
+		// 		glBegin(GL_POINTS);
+		// 		if (this->buckets[i].distFromWallSQ < midDis)
+		// 		{
+		// 			glColor3f(0, this->buckets[i].distFromWallSQ / midDis, 1 - this->buckets[i].distFromWallSQ / midDis);
+		// 		}
+		// 		else
+		// 		{
+		// 			glColor3f(this->buckets[i].distFromWallSQ / midDis, 1 - this->buckets[i].distFromWallSQ / midDis, 0);
+		// 		}
+		// 		drawVertex(move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight));
+		// 		glEnd();
+		// 	}
+
+		// 	glShadeModel(GL_SMOOTH);
+		// 	glBegin(GL_LINES);
+		// 	glColor3f(1.0f, 1.0f, 1.0f);
+		// 	// drawVertex(move_vec_to_map_center(this->buckets[i].position, halfMapSize, midHeight));
+		// 	// drawVertex(move_vec_to_map_center(this->buckets[i].position + this->buckets[i].n * 1000, halfMapSize, midHeight));
+		// 	drawVertex(move_vec_to_map_center(this->buckets[i].center, halfMapSize, midHeight));
+		// 	glColor3f(0.5f, 0.0f, 0.0f);
+		// 	drawVertex(move_vec_to_map_center(this->buckets[i].center + this->buckets[i].nInterpolation * 1000, halfMapSize, midHeight));
+		// 	Print::OutWords(this->buckets[i].nInterpolation);
+		// 	glEnd();
+		// }
 	}
-	glEnd();
 }
 
 // void	BC::_SearchNeighborParticle(const size_t i)

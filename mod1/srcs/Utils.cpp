@@ -321,13 +321,13 @@ static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
 	const Vec	vertexB(0, mapSize.y, 0);
 	const Vec	vertexC(mapSize.x, 0, 0);
 
-	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.z = abs(ts.back().n.z);
 
 	vertexA = Vec(mapSize.x, mapSize.y, 0);
 
-	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.push_back({vertexA, vertexB, vertexC, false, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.z = abs(ts.back().n.z);
 }

@@ -58,8 +58,12 @@ Particle&	Particle::operator=(const Particle &p)
 		this->r = p.r;
 		this->velocity = p.velocity;
 		this->acceleration = p.acceleration;
+		this->n = p.n;
 		this->pressure = p.pressure;
 		this->validFlag = p.validFlag;
+		this->bucketX = p.bucketX;
+		this->bucketY = p.bucketY;
+		this->bucketZ = p.bucketZ;
 	}
 	return *this;
 }
