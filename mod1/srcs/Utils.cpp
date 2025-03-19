@@ -223,11 +223,10 @@ Vec	move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double 
 				vec.z - midHeight / 2.0);
 }
 
-double trilinear_interpolation_dist(const Vec &pPos, const size_t currentBX,
-								const size_t currentBY,
-								const size_t currentBZ, 
-							double dist_000, double dist_100, double dist_010, double dist_110, 
-							double dist_001, double dist_101, double dist_011, double dist_111)
+double trilinear_interpolation_dist(const Vec &pPos, 
+									const size_t currentBX, const size_t currentBY, const size_t currentBZ, 
+									double dist_000, double dist_100, double dist_010, double dist_110, 
+									double dist_001, double dist_101, double dist_011, double dist_111)
 {
 	// const Vec	origin;
 	const Vec	diagonalPoint(BUCKET_LENGTH);
