@@ -117,21 +117,6 @@ void mouse(int button, int state, int x, int y)
 	glutPostRedisplay();
 }
 
-Quaternion	makeQuaternion(const double radian, const Vec &direction)
-{
-	return Quaternion(cos(radian / 2.0), direction * sin(radian / 2.0));
-}
-
-Quaternion calcQuaternion(const Quaternion &qGlobal, const double radian, const Vec &direction)
-{
-	Quaternion q = makeQuaternion(radian, direction);
-	if (qGlobal == 0.0)
-	{
-		return q;
-	}
-	return q * qGlobal;
-}
-
 void keyboard(unsigned char key, int x, int y)
 {
 	(void)x;
@@ -148,10 +133,10 @@ void keyboard(unsigned char key, int x, int y)
 			break;
 		case 'i':
 			g_data.q = 0.0;
-			g_data.q = calcQuaternion(g_data.q, M_PI / 12 * 3, Vec(0,0,1));
-			g_data.q = calcQuaternion(g_data.q, M_PI / 12 * 5, Vec(1,0,0));
-			// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(1,0,0));
-			// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(0,1,0));
+			g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 3, Vec(0,0,1));
+			g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 5, Vec(1,0,0));
+			// g_data.q = calcQuaternion(M_PI_2, Vec(1,0,0));
+			// g_data.q = calcQuaternion(M_PI_2, Vec(0,1,0));
 			g_data.scaling = SCALING;
 			g_data.elapsedTime = 0;
 			break;
@@ -195,22 +180,22 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.q = 0.0;
 			break;
 		case 'x':
-			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(1,0,0));
+			g_data.q = g_data.q.calcQuaternion(RADIAN, Vec(1,0,0));
 			break;
 		case 'X':
-			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(1,0,0));
+			g_data.q = g_data.q.calcQuaternion(-RADIAN, Vec(1,0,0));
 			break;
 		case 'y':
-			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(0,1,0));
+			g_data.q = g_data.q.calcQuaternion(RADIAN, Vec(0,1,0));
 			break;
 		case 'Y':
-			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(0,1,0));
+			g_data.q = g_data.q.calcQuaternion(-RADIAN, Vec(0,1,0));
 			break;
 		case 'z':
-			g_data.q = calcQuaternion(g_data.q, RADIAN, Vec(0,0,1));
+			g_data.q = g_data.q.calcQuaternion(RADIAN, Vec(0,0,1));
 			break;
 		case 'Z':
-			g_data.q = calcQuaternion(g_data.q, -RADIAN, Vec(0,0,1));
+			g_data.q = g_data.q.calcQuaternion(-RADIAN, Vec(0,0,1));
 			break;			
 		default:
 			return ;
@@ -354,10 +339,10 @@ void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.rad.x = 0.0;
 	g_data.rad.y = 0.0;
 	g_data.rad.z = 0.0;
-	// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(1,0,0));
-	// g_data.q = calcQuaternion(g_data.q, M_PI_2, Vec(0,1,0));
-	g_data.q = calcQuaternion(g_data.q, M_PI / 12 * 3, Vec(0,0,1));
-	g_data.q = calcQuaternion(g_data.q, M_PI / 12 * 5, Vec(1,0,0));
+	// g_data.q = g_data.q.calcQuaternion(M_PI_2, Vec(1,0,0));
+	// g_data.q = g_data.q.calcQuaternion(M_PI_2, Vec(0,1,0));
+	g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 3, Vec(0,0,1));
+	g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 5, Vec(1,0,0));
 	g_data.i = g_data.ts.size();
 	g_data.count = 0;
 	g_data.scaling = SCALING;

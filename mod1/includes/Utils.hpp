@@ -12,6 +12,7 @@ uint32_t	max(uint32_t	aX, uint32_t bX);
 double	min(const double aX, const double bX);
 double  max_of_3_elm(const double aX, const double bX, const double cX);
 double	min_of_3_elm(const double aX, const double bX, const double cX);
+Vec		min_of_3_vec(const Vec a, const Vec b, const Vec c);
 void	assign_power_of_two(uint32_t &x, uint32_t &y, uint32_t &z);
 
 size_t	to_bucket_coor(const double coordinate);

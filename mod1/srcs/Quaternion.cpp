@@ -1,4 +1,5 @@
 #include "../includes/Quaternion.hpp"
+#include <cmath>
 
 Quaternion::Quaternion(): w(0), x(0), y(0), z(0)
 {
@@ -26,9 +27,19 @@ Quaternion::~Quaternion()
 
 }
 
-Quaternion Quaternion::conjugate() const
+Quaternion	Quaternion::conjugate() const
 {
 	return	Quaternion(this->w, - this->x, - this->y, - this->z);
+}
+
+Quaternion	Quaternion::calcQuaternion(const double radian, const Vec &direction)
+{
+	Quaternion q = make_rotate_quaternion(radian, direction);
+	if (*this == 0.0)
+	{
+		return q;
+	}
+	return q * (*this);
 }
 
 bool	Quaternion::operator==(const double &num) const
@@ -76,4 +87,10 @@ std::ostream &operator<<(std::ostream &ostrm, const Quaternion &q)
 						<< q.y << ", "
 						<< q.z << ')' 
 						<< std::endl;
+}
+
+
+Quaternion	make_rotate_quaternion(const double radian, const Vec &direction)
+{
+	return Quaternion(cos(radian / 2.0), direction * sin(radian / 2.0));
 }

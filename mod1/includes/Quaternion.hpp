@@ -24,7 +24,10 @@ class Quaternion
 		Quaternion(const double _w, const Vec &pos);
 		Quaternion(const Quaternion& q);
 
-		Quaternion conjugate() const;
+		Quaternion	conjugate() const;
+
+		Quaternion	calcQuaternion(const double radian, const Vec &direction);
+
 
 		bool	operator==(const double &num) const;
 		Quaternion operator*(const Quaternion& q) const;
@@ -33,5 +36,7 @@ class Quaternion
 };
 
 std::ostream &operator<<(std::ostream &ostrm, const Quaternion &q);
+
+Quaternion	make_rotate_quaternion(const double radian, const Vec &direction);
 
 #endif

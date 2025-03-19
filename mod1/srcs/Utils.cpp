@@ -51,12 +51,7 @@ double	max(const double aX, const double bX)
 double	max_of_3_elm(const double aX, const double bX, const double cX)
 {
 	const double	biggerX = max(aX, bX);
-
-	if (biggerX < cX)
-	{
-		return cX;
-	}
-	return biggerX;
+	return max(biggerX, cX);
 }
 
 double	min(const double aX, const double bX)
@@ -71,12 +66,23 @@ double	min(const double aX, const double bX)
 double	min_of_3_elm(const double aX, const double bX, const double cX)
 {
 	const double	smallerX = min(aX, bX);
+	return min(smallerX, cX);
+}
 
-	if (smallerX < cX)
+
+Vec	min(const Vec a, const Vec b)
+{
+	if (a.Magnitude3d() < b.Magnitude3d())
 	{
-		return smallerX;
+		return a;
 	}
-	return cX;
+	return b;
+}
+
+Vec	min_of_3_vec(const Vec a, const Vec b, const Vec c)
+{
+	const Vec	smallerVec = min(a, b);
+	return min(smallerVec, c);
 }
 
 size_t	to_bucket_coor(const double coordinate)

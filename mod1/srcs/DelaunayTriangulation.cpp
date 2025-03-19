@@ -141,12 +141,8 @@ std::deque<Triangle>	DT::Calculation(void)
 	for (size_t	i = 3; i < size; ++i)
 	{
 		this->_SegmentTriangles(i);
-		// std::cout <<std::fixed << std::setprecision(1)
-		// 		  << double(i) / this->_specificPoints.size() * 100
-		// 		  << " %\r" << std::flush;
 	}
 
-	std::cout << std::endl;
 	std::cout << "Delaunay Triangulation Done" << std::endl;
 
 	this->_EraseTempTriangles();

@@ -19,8 +19,7 @@ static Vec g_n;
 
 // totalMapSize(extend_map(mapSize[X]), extend_map(mapSize[Y]), extend_map(mapSize[Z]))
 
-MPS::MPS(const Vec	mapSize, 
-		 const std::deque<Triangle> &ts)
+MPS::MPS(const Vec	mapSize, const std::deque<Triangle> &ts)
 		 :BC(Vec(mapSize), Vec(mapSize)), 
 		 _g(0, 0, -9.8),
 		visibleMapSize(mapSize) ,
@@ -263,11 +262,11 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 										 const size_t currentBZ, 
 										 Vec &acceleration)
 {
-	double	distFromWallSQs[8];
+	const size_t	bucketIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
 	const double	distFromWallSQ = 
 	this->BC_InterpolateDistFromWallSQ(this->ps[oneself].center, 
-										currentBX, currentBY, currentBZ,
-										distFromWallSQs);
+										currentBX, currentBY, currentBZ, 
+										this->buckets[bucketIdx].distFromWallSQs);
 	double	distFromWall;
 	double	wallWeight;
 	Vec		nVector;
@@ -285,10 +284,9 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_COLLISION:
-			
 			if (distFromWallSQ < this->bc_radius_effectiveSQ)
 			{
-				nVector = calc_n_vec(distFromWallSQs);
+				nVector = this->buckets[bucketIdx].nInterpolation;
 				closing = this->ps[oneself].velocity.DotProduct3d(nVector);
 				if (closing < 0.0)
 				{
@@ -298,7 +296,6 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			this->ps[oneself].bucketX = currentBX;
 			this->ps[oneself].bucketY = currentBY;
 			this->ps[oneself].bucketZ = currentBZ;
-			this->ps[oneself].n = nVector;
 			break;
 		case e_PRESSURE:
 			break;
@@ -306,7 +303,7 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
 			{
 				distFromWall = sqrt(distFromWallSQ);
-				nVector = calc_n_vec(distFromWallSQs);
+				nVector = this->buckets[bucketIdx].nInterpolation;
 				acceleration -= nVector * 2.0 * DENSITY_OF_PARTICLES * (I_DISTANCE - distFromWall);
 			}
 		default:
@@ -589,6 +586,14 @@ void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight,
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		this->_logs[elapsedTime].ps[i].DrawParticle(halfMapSize, midHeight);
+
+		// if (8 <= this->_logs[elapsedTime].ps[i].bucketX && this->_logs[elapsedTime].ps[i].bucketX <= 10 &&
+		// 	7 <= this->_logs[elapsedTime].ps[i].bucketY && this->_logs[elapsedTime].ps[i].bucketY < 12 &&
+		// 	this->_logs[elapsedTime].ps[i].bucketZ <= 5)
+		// {
+		// 	this->_logs[elapsedTime].ps[i].DrawParticle(halfMapSize, midHeight);
+		// 	Print::OutWords(elapsedTime, i, this->_logs[elapsedTime].ps[i].velocity, this->_logs[elapsedTime].ps[i].acceleration);
+		// }
 	}
 }
 

@@ -16,9 +16,11 @@ typedef struct s_bucket
 	Vec		center;
 	Vec		n;
 	Vec		nInterpolation;
+	Vec		shortestVec;
 	size_t	bucketX;
 	size_t	bucketY;
 	size_t	bucketZ;
+	double	distFromWallSQs[8];
 	// size_t	bucketIdx;
 } t_bucket;
 
@@ -39,6 +41,14 @@ class BC
 		Vec		_MinEachCoordinateOfVertex(const Vec &a, 
 											const Vec &b,
 											const Vec &c);
+
+		Vec		_CalcShortestVecFromVertex(const Triangle &t, const size_t bucketIdx);
+		Vec		_CalcVecFromSide(const Vec &a, const Vec &b, const size_t bucketIdx);
+		Vec		_CalcShortestVecFromSide(const Triangle &t, const size_t bucketIdx);
+		Vec		_CalcVecFromTriangle(const Triangle &t, const size_t bucketIdx);
+		Vec		_CalcShortestVec(const Triangle &t, const size_t bucketIdx);
+
+
 		double	_CalcShortestDistanceFromVertexSQ(const Triangle &t, 
 												const size_t bucketIdx);
 		void	_CalcBucketsPos(const size_t i);
@@ -53,6 +63,8 @@ class BC
 		double	_GetDistFromWallSQ(const size_t currentBX,
 									const size_t currentBY,
 									const size_t currentBZ);
+		void	_GetNeighborBDistFromWallS(const size_t bucketIdx, double *distFromWallSQs);
+
 		Vec		_GetNVEC(const size_t currentBX,
 						 	   const size_t currentBY,
 						 	   const size_t currentBZ);
@@ -81,12 +93,6 @@ class BC
 
 		bool	BC_IsOutOfWallWeightRange(const double disFromWall);
 		double	BC_InterpolateWallWeight(const double interpolatedDist);
-		
-
-		double	BC_InterpolateDistFromWallSQ(const Vec	 &pPos,
-										const size_t currentBX,
-										const size_t currentBY,
-										const size_t currentBZ);
 
 		double	BC_InterpolateDistFromWallSQ(const Vec	 &pPos,
 										const size_t currentBX,

@@ -43,7 +43,7 @@ enum	e_coor
 #define DISTANCE_LIMIT_SQ (DISTANCE_LIMIT * DISTANCE_LIMIT)
 #define REPULSION_COEFFICIENT 1.2
 
-#define NUM_OF_PARTICLES 1000
+#define NUM_OF_PARTICLES 600
 #define	D 3 // dimension number
 #define	GRADIENT  0
 #define LAPLACIAN 1
@@ -55,7 +55,7 @@ enum	e_coor
 // #define DELTA_TIME 0.0005
 #define DELTA_TIME 0.1
 #define ONE_SECOUD 1.0
-#define SIMULATION_TIME 200
+#define SIMULATION_TIME 100
 
 #define X 0
 #define Y 1
