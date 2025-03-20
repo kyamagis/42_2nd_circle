@@ -225,8 +225,7 @@ Vec	move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double 
 
 double trilinear_interpolation_dist(const Vec &pPos, 
 									const size_t currentBX, const size_t currentBY, const size_t currentBZ, 
-									double dist_000, double dist_100, double dist_010, double dist_110, 
-									double dist_001, double dist_101, double dist_011, double dist_111)
+									const double *dists)
 {
 	// const Vec	origin;
 	const Vec	diagonalPoint(BUCKET_LENGTH);
@@ -234,73 +233,38 @@ double trilinear_interpolation_dist(const Vec &pPos,
 							   pPos.y - currentBY * BUCKET_LENGTH, 
 							   pPos.z - currentBZ * BUCKET_LENGTH);
 
-	const double r_00 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_000 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_100;
-	const double r_01 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_010 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_110;
-	const double r_10 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_001 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_101;
-	const double r_11 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dist_011 + ((calibratedPPos.x) / (diagonalPoint.x)) * dist_111;
+	const double r_00 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dists[e_000] + ((calibratedPPos.x) / (diagonalPoint.x)) * dists[e_100];
+	const double r_01 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dists[e_010] + ((calibratedPPos.x) / (diagonalPoint.x)) * dists[e_110];
+	const double r_10 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dists[e_001] + ((calibratedPPos.x) / (diagonalPoint.x)) * dists[e_101];
+	const double r_11 = ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) * dists[e_011] + ((calibratedPPos.x) / (diagonalPoint.x)) * dists[e_111];
 
-	// Y方向補間
 	double p_0 = ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) * r_00 + ((calibratedPPos.y) / (diagonalPoint.y)) * r_01;
 	double p_1 = ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) * r_10 + ((calibratedPPos.y) / (diagonalPoint.y)) * r_11;
 
-	// Z方向補間
 	return ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) * p_0 + ((calibratedPPos.z) / (diagonalPoint.z)) * p_1;
 }
 
-Vec trilinear_interpolation_nVec(const Vec &pPos, const size_t currentBX,
-								const size_t currentBY,
-								const size_t currentBZ, 
-								Vec dist_000, Vec dist_100, Vec dist_010, Vec dist_110, 
-								Vec dist_001, Vec dist_101, Vec dist_011, Vec dist_111)
-{
-	// const Vec	origin;
-	const Vec	diagonalPoint(BUCKET_LENGTH);
-	const Vec	calibratedPPos(pPos.x - currentBX * BUCKET_LENGTH, 
-							   pPos.y - currentBY * BUCKET_LENGTH, 
-							   pPos.z - currentBZ * BUCKET_LENGTH);
-
-	const Vec r_00 = dist_000 * ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) + dist_100 * ((calibratedPPos.x) / (diagonalPoint.x));
-	const Vec r_01 = dist_010 * ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) + dist_110 * ((calibratedPPos.x) / (diagonalPoint.x));
-	const Vec r_10 = dist_001 * ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) + dist_101 * ((calibratedPPos.x) / (diagonalPoint.x));
-	const Vec r_11 = dist_011 * ((diagonalPoint.x - calibratedPPos.x) / (diagonalPoint.x)) + dist_111 * ((calibratedPPos.x) / (diagonalPoint.x));
-
-	// Y方向補間
-	Vec p_0 = r_00 * ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) + r_01 * ((calibratedPPos.y) / (diagonalPoint.y));
-	Vec p_1 = r_10 * ((diagonalPoint.y - calibratedPPos.y) / (diagonalPoint.y)) + r_11 * ((calibratedPPos.y) / (diagonalPoint.y));
-
-	// Z方向補間
-	return p_0 * ((diagonalPoint.z - calibratedPPos.z) / (diagonalPoint.z)) + p_1 * ((calibratedPPos.z) / (diagonalPoint.z));
-}
-
-Vec	calc_n_vec(const double *distFromWallSQs)
+Vec	calc_n_vec(const double *distFromWalls)
 {
 	const double bl2 = 2.0 * BUCKET_LENGTH;
 	Vec	nVec;
 
-	nVec.x = (distFromWallSQs[e_100] - distFromWallSQs[e_000] + 
-			  distFromWallSQs[e_110] - distFromWallSQs[e_010] + 
-			  distFromWallSQs[e_101] - distFromWallSQs[e_001] + 
-			  distFromWallSQs[e_111] - distFromWallSQs[e_011]) / (bl2);
+	nVec.x = (distFromWalls[e_100] - distFromWalls[e_000] + 
+			  distFromWalls[e_110] - distFromWalls[e_010] + 
+			  distFromWalls[e_101] - distFromWalls[e_001] + 
+			  distFromWalls[e_111] - distFromWalls[e_011]) / (bl2);
 
-	nVec.y = (distFromWallSQs[e_010] - distFromWallSQs[e_000] +
-			  distFromWallSQs[e_110] - distFromWallSQs[e_100] +
-			  distFromWallSQs[e_011] - distFromWallSQs[e_001] +
-			  distFromWallSQs[e_111] - distFromWallSQs[e_101]) / (bl2);
+	nVec.y = (distFromWalls[e_010] - distFromWalls[e_000] +
+			  distFromWalls[e_110] - distFromWalls[e_100] +
+			  distFromWalls[e_011] - distFromWalls[e_001] +
+			  distFromWalls[e_111] - distFromWalls[e_101]) / (bl2);
 
-	nVec.z = (distFromWallSQs[e_001] - distFromWallSQs[e_000] +
-			  distFromWallSQs[e_101] - distFromWallSQs[e_100] +
-			  distFromWallSQs[e_011] - distFromWallSQs[e_010] +
-			  distFromWallSQs[e_111] - distFromWallSQs[e_110]) / (bl2);
+	nVec.z = (distFromWalls[e_001] - distFromWalls[e_000] +
+			  distFromWalls[e_101] - distFromWalls[e_100] +
+			  distFromWalls[e_011] - distFromWalls[e_010] +
+			  distFromWalls[e_111] - distFromWalls[e_110]) / (bl2);
 
-	if (nVec == 0.0)
-	{
-		return nVec;
-	}
-	if (nVec.z < 0)
-	{
-		nVec *= -1.0;
-	}
-	return nVec / nVec.Magnitude3d();
+	return nVec.Normalized3d();
 }
 
 // static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)

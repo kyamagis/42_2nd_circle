@@ -32,16 +32,9 @@ Vec		move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double
 double trilinear_interpolation_dist(const Vec &pPos, const size_t currentBX,
 								const size_t currentBY,
 								const size_t currentBZ, 
-								double dist_000, double dist_100, double dist_010, double dist_110, 
-								double dist_001, double dist_101, double dist_011, double dist_111);
+								const double *dists);
 
-Vec trilinear_interpolation_nVec(const Vec &pPos, const size_t currentBX,
-								const size_t currentBY,
-								const size_t currentBZ, 
-								Vec dist_000, Vec dist_100, Vec dist_010, Vec dist_110, 
-								Vec dist_001, Vec dist_101, Vec dist_011, Vec dist_111);
-
-Vec	calc_n_vec(const double *distFromWallSQs);
+Vec	calc_n_vec(const double *distFromWalls);
 
 double	calibrate_dist(const double dist);
 

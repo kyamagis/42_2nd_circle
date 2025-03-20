@@ -11,7 +11,8 @@
 typedef struct s_bucket
 {
 	size_t	firstPrtIdx; // first particle index
-	double	distFromWallSQ;
+	double	distFromWall;
+	double	distFromWalls[8];
 	Vec		position;
 	Vec		center;
 	Vec		n;
@@ -20,7 +21,6 @@ typedef struct s_bucket
 	size_t	bucketX;
 	size_t	bucketY;
 	size_t	bucketZ;
-	double	distFromWallSQs[8];
 	// size_t	bucketIdx;
 } t_bucket;
 
@@ -60,21 +60,21 @@ class BC
 		double	_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx);
 		void	_CalcDistanceFromWallSQ(const Triangle &t);
 
-		double	_GetDistFromWallSQ(const size_t currentBX,
+		double	_GetDistFromWall(const size_t currentBX,
 									const size_t currentBY,
 									const size_t currentBZ);
-		void	_GetNeighborBDistFromWallS(const size_t bucketIdx, double *distFromWallSQs);
+		void	_GetNeighborBDistFromWalls(const size_t bucketIdx, double *distFromWalls);
 
 		Vec		_GetNVEC(const size_t currentBX,
 						 	   const size_t currentBY,
 						 	   const size_t currentBZ);
 		
-		double	_SearchNeighborBDistFromWallSQ(size_t currentBX,
+		double	_SearchNeighborBDistFromWall(size_t currentBX,
 											size_t currentBY,
 											size_t currentBZ,
 											const unsigned char cmp);
 		
-		bool	_StoreEachCmpOfNeighborBDistFromWallSQ(const size_t currentBX, 
+		bool	_StoreEachCmpOfNeighborBDistFromWall(const size_t currentBX, 
 													const size_t currentBY, 
 													const size_t currentBZ,
 													const unsigned char cmp,
@@ -93,12 +93,6 @@ class BC
 
 		bool	BC_IsOutOfWallWeightRange(const double disFromWall);
 		double	BC_InterpolateWallWeight(const double interpolatedDist);
-
-		double	BC_InterpolateDistFromWallSQ(const Vec	 &pPos,
-										const size_t currentBX,
-										const size_t currentBY,
-										const size_t currentBZ,
-										double *distFromWallSQs);
 										
 	public:
 
@@ -110,12 +104,12 @@ class BC
 
 		t_bucket			*buckets;
 		size_t				*particleNextIdxs;
-		
+
 		BC(const Vec &visibleMapSize_,
 			const Vec &totalMapSize_);
 			virtual ~BC();
-		
-		void	MoveVertexToMapCenterBs(const Vec &halfMapSize, const double midHeight);
+
+
 		void	DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight);
 		// BC(const BC &BC);
 		// BC&	operator=(const BC &BC);

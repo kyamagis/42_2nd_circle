@@ -60,6 +60,16 @@ Vec	Vec::CrossProduct3d(const Vec &p) const
 	return Vec(crossX, crossY, crossZ);
 }
 
+Vec		Vec::Normalized3d() const
+{
+	const double	magnitude = this->Magnitude3d();
+	if (magnitude < EPS)
+	{
+		return Vec(0, 0, 0);
+	}
+	return *this / magnitude;
+}
+
 double	Vec::MagnitudeSQ3d(const Vec &p) const
 {
 	return (this->x - p.x) * (this->x - p.x) + 

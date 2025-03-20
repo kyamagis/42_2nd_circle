@@ -140,15 +140,10 @@ size_t	_InitMaxOtherBucketCoor(const size_t max, const size_t coor)
 
 double	MPS::_WallWeight(const double disFromWall)
 {
-	if (disFromWall < 0.0)
-	{
-		Print::Err("_WallWeight: disFromWall");
-	}
 	if (this->BC_IsOutOfWallWeightRange(disFromWall))
 	{
 		return 0.0;
 	}
-
 	return this->BC_InterpolateWallWeight(disFromWall);
 }
 
@@ -263,20 +258,20 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 										 Vec &acceleration)
 {
 	const size_t	bucketIdx = this->BC_CalcBucketIdx(currentBX, currentBY, currentBZ);
-	const double	distFromWallSQ = 
-	this->BC_InterpolateDistFromWallSQ(this->ps[oneself].center, 
-										currentBX, currentBY, currentBZ, 
-										this->buckets[bucketIdx].distFromWallSQs);
-	double	distFromWall;
+	const double	distFromWall = 
+	trilinear_interpolation_dist(this->ps[oneself].center, currentBX, currentBY, currentBZ, 
+								 this->buckets[bucketIdx].distFromWalls);
 	double	wallWeight;
 	Vec		nVector;
-	double	closing;
 	switch (e)
 	{
 		case e_VISCOSITY:
-			if (distFromWallSQ < this->bc_radius_effectiveSQ)
+			this->ps[oneself].bucketX = currentBX;
+			this->ps[oneself].bucketY = currentBY;
+			this->ps[oneself].bucketZ = currentBZ;
+			if (distFromWall < DIAMETER)
 			{
-				wallWeight = this->_WallWeight(calibrate_dist(sqrt(distFromWallSQ)));
+				wallWeight = this->_WallWeight(distFromWall);
 				if (0.0 < wallWeight)
 				{
 					acceleration += (this->ps[oneself].velocity * -2.0) * wallWeight;
@@ -284,28 +279,29 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 			}
 			break;
 		case e_COLLISION:
-			if (distFromWallSQ < this->bc_radius_effectiveSQ)
+			if (distFromWall < DIAMETER)
 			{
 				nVector = this->buckets[bucketIdx].nInterpolation;
-				closing = this->ps[oneself].velocity.DotProduct3d(nVector);
-				if (closing < 0.0)
+				double	closing = this->ps[oneself].velocity.DotProduct3d(nVector);
+				if (closing < 0.0 && 0.0 < distFromWall)
 				{
 					acceleration += nVector * REPULSION_COEFFICIENT * (-closing);
 				}
+				else if (0.0 <= closing && distFromWall <= 0.0)
+				{
+					acceleration += nVector * REPULSION_COEFFICIENT * (closing);
+				}
 			}
-			this->ps[oneself].bucketX = currentBX;
-			this->ps[oneself].bucketY = currentBY;
-			this->ps[oneself].bucketZ = currentBZ;
 			break;
 		case e_PRESSURE:
 			break;
 		case e_PGRADIENT2:
-			if (distFromWallSQ < DISTANCE_LIMIT_SQ)
+			if (distFromWall < DIAMETER)
 			{
-				distFromWall = sqrt(distFromWallSQ);
 				nVector = this->buckets[bucketIdx].nInterpolation;
-				acceleration -= nVector * 2.0 * DENSITY_OF_PARTICLES * (I_DISTANCE - distFromWall);
+				acceleration -= nVector * DENSITY_OF_PARTICLES * (DIAMETER - distFromWall);
 			}
+			break;
 		default:
 			break;
 	}
@@ -343,6 +339,7 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 
 	const Vec	oneselfPos(this->ps[oneself].center);
 	const Vec	oneselfVel(this->ps[oneself].velocity);
+
 	Vec	acceleration(0.0);
 
 	if (e == e_COLLISION)
@@ -367,7 +364,7 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 	for (size_t	otherBY = otherBEdgeY; otherBY <= maxBY ; ++otherBY){
 	for (size_t	otherBZ = otherBEdgeZ; otherBZ <= maxBZ ; ++otherBZ){
 		bucketIdx   = this->BC_CalcBucketIdx(otherBX, otherBY, otherBZ);
-		particleIdx = this->buckets[bucketIdx].firstPrtIdx;
+		particleIdx = this->buckets[bucketIdx].firstPrtIdx;		
 		if (particleIdx == UINT64_MAX)
 		{
 			continue;
@@ -394,9 +391,9 @@ void	MPS::_SearchNeighborParticles(const size_t oneself, const e_operation e, do
 
 bool	MPS::_CheckOutOfRange(const Vec &pos)
 {
-	if (pos.x < 0.0 || 
-		pos.y < 0.0 || 
-		pos.z < 0.0)
+	if (pos.x < EPS || 
+		pos.y < EPS || 
+		pos.z < EPS)
 	{
 		return false;
 	}
@@ -587,9 +584,9 @@ void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight,
 	{
 		this->_logs[elapsedTime].ps[i].DrawParticle(halfMapSize, midHeight);
 
-		// if (8 <= this->_logs[elapsedTime].ps[i].bucketX && this->_logs[elapsedTime].ps[i].bucketX <= 10 &&
-		// 	7 <= this->_logs[elapsedTime].ps[i].bucketY && this->_logs[elapsedTime].ps[i].bucketY < 12 &&
-		// 	this->_logs[elapsedTime].ps[i].bucketZ <= 5)
+		// if (5 <= this->_logs[elapsedTime].ps[i].bucketX && this->_logs[elapsedTime].ps[i].bucketX < 8 &&
+		// 	5 <= this->_logs[elapsedTime].ps[i].bucketY && this->_logs[elapsedTime].ps[i].bucketY < 7 &&
+		// 	1 <= this->_logs[elapsedTime].ps[i].bucketZ && this->_logs[elapsedTime].ps[i].bucketZ <= 2)
 		// {
 		// 	this->_logs[elapsedTime].ps[i].DrawParticle(halfMapSize, midHeight);
 		// 	Print::OutWords(elapsedTime, i, this->_logs[elapsedTime].ps[i].velocity, this->_logs[elapsedTime].ps[i].acceleration);

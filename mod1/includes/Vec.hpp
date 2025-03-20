@@ -30,6 +30,8 @@ class Vec
 		double	DotProduct3d(const Vec &p) const;
 
 		Vec		CrossProduct3d(const Vec &p) const;
+		Vec		Normalized3d() const;
+
 
 		double	MagnitudeSQ3d(const Vec &p) const;
 		double	Magnitude3d(const Vec &p) const;
