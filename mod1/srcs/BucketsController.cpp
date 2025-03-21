@@ -394,11 +394,13 @@ void	BC::BC_MakeBuckets(const std::deque<Particle> &ps)
 	this->buckets           = new t_bucket[this->numOfBuckets];
 	this->_bucketLast       = new t_bucket[this->numOfBuckets];
 	this->particleNextIdxs  = new size_t[NUM_OF_PARTICLES];
+	const Vec		diagonalVec(this->bc_bucketLength);
+	const double	diagonalLength = diagonalVec.Magnitude3d() + EPS;
 
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
 		this->buckets[i].firstPrtIdx     = UINT64_MAX;
-		this->buckets[i].distFromWall    = this->bc_bucketLength;
+		this->buckets[i].distFromWall    = diagonalLength;
 		// this->buckets[i].bucketIdx       = i;
 		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
 
@@ -554,27 +556,29 @@ void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
 		// if (2 <= this->buckets[i].bucketX && this->buckets[i].bucketX + 3 < this->bucketRow &&
 		// 	2 <= this->buckets[i].bucketY && this->buckets[i].bucketY + 3 < this->bucketColumn &&
 		// 	this->buckets[i].bucketZ < this->bucketDepth)
-		if (8 <= this->buckets[i].bucketX && this->buckets[i].bucketX <= 9 &&
-			8 <= this->buckets[i].bucketY && this->buckets[i].bucketY <= 8 &&
-			1 <= this->buckets[i].bucketZ && this->buckets[i].bucketZ <= 2)
+		// 12
+		if (11 <= this->buckets[i].bucketX && this->buckets[i].bucketX <= 16 &&
+			1 <= this->buckets[i].bucketY && this->buckets[i].bucketY <= 3 &&
+			this->buckets[i].bucketZ <= 1)
 		{	
-			if (abs(this->buckets[i].distFromWall) <= this->bc_bucketLength)
+			if (abs(this->buckets[i].distFromWall) <= this->bc_bucketLength + EPS)
 			{
+				Print::OutWords(this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ, this->buckets[i].shortestVec);
 				DrawBucketPos(halfMapSize, midHeight, this->buckets[i]);
 				DrawShortestVec(halfMapSize, midHeight, this->buckets[i]);
-				// DrawNormalVec(halfMapSize, midHeight, this->buckets[i]);
-				// DrawInterpolatedNormalVec(halfMapSize, midHeight, this->buckets[i]);
+				DrawNormalVec(halfMapSize, midHeight, this->buckets[i]);
+				DrawInterpolatedNormalVec(halfMapSize, midHeight, this->buckets[i]);
 			}
 		}
 	}
-	size_t	bi = this->BC_CalcBucketIdx(8, 7, 1);
-	for (size_t	i = 0; i < 8; ++i)
-	{
-		Print::OutWords(bi, coorToString[i], this->buckets[bi].distFromWalls[i], 
-						this->buckets[bi].shortestVec, 
-						this->buckets[bi].nInterpolation);
-	}
-	Print::OutWords("/////////////");
+	// size_t	bi = this->BC_CalcBucketIdx(8, 7, 1);
+	// for (size_t	i = 0; i < 8; ++i)
+	// {
+	// 	Print::OutWords(bi, coorToString[i], this->buckets[bi].distFromWalls[i], 
+	// 					this->buckets[bi].shortestVec, 
+	// 					this->buckets[bi].nInterpolation);
+	// }
+	// Print::OutWords("/////////////");
 }
 
 // void	BC::_SearchNeighborParticle(const size_t i)

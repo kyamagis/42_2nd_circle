@@ -38,6 +38,11 @@ Vec	calc_n_vec(const double *distFromWalls);
 
 double	calibrate_dist(const double dist);
 
+void	add_bottom(std::deque<Triangle> &ts, 
+	const Vec &mapSizeOrigin,
+	const Vec &mapSizeExtended,
+	const double extendSize);
+
 void	add_cube(std::deque<Triangle> &ts, const Vec &mapSize);
 
 #endif

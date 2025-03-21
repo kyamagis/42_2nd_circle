@@ -28,6 +28,10 @@ typedef struct s_data
 	int		gWindowID;
 
 	unsigned char	key;
+	int				mouseX;
+	int				mouseY;
+	int				windowSizeX;
+	int				windowSizeY;
 	size_t			elapsedTime;
 
 } t_data;
@@ -57,14 +61,17 @@ void defaultkeyboard(unsigned char key, int x, int y)
 
 void	drawVertex(const Vec &vertex)
 {
-	const Vec	rotatedPos = vertex.Rotate(g_data.q);
-
+	const Vec		rotatedPos = vertex.Rotate(g_data.q);
 	const double	coordinateX = rotatedPos.x / g_data.mapSize.x;
 	const double	coordinateY =  - 1.0 * (rotatedPos.y / g_data.mapSize.y);
 	const double	coordinateZ = rotatedPos.z / g_data.midHeight;
+	const double	mousePosX = double(g_data.mouseX) / double(g_data.windowSizeX) - 0.5;
+	const double	mousePosY = -(double(g_data.mouseY) / double(g_data.windowSizeY) - 0.5);
 
-	glVertex3f(coordinateX * g_data.scaling, 
-			   coordinateY * g_data.scaling, 
+	// Print::OutWords(g_data.mouseX, g_data.mouseY, g_data.windowSizeX, g_data.windowSizeY);
+
+	glVertex3f((coordinateX - mousePosX) * g_data.scaling, 
+			   (coordinateY - mousePosY) * g_data.scaling, 
 			   -coordinateZ * DEPTH_SCALING * g_data.scaling);
 }
 
@@ -89,15 +96,14 @@ void mouseWheel(int button, int dir, int x, int y)
 
 void mouse(int button, int state, int x, int y)
 {
-	(void)x;
-	(void)y;
-
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
 		if (g_data.scaling < 3.0)
 		{
 			g_data.scaling += 0.1;
 		}
+		g_data.mouseX = x;
+		g_data.mouseY = y;
 	}
 	else if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
 	{
@@ -132,6 +138,8 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.circleFlg = !g_data.circleFlg;
 			break;
 		case 'i':
+			g_data.mouseX = g_data.windowSizeX / 2;
+			g_data.mouseY = g_data.windowSizeY / 2;
 			g_data.q = 0.0;
 			g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 3, Vec(0,0,1));
 			g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 5, Vec(1,0,0));
@@ -177,6 +185,8 @@ void keyboard(unsigned char key, int x, int y)
 			}
 			break;
 		case 't':
+			g_data.mouseX = g_data.windowSizeX / 2;
+			g_data.mouseY = g_data.windowSizeY / 2;
 			g_data.q = 0.0;
 			break;
 		case 'x':
@@ -267,6 +277,8 @@ Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int s
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
 	// glutInitDisplayMode(GLUT_SINGLE);
 	glutInitWindowSize(sizeX, sizeY);
+	g_data.windowSizeX = sizeX;
+	g_data.windowSizeY = sizeY;
 	glutInitWindowPosition(300, 100);
 
 	this->_InitGraphicData(ts, mapSize, maxHeight, minHeight);
@@ -330,6 +342,9 @@ void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts,
 		g_data.ts[i].c.x += 2.0 * BUCKET_LENGTH;
 		g_data.ts[i].c.y += 2.0 * BUCKET_LENGTH;
 	}
+	add_bottom(g_data.ts, Vec(mapSize[X],mapSize[Y],mapSize[Z]),
+					g_data.mapSize,
+					2.0 * BUCKET_LENGTH);
 	add_cube(g_data.ts, g_data.mapSize);
 	g_data.mps = new MPS(g_data.mapSize, g_data.ts);
 
@@ -350,6 +365,8 @@ void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.lineFlg = false;
 	g_data.visibleBucketsFlg = false;
 	g_data.key = 'i';
+	g_data.mouseX = g_data.windowSizeX / 2;
+	g_data.mouseY = g_data.windowSizeY / 2;
 	g_data.elapsedTime = 0;
 }
 

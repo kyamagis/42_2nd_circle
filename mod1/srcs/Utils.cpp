@@ -284,22 +284,95 @@ Vec	calc_n_vec(const double *distFromWalls)
 // 	ts.back().n.z = abs(ts.back().n.z);
 // }
 
-static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
+void	add_bottom(std::deque<Triangle> &ts, 
+					const Vec &mapSizeOrigin,
+					const Vec &mapSizeExtended,
+					const double extendSize)
 {
+	// const double	dist_side_x = mapSizeExtended.x - (mapSizeOrigin.x + extendSize);
+	// const double	dist_side_y = mapSizeExtended.y - (mapSizeOrigin.y + extendSize);
+	// const double	dist_side_z = mapSizeExtended.z - (mapSizeOrigin.z + extendSize);
 	Vec	vertexA(0,0,0);
-	const Vec	vertexB(0, mapSize.y, 0);
-	const Vec	vertexC(mapSize.x, 0, 0);
+	Vec	vertexB(mapSizeExtended.x, 0, 0);
+	Vec	vertexC(extendSize, extendSize, 0);
 
-	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.push_back({vertexA, vertexB, vertexC, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.z = abs(ts.back().n.z);
 
-	vertexA = Vec(mapSize.x, mapSize.y, 0);
+	vertexA = Vec(mapSizeOrigin.x + extendSize, extendSize, 0);
 
-	ts.push_back({vertexA, vertexB, vertexC, false, false});
+	ts.push_back({vertexA, vertexB, vertexC, false});
 	ts.back().CalcNormalVector();
 	ts.back().n.z = abs(ts.back().n.z);
+
+	vertexC = Vec(mapSizeExtended.x, mapSizeExtended.y, 0);
+
+	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = abs(ts.back().n.z);
+
+	vertexB = Vec(mapSizeOrigin.x + extendSize, mapSizeOrigin.y + extendSize, 0);
+
+	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = abs(ts.back().n.z);
+
+	vertexA = Vec(extendSize, mapSizeOrigin.y + extendSize, 0);
+
+	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = abs(ts.back().n.z);
+
+	vertexB = Vec(0, mapSizeExtended.y, 0);
+
+	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = abs(ts.back().n.z);
+
+	vertexC = Vec(extendSize, extendSize, 0);
+
+	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = abs(ts.back().n.z);
+
+	vertexA = Vec(0, 0, 0);
+
+	ts.push_back({vertexA, vertexB, vertexC, false});
+	ts.back().CalcNormalVector();
+	ts.back().n.z = abs(ts.back().n.z);
+
+	// vertexA = Vec(extendSize, extendSize, 0);
+	// vertexB = Vec(mapSizeOrigin.x + extendSize, extendSize, 0);
+	// vertexC = Vec(extendSize, mapSizeOrigin.y + extendSize, 0);
+
+	// ts.push_back({vertexA, vertexB, vertexC, false});
+	// ts.back().CalcNormalVector();
+	// ts.back().n.z = -abs(ts.back().n.z);
+
+	// vertexA = Vec(mapSizeOrigin.x + extendSize, mapSizeOrigin.y + extendSize, 0);
+
+	// ts.push_back({vertexA, vertexB, vertexC, false});
+	// ts.back().CalcNormalVector();
+	// ts.back().n.z = -abs(ts.back().n.z);
 }
+
+// static void	add_bottom(std::deque<Triangle> &ts, const Vec &mapSize)
+// {
+// 	Vec	vertexA(0,0,0);
+// 	const Vec	vertexB(0, mapSize.y, 0);
+// 	const Vec	vertexC(mapSize.x, 0, 0);
+
+// 	ts.push_back({vertexA, vertexB, vertexC, false, false});
+// 	ts.back().CalcNormalVector();
+// 	ts.back().n.z = abs(ts.back().n.z);
+
+// 	vertexA = Vec(mapSize.x, mapSize.y, 0);
+
+// 	ts.push_back({vertexA, vertexB, vertexC, false, false});
+// 	ts.back().CalcNormalVector();
+// 	ts.back().n.z = abs(ts.back().n.z);
+// }
 
 void	add_top(std::deque<Triangle> &ts, const Vec &mapSize)
 {
@@ -388,7 +461,7 @@ static void	add_front(std::deque<Triangle> &ts, const Vec &mapSize)
 
 void	add_cube(std::deque<Triangle> &ts, const Vec &mapSize)
 {
-	add_bottom(ts, mapSize);
+	// add_bottom(ts, mapSize);
 	// add_top(ts, mapSize);
 	add_leftSide(ts, mapSize);
 	add_rightSide(ts, mapSize);
