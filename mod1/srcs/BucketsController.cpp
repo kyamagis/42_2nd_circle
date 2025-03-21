@@ -170,7 +170,7 @@ Vec	BC::_CalcVecFromSide(const Vec &a, const Vec &b, const size_t bucketIdx)
 		return (projectivePoint - this->buckets[bucketIdx].position);
 	}
 
-	return Vec(1,1,1) * (this->bc_bucketLength + 1);
+	return Vec(1,1,1) * (this->bc_bucketLength + EPS);
 }
 
 Vec	BC::_CalcShortestVecFromSide(const Triangle &t, const size_t bucketIdx)
@@ -208,79 +208,9 @@ Vec	BC::_CalcShortestVec(const Triangle &t, const size_t bucketIdx)
 	const Vec	vecFromVertex   = this->_CalcShortestVecFromVertex(t, bucketIdx);
 	const Vec	vecFromSide 	= this->_CalcShortestVecFromSide(t,bucketIdx);
 	const Vec	vecFromTriangle = this->_CalcVecFromTriangle(t, bucketIdx);
-	const Vec	shortestVecSQ   = min_of_3_vec(vecFromVertex, vecFromSide, vecFromTriangle);
+	const Vec	shortestVec   = min_of_3_vec(vecFromVertex, vecFromSide, vecFromTriangle);
 
-	return shortestVecSQ;
-}
-
-double	BC::_CalcShortestDistanceFromVertexSQ(const Triangle &t, 
-											const size_t bucketIdx)
-{
-	double	disFromVertexA = t.a.MagnitudeSQ3d(this->buckets[bucketIdx].position);
-	double	disFromVertexB = t.b.MagnitudeSQ3d(this->buckets[bucketIdx].position);
-	double	disFromVertexC = t.c.MagnitudeSQ3d(this->buckets[bucketIdx].position);
-
-	return min_of_3_elm(disFromVertexA, disFromVertexB, disFromVertexC);
-}
-
-double	BC::_CalcDistanceFromSideSQ(const Vec &a, 
-								  const Vec &b, 
-								  const size_t bucketIdx)
-{
-	const Vec	abVector = b - a;
-	const Vec	aCenterVector = this->buckets[bucketIdx].position - a;
-	const double	t = abVector.DotProduct3d(aCenterVector) / 
-						abVector.MagnitudeSQ3d();
-
-	if (0.0 < t && t < 1.0)
-	{
-		const Vec	projectivePoint = a + (abVector * t);
-
-	
-		return (projectivePoint - this->buckets[bucketIdx].position).MagnitudeSQ3d();
-	}
-
-	return 2.0 * this->bc_bucketLength * 2.0 * this->bc_bucketLength;
-}
-
-double	BC::_CalcShortestDistanceFromSideSQ(const Triangle &t, const size_t bucketIdx)
-{
-	const double	disFromSideAB = this->_CalcDistanceFromSideSQ(t.a, t.b, bucketIdx);
-	const double	disFromSideBC = this->_CalcDistanceFromSideSQ(t.b, t.c, bucketIdx);
-	const double	disFromSideCA = this->_CalcDistanceFromSideSQ(t.c, t.a, bucketIdx);
-
-	return min_of_3_elm(disFromSideAB, disFromSideBC, disFromSideCA);
-}
-
-double	BC::_CalcDistanceFromTriangleSQ(const Triangle &t, const size_t bucketIdx)
-{
-	const Vec		apVec = this->buckets[bucketIdx].position - t.a;
-	const double	coefficient = apVec.DotProduct3d(t.n) / t.n.MagnitudeSQ3d();
-	const Vec 		orientVec =  t.n * -1 * coefficient;
-	const Vec		projectivePoint = this->buckets[bucketIdx].position + orientVec;
-	
-	if (t.InternalAndExternalJudgments3d(projectivePoint))
-	{
-		return orientVec.MagnitudeSQ3d();
-	}
-	return 2.0 * this->bc_bucketLength * 2.0 * this->bc_bucketLength;
-}
-
-double	BC::_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx)
-{
-	// const double	distFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
-	// return distFromVertex;
-
-	// const double	distFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
-	// const double	distFromSide 	= this->_CalcShortestDistanceFromSideSQ(t,bucketIdx);
-	// return min(distFromVertex, distFromSide);
-
-	const double	distFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
-	const double	distFromSide 	 = this->_CalcShortestDistanceFromSideSQ(t,bucketIdx);
-	const double	distFromTriangle = this->_CalcDistanceFromTriangleSQ(t, bucketIdx);
-	const double	shortestDistSQ   = min_of_3_elm(distFromVertex, distFromSide, distFromTriangle);
-
-	return shortestDistSQ;
+	return shortestVec;
 }
 
 double	BC::_GetDistFromWall(const size_t currentBX,
@@ -417,6 +347,8 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 	size_t	bucketIdx;
 
 	double	shortestDist;
+	double	shortestDistAbs;
+	double	distFromWallAbs;
 	Vec		shortestVec;
 
 	for (double	i = minCrd.x; size_t(i) <= size_t(maxCrd.x);) {
@@ -425,17 +357,19 @@ void	BC::_CalcDistanceFromWallSQ(const Triangle &t)
 				bucketIdx    = this->BC_CalcBucketIdx(bucketX, bucketY, bucketZ);
 				shortestVec  = this->_CalcShortestVec(t, bucketIdx);
 				shortestDist = shortestVec.Magnitude3d();
+				shortestDistAbs = shortestDist;
+				distFromWallAbs = abs(this->buckets[bucketIdx].distFromWall);
 				if (0.0 < t.n.DotProduct3d(shortestVec.Normalized3d()))
 				{
 					shortestDist = -shortestDist;
 				}
-				if (abs(shortestDist) - abs(this->buckets[bucketIdx].distFromWall) < EPS)
+				if (abs(shortestDistAbs - distFromWallAbs) < EPS)
 				{
 					this->buckets[bucketIdx].n += t.n;
 					this->buckets[bucketIdx].shortestVec  = shortestVec;
 					this->buckets[bucketIdx].distFromWall = shortestDist;
 				}
-				else if (abs(shortestDist) < abs(this->buckets[bucketIdx].distFromWall) + EPS)
+				else if (shortestDistAbs < distFromWallAbs + EPS)
 				{
 					this->buckets[bucketIdx].n = t.n;
 					this->buckets[bucketIdx].shortestVec  = shortestVec;
@@ -464,7 +398,7 @@ void	BC::BC_MakeBuckets(const std::deque<Particle> &ps)
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
 		this->buckets[i].firstPrtIdx     = UINT64_MAX;
-		this->buckets[i].distFromWall    = this->bc_radius_effective;
+		this->buckets[i].distFromWall    = this->bc_bucketLength;
 		// this->buckets[i].bucketIdx       = i;
 		this->_bucketLast[i].firstPrtIdx = UINT64_MAX;
 
@@ -503,7 +437,7 @@ void	BC::BC_CalcAllDistanceFromWallSQ(const std::deque<Triangle>	&ts)
 		this->buckets[i].n = this->buckets[i].n.Normalized3d();
 		this->_GetNeighborBDistFromWalls(i, this->buckets[i].distFromWalls);
 		this->buckets[i].nInterpolation = calc_n_vec(this->buckets[i].distFromWalls);
-		// if (this->buckets[i].nInterpolation.DotProduct3d(this->buckets[i].n) < 0.0)
+		// if (this->buckets[i].nInterpolation.z < 0.0)
 		// {
 		// 	this->buckets[i].nInterpolation *= -1.0;
 		// }
@@ -582,44 +516,65 @@ void	DrawInterpolatedNormalVec(const Vec &halfMapSize, const double midHeight, c
 
 void	DrawBucketPos(const Vec &halfMapSize, const double midHeight, const t_bucket bucket)
 {
-	const double	midDist = E_RADIUS / 2.0;
+	const double	midDist = BUCKET_LENGTH / 2.0;
 
 	glPointSize(5.0f);
 	glBegin(GL_POINTS);
-	if (bucket.distFromWall < midDist)
+	if (abs(bucket.distFromWall) < midDist)
 	{
-		glColor3f(0, bucket.distFromWall / midDist, 1 - bucket.distFromWall / midDist);
+		glColor3f(0, abs(bucket.distFromWall) / midDist, 1 - abs(bucket.distFromWall) / midDist);
 	}
 	else
 	{
-		glColor3f(bucket.distFromWall / midDist, 1 - bucket.distFromWall / midDist, 0);
+		glColor3f(abs(bucket.distFromWall) / midDist, 1 - abs(bucket.distFromWall) / midDist, 0);
 	}
 	drawVertex(move_vec_to_map_center(bucket.position, halfMapSize, midHeight));
 	glEnd();
 }
 
+#include <unordered_map>
+std::unordered_map<size_t, std::string> coorToString = {
+    {0, "e_000"},
+    {1, "e_100"},
+    {2, "e_110"},
+    {3, "e_101"},
+    {4, "e_111"},
+    {5, "e_010"},
+    {6, "e_011"},
+    {7, "e_001"}
+};
+
 void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
 {	
 	for (size_t	i = 0; i < this->numOfBuckets; ++i)
 	{
-		if (1 <= this->buckets[i].bucketX && this->buckets[i].bucketX + 3 < this->bucketRow &&
-			1 <= this->buckets[i].bucketY && this->buckets[i].bucketY + 3 < this->bucketColumn)
+		// if (1 <= this->buckets[i].bucketX && this->buckets[i].bucketX + 3 < this->bucketRow &&
+		// 	1 <= this->buckets[i].bucketY && this->buckets[i].bucketY + 3 < this->bucketColumn &&
+		// 	this->buckets[i].bucketZ <= 4)
 		// if (2 <= this->buckets[i].bucketX && this->buckets[i].bucketX + 3 < this->bucketRow &&
 		// 	2 <= this->buckets[i].bucketY && this->buckets[i].bucketY + 3 < this->bucketColumn &&
 		// 	this->buckets[i].bucketZ < this->bucketDepth)
-		// if (3 <= this->buckets[i].bucketX && this->buckets[i].bucketX <= 3 &&
-		// 	3 <= this->buckets[i].bucketY && this->buckets[i].bucketY <= 4 &&
-		// 	1 <= this->buckets[i].bucketZ && this->buckets[i].bucketZ <= 2)
+		if (8 <= this->buckets[i].bucketX && this->buckets[i].bucketX <= 9 &&
+			8 <= this->buckets[i].bucketY && this->buckets[i].bucketY <= 8 &&
+			1 <= this->buckets[i].bucketZ && this->buckets[i].bucketZ <= 2)
 		{	
-			if (abs(this->buckets[i].distFromWall) < this->bc_bucketLength)
+			if (abs(this->buckets[i].distFromWall) <= this->bc_bucketLength)
 			{
 				DrawBucketPos(halfMapSize, midHeight, this->buckets[i]);
 				DrawShortestVec(halfMapSize, midHeight, this->buckets[i]);
 				// DrawNormalVec(halfMapSize, midHeight, this->buckets[i]);
-				DrawInterpolatedNormalVec(halfMapSize, midHeight, this->buckets[i]);
+				// DrawInterpolatedNormalVec(halfMapSize, midHeight, this->buckets[i]);
 			}
 		}
 	}
+	size_t	bi = this->BC_CalcBucketIdx(8, 7, 1);
+	for (size_t	i = 0; i < 8; ++i)
+	{
+		Print::OutWords(bi, coorToString[i], this->buckets[bi].distFromWalls[i], 
+						this->buckets[bi].shortestVec, 
+						this->buckets[bi].nInterpolation);
+	}
+	Print::OutWords("/////////////");
 }
 
 // void	BC::_SearchNeighborParticle(const size_t i)
@@ -690,3 +645,73 @@ void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
 // 						<< BC.r << ')' 
 // 						<< std::endl;
 // }
+/*
+double	BC::_CalcShortestDistanceFromVertexSQ(const Triangle &t, 
+											const size_t bucketIdx)
+{
+	double	disFromVertexA = t.a.MagnitudeSQ3d(this->buckets[bucketIdx].position);
+	double	disFromVertexB = t.b.MagnitudeSQ3d(this->buckets[bucketIdx].position);
+	double	disFromVertexC = t.c.MagnitudeSQ3d(this->buckets[bucketIdx].position);
+
+	return min_of_3_elm(disFromVertexA, disFromVertexB, disFromVertexC);
+}
+
+double	BC::_CalcDistanceFromSideSQ(const Vec &a, 
+								  const Vec &b, 
+								  const size_t bucketIdx)
+{
+	const Vec	abVector = b - a;
+	const Vec	aCenterVector = this->buckets[bucketIdx].position - a;
+	const double	t = abVector.DotProduct3d(aCenterVector) / 
+						abVector.MagnitudeSQ3d();
+
+	if (0.0 < t && t < 1.0)
+	{
+		const Vec	projectivePoint = a + (abVector * t);
+
+	
+		return (projectivePoint - this->buckets[bucketIdx].position).MagnitudeSQ3d();
+	}
+
+	return 2.0 * this->bc_bucketLength * 2.0 * this->bc_bucketLength;
+}
+
+double	BC::_CalcShortestDistanceFromSideSQ(const Triangle &t, const size_t bucketIdx)
+{
+	const double	disFromSideAB = this->_CalcDistanceFromSideSQ(t.a, t.b, bucketIdx);
+	const double	disFromSideBC = this->_CalcDistanceFromSideSQ(t.b, t.c, bucketIdx);
+	const double	disFromSideCA = this->_CalcDistanceFromSideSQ(t.c, t.a, bucketIdx);
+
+	return min_of_3_elm(disFromSideAB, disFromSideBC, disFromSideCA);
+}
+
+double	BC::_CalcDistanceFromTriangleSQ(const Triangle &t, const size_t bucketIdx)
+{
+	const Vec		apVec = this->buckets[bucketIdx].position - t.a;
+	const double	coefficient = apVec.DotProduct3d(t.n) / t.n.MagnitudeSQ3d();
+	const Vec 		orientVec =  t.n * -1 * coefficient;
+	const Vec		projectivePoint = this->buckets[bucketIdx].position + orientVec;
+	
+	if (t.InternalAndExternalJudgments3d(projectivePoint))
+	{
+		return orientVec.MagnitudeSQ3d();
+	}
+	return 2.0 * this->bc_bucketLength * 2.0 * this->bc_bucketLength;
+}
+
+double	BC::_CalcShortestDistanceSQ(const Triangle &t, const size_t bucketIdx)
+{
+	// const double	distFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
+	// return distFromVertex;
+
+	// const double	distFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
+	// const double	distFromSide 	= this->_CalcShortestDistanceFromSideSQ(t,bucketIdx);
+	// return min(distFromVertex, distFromSide);
+
+	const double	distFromVertex   = this->_CalcShortestDistanceFromVertexSQ(t, bucketIdx);
+	const double	distFromSide 	 = this->_CalcShortestDistanceFromSideSQ(t,bucketIdx);
+	const double	distFromTriangle = this->_CalcDistanceFromTriangleSQ(t, bucketIdx);
+	const double	shortestDistSQ   = min_of_3_elm(distFromVertex, distFromSide, distFromTriangle);
+
+	return shortestDistSQ;
+}*/

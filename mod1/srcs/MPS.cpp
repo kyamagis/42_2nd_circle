@@ -287,19 +287,19 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 				{
 					acceleration += nVector * REPULSION_COEFFICIENT * (-closing);
 				}
-				else if (0.0 <= closing && distFromWall <= 0.0)
-				{
-					acceleration += nVector * REPULSION_COEFFICIENT * (closing);
-				}
+				// else if (0.0 <= closing && distFromWall <= 0.0)
+				// {
+				// 	acceleration += nVector * REPULSION_COEFFICIENT * (closing);
+				// }
 			}
 			break;
 		case e_PRESSURE:
 			break;
 		case e_PGRADIENT2:
-			if (distFromWall < DIAMETER)
+			if (distFromWall < RADIUS)
 			{
 				nVector = this->buckets[bucketIdx].nInterpolation;
-				acceleration -= nVector * DENSITY_OF_PARTICLES * (DIAMETER - distFromWall);
+				acceleration -= nVector * DENSITY_OF_PARTICLES * (RADIUS - distFromWall);
 			}
 			break;
 		default:
