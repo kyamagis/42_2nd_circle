@@ -21,7 +21,7 @@ int64_t	cross_product_2d(const Vec &a, const Vec &b, const Vec &point)
 void	assign_power_of_two(uint32_t &x, uint32_t &y, uint32_t &z)
 {
 	size_t	i = 1;
-	for (; i <= x; ++i)
+	for (; i <= x - 1; ++i)
 	{
 		i *= 2;
 	}

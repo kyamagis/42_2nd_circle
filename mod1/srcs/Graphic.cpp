@@ -341,6 +341,8 @@ void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts,
 		g_data.ts[i].b.y += 2.0 * BUCKET_LENGTH;
 		g_data.ts[i].c.x += 2.0 * BUCKET_LENGTH;
 		g_data.ts[i].c.y += 2.0 * BUCKET_LENGTH;
+		g_data.ts[i].circumcircle.center.x += 2.0 * BUCKET_LENGTH;
+		g_data.ts[i].circumcircle.center.y += 2.0 * BUCKET_LENGTH;
 	}
 	add_bottom(g_data.ts, Vec(mapSize[X],mapSize[Y],mapSize[Z]),
 					g_data.mapSize,

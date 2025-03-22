@@ -20,8 +20,8 @@ DT::DT(const std::deque<Vec> &specificPoints,
 	this->_mapSize[Y] = mapSize[Y];
 	this->_mapSize[Z] = mapSize[Z];
 
-	this->_tempVertexB = Vec(2 * this->_mapSize[X], 0, 0);
-	this->_tempVertexC = Vec(0, 2 * this->_mapSize[Y], 0);
+	this->_tempVertexB = Vec(2 * (this->_mapSize[X] - 1), 0, 0);
+	this->_tempVertexC = Vec(0, 2 * (this->_mapSize[Y] - 1), 0);
 
 	this->_MakeSuperTriangle();
 }
@@ -33,13 +33,13 @@ DT::~DT()
 
 void	DT::_MakeSuperTriangle(void)
 {
-	Vec	o(Vec(0, 0, 0));
-	this->_triangles.push_back(Triangle(o, 
+	const Vec	origin(Vec(0, 0, 0));
+	this->_triangles.push_back(Triangle(origin, 
 								this->_tempVertexB, 
 								this->_tempVertexC,
 								true));
 
-	this->_specificPoints.push_front(o);
+	this->_specificPoints.push_front(origin);
 	this->_specificPoints.push_front(this->_tempVertexB);
 	this->_specificPoints.push_front(this->_tempVertexC);
 }
@@ -70,15 +70,14 @@ bool	DT::_AddSegmentedTriangle(const size_t idx, const Vec &a, const Vec &b)
 	{
 		return false;
 	}
-	bool	tempVertexFlg = this->_HaveATempVertex(a, b, this->_specificPoints[idx]);
+	const bool	tempVertexFlg = this->_HaveATempVertex(a, b, this->_specificPoints[idx]);
 
 	const Triangle t(a, b, this->_specificPoints[idx], tempVertexFlg);
 
-	for (size_t i = 0; i <= idx; ++i)
+	for (size_t i = 0; i < idx; ++i)
 	{
-		if (this->_specificPoints[i] == a 
-			|| this->_specificPoints[i] == b
-			|| idx == i)
+		if (this->_specificPoints[i] == a ||
+			this->_specificPoints[i] == b)
 		{
 			continue;
 		}
@@ -143,8 +142,7 @@ std::deque<Triangle>	DT::Calculation(void)
 		this->_SegmentTriangles(i);
 	}
 
-	std::cout << "Delaunay Triangulation Done" << std::endl;
-
 	this->_EraseTempTriangles();
+	Print::OutWords("Delaunay Triangulation Done");
 	return this->_triangles;
 }

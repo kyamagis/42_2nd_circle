@@ -9,11 +9,10 @@ class RMD
 {
 	private:
 		const std::string	&_fileName;
-
-		std::deque<Vec> _specificPoints;
-		uint32_t		_mapSize[3];
-		int64_t			_maxHeight;
-		int64_t			_minHeight;
+		std::deque<Vec> 	_specificPoints;
+		uint32_t			_mapSize[3];
+		int64_t				_maxHeight;
+		int64_t				_minHeight;
 
 		RMD();
 
@@ -26,19 +25,15 @@ class RMD
 		bool	_ParseModFile(void);
 		
 		void	_DecideMapSize(void);
-		void	_CalibrateHeight(void);
 		void	_AddEndPoints(void);
+		void	_Add8Corners(const double calibrationHeight);
 
-		
-
-	
 	public:
 
 		RMD(const std::string &fileName);
 		~RMD();
 
 		bool	ReadStart(void);
-
 		std::deque<Vec>	GetSpecificPoints(void);
 		void	GetMapSize(uint32_t mapSize[3]);
 		void	GetMaxMinHeight(int64_t &maxHeight, 
