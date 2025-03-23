@@ -287,10 +287,10 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 				{
 					acceleration += nVector * REPULSION_COEFFICIENT * (-closing);
 				}
-				else if (0.0 < closing && distFromWall < 0.0)
-				{
-					acceleration += nVector * REPULSION_COEFFICIENT * (closing);
-				}
+				// else if (0.0 < closing && distFromWall < 0.0)
+				// {
+				// 	acceleration += nVector * REPULSION_COEFFICIENT * (closing);
+				// }
 			}
 			break;
 		case e_PRESSURE:

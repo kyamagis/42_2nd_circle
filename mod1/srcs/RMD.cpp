@@ -216,10 +216,7 @@ bool	RMD::_ParseModFile(void)
 	}
 	errorFlg = this->_ParseLines(ifs);
 	ifs.close();
-	// for (size_t i = 0; i < this->_specificPoints.size(); ++i)
-	// {
-	// 	std::cout << this->_specificPoints[i] << std::endl;
-	// }
+
 	return errorFlg;
 }
 
@@ -227,8 +224,8 @@ void	RMD::_DecideMapSize(void)
 {
 	const uint32_t	particleZone = 2.0 * BUCKET_LENGTH + 1;
 	const uint32_t	extendMapSize = 2.0 * particleZone;
-	const uint32_t	tempMapSizeX = this->_mapSize[X] - 1;
-	const uint32_t	tempMapSizeY = this->_mapSize[Y] - 1;
+	const uint32_t	originMapSizeX = this->_mapSize[X] - 1;
+	const uint32_t	originMapSizeY = this->_mapSize[Y] - 1;
 
 	this->_mapSize[X] += extendMapSize;
 	this->_mapSize[Y] += extendMapSize;
@@ -260,8 +257,8 @@ void	RMD::_DecideMapSize(void)
 							this->_mapSize[X], 
 							this->_mapSize[Y]);
 	}
-	const double	calibrationX = (this->_mapSize[X] - 1 - tempMapSizeX) / 2.0;
-	const double	calibrationY = (this->_mapSize[Y] - 1 - tempMapSizeY) / 2.0;
+	const double	calibrationX = (this->_mapSize[X] - 1 - originMapSizeX) / 2.0;
+	const double	calibrationY = (this->_mapSize[Y] - 1 - originMapSizeY) / 2.0;
 	double	calibrationHeight = 0;
 	if (this->_minHeight < calibrationHeight)
 	{
