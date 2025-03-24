@@ -109,7 +109,7 @@ void	RMD::_InsertionAndSort(int32_t x, int32_t y, int32_t z)
 		{
 			return ;
 		}
-		else if (it == this->_specificPoints.end() - 1)
+		else if (it == this->_specificPoints.end())
 		{
 			this->_specificPoints.insert(this->_specificPoints.end(), Vec(x, y, z));
 		}
@@ -224,8 +224,8 @@ void	RMD::_DecideMapSize(void)
 {
 	const uint32_t	particleZone = 2.0 * BUCKET_LENGTH + 1;
 	const uint32_t	extendMapSize = 2.0 * particleZone;
-	const uint32_t	originMapSizeX = this->_mapSize[X] - 1;
-	const uint32_t	originMapSizeY = this->_mapSize[Y] - 1;
+	const uint32_t	originMapSizeX = this->_mapSize[X];
+	const uint32_t	originMapSizeY = this->_mapSize[Y];
 
 	this->_mapSize[X] += extendMapSize;
 	this->_mapSize[Y] += extendMapSize;
@@ -257,8 +257,8 @@ void	RMD::_DecideMapSize(void)
 							this->_mapSize[X], 
 							this->_mapSize[Y]);
 	}
-	const double	calibrationX = (this->_mapSize[X] - 1 - originMapSizeX) / 2.0;
-	const double	calibrationY = (this->_mapSize[Y] - 1 - originMapSizeY) / 2.0;
+	const double	calibrationX = (this->_mapSize[X] - originMapSizeX) / 2.0;
+	const double	calibrationY = (this->_mapSize[Y] - originMapSizeY) / 2.0;
 	double	calibrationHeight = 0;
 	if (this->_minHeight < calibrationHeight)
 	{
@@ -284,7 +284,7 @@ void	RMD::_AddEndPoints(void)
 	}
 	for (uint32_t x = 0; x < this->_mapSize[X]; ++x)
 	{
-		if (x == 0 || x == this->_mapSize[X] - 1)
+		if (x == 0 || x == this->_mapSize[X])
 		{
 			for (uint32_t y = 0; y < this->_mapSize[Y]; ++y)
 			{
@@ -301,22 +301,22 @@ void	RMD::_AddEndPoints(void)
 		else if (x % OMMIT == 0)
 		{
 			this->_specificPoints.push_back(Vec(x, 0, calibrationHeight));
-			this->_specificPoints.push_back(Vec(x, this->_mapSize[Y] - 1, calibrationHeight));
+			this->_specificPoints.push_back(Vec(x, this->_mapSize[Y], calibrationHeight));
 		}
 	}
 }
 
 void	RMD::_Add8Corners(const double calibrationHeight)
 {
-	const double halfX = (this->_mapSize[X] - 1) / 2.0;
-	const double halfY = (this->_mapSize[Y] - 1) / 2.0;
+	const double halfX = this->_mapSize[X] / 2.0;
+	const double halfY = this->_mapSize[Y] / 2.0;
 
-	this->_specificPoints.push_front(Vec(this->_mapSize[X] - 1, this->_mapSize[Y] - 1, calibrationHeight));
-	this->_specificPoints.push_front(Vec(halfX, this->_mapSize[Y] - 1, calibrationHeight));
-	this->_specificPoints.push_front(Vec(this->_mapSize[X] - 1, halfY, calibrationHeight));
-	this->_specificPoints.push_front(Vec(0, this->_mapSize[Y] - 1, calibrationHeight));
+	this->_specificPoints.push_front(Vec(this->_mapSize[X], this->_mapSize[Y], calibrationHeight));
+	this->_specificPoints.push_front(Vec(halfX, this->_mapSize[Y], calibrationHeight));
+	this->_specificPoints.push_front(Vec(this->_mapSize[X], halfY, calibrationHeight));
+	this->_specificPoints.push_front(Vec(0, this->_mapSize[Y], calibrationHeight));
 	this->_specificPoints.push_front(Vec(0, halfY, calibrationHeight));
-	this->_specificPoints.push_front(Vec(this->_mapSize[X] - 1, 0, calibrationHeight));
+	this->_specificPoints.push_front(Vec(this->_mapSize[X], 0, calibrationHeight));
 	this->_specificPoints.push_front(Vec(halfX, 0, calibrationHeight));
 	this->_specificPoints.push_front(Vec(0, 0, calibrationHeight));
 }
