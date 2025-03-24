@@ -109,7 +109,7 @@ void	RMD::_InsertionAndSort(int32_t x, int32_t y, int32_t z)
 		{
 			return ;
 		}
-		else if (it == this->_specificPoints.end())
+		else if (it == this->_specificPoints.end() - 1)
 		{
 			this->_specificPoints.insert(this->_specificPoints.end(), Vec(x, y, z));
 		}
