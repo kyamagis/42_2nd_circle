@@ -25,6 +25,7 @@ typedef struct s_data
 	bool	circleFlg;
 	bool	lineFlg;
 	bool	visibleBucketsFlg;
+	bool	simulationFlg;
 	int		gWindowID;
 
 	unsigned char	key;
@@ -184,6 +185,10 @@ void keyboard(unsigned char key, int x, int y)
 				--g_data.elapsedTime;
 			}
 			break;
+		case 19: // ctrl s
+			g_data.elapsedTime = 0;
+			g_data.simulationFlg = !g_data.simulationFlg;
+			break;
 		case 't':
 			g_data.mouseX = g_data.windowSizeX / 2;
 			g_data.mouseY = g_data.windowSizeY / 2;
@@ -239,8 +244,20 @@ void	RenderingAlgorithm()
 									g_data.lineFlg);
 	
 	}
-	g_data.key = 0;
 	glFlush();
+	
+	if (g_data.simulationFlg)
+	{
+		if(g_data.elapsedTime + 1 < SIMULATION_TIME)
+		{
+			++g_data.elapsedTime;
+		}
+		else
+		{
+			g_data.elapsedTime = 0;
+		}
+		glutPostRedisplay();
+	}
 }
 
 void	onWindowClose(void)
@@ -314,11 +331,10 @@ void	Graphic::GraphicLoop(void)
 
 double	extend_map(const uint32_t mapSize)
 {	
-	const size_t	maxIdx = mapSize - 1;
-	const uint32_t	num = (uint32_t)((maxIdx) / BUCKET_LENGTH);
-	const double	diff = maxIdx - num * BUCKET_LENGTH;
+	const uint32_t	num = (uint32_t)((mapSize) / BUCKET_LENGTH);
+	const double	diff = mapSize - num * BUCKET_LENGTH;
 
-	return maxIdx + BUCKET_LENGTH - diff + 4 * BUCKET_LENGTH;
+	return mapSize + BUCKET_LENGTH - diff + 4 * BUCKET_LENGTH;
 }
 
 void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts, 
@@ -366,6 +382,7 @@ void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.circleFlg = false;
 	g_data.lineFlg = false;
 	g_data.visibleBucketsFlg = false;
+	g_data.simulationFlg = false;
 	g_data.key = 'i';
 	g_data.mouseX = g_data.windowSizeX / 2;
 	g_data.mouseY = g_data.windowSizeY / 2;
