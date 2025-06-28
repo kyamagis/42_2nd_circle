@@ -9,7 +9,6 @@
 
 static size_t g_i;
 static size_t g_o;
-static size_t g_t;
 static Vec g_n;
 
 // MPS::MPS()
@@ -28,7 +27,6 @@ MPS::MPS(const Vec	mapSize, const std::deque<Triangle> &ts)
 	this->_InitParticlesWaterColumnCollapse();
 	this->_InitBuckets(ts);
 	this->_SetParameter();
-	this->_Simulation();
 }
 
 MPS::~MPS()
@@ -530,62 +528,18 @@ void	MPS::_NavierStokesEquations(void)
 	this->_UpdateVPA2();
 }
 
-void	MPS::_Simulation(void)
+void	MPS::Simulation(t_log logs[SIMULATION_TIME])
 {
 	const double maxTime = ONE_SECOUD;
 
 	for (size_t elapsedTime = 0; elapsedTime < SIMULATION_TIME; elapsedTime += maxTime)
 	{
-		this->_logs[elapsedTime].ps = this->ps;
+		logs[elapsedTime].ps = this->ps;
 		for (double time = 0.0; time < maxTime; time += DELTA_TIME) {
 			this->_NavierStokesEquations();
 		}
-		g_t = elapsedTime;
 		std::cout << elapsedTime << " / " << SIMULATION_TIME
 		<< "\r" << std::flush;
 	}
 	std::cout <<  std::endl;
-}
-
-void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
-{
-	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-	{
-		this->ps[i].DrawParticle(halfMapSize, midHeight);
-		Print::OutWords(i, this->ps[i]);
-	}
-}
-
-void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight, 
-						   const size_t elapsedTime)
-{
-	if (SIMULATION_TIME < elapsedTime + 1)
-	{
-		Print::Err("DrawParticles: elapsedTime");
-		return;
-	}
-	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-	{
-		this->_logs[elapsedTime].ps[i].DrawParticle(halfMapSize, midHeight);
-	}
-}
-
-void	MPS::DrawPoints(const Vec &halfMapSize, const double midHeight,
-						const size_t elapsedTime)
-{
-	if (SIMULATION_TIME < elapsedTime + 1)
-	{
-		Print::Err("DrawParticles: elapsedTime");
-		return;
-	}
-	glEnable(GL_POINT_SMOOTH);
-	glPointSize(20.0f);
-    glBegin(GL_POINTS);
-	glColor4f(0.0f, 1.0f, 1.0f, 0.4f);
-	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-	{
-		this->_logs[elapsedTime].ps[i].DrawPoint(halfMapSize, midHeight);
-	}
-	glEnd();
-	glDisable(GL_POINT_SMOOTH);
 }

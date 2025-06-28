@@ -197,6 +197,16 @@ static void	calc_wall_weight(std::deque<Vec> &weights, std::deque<Particle> &ps)
 	outputfile.close();
 }
 
+void	output_regression(void)
+{
+	const char* script = "python3 ./srcs/WallWeight.py";
+
+	if (std::system(script) != 0)
+	{
+		Print::Err("std::system");
+	}
+}
+
 std::deque<Vec>	init_wall_weight(void)
 {
 	std::deque<Particle>	ps;
@@ -205,20 +215,9 @@ std::deque<Vec>	init_wall_weight(void)
 	init_ps(ps);
 	calc_wall_weight(weights, ps);
 
-	const char* script = "python3 ./srcs/WallWeight.py";
-
-	if (std::system(script) != 0)
-	{
-		Print::Err("std::system");
-	}
+	// output_regression(void);
+	
 	return weights;
-}
-
-Vec	move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double midHeight)
-{
-	return	Vec(vec.x - halfMapSize.x,
-				vec.y - halfMapSize.y, 
-				vec.z - midHeight / 2.0);
 }
 
 double trilinear_interpolation_dist(const Vec &pPos, 

@@ -7,6 +7,8 @@
 #include "./Defines.hpp"
 #include "./Circle.hpp"
 
+class Vec;
+
 class Particle: public Circle
 {
 	private:
@@ -26,9 +28,6 @@ class Particle: public Circle
 		Particle(const double &cX, const double &cY, const double &cZ, const double &R);
 		Particle(const Particle &p);
 		~Particle();
-
-		void	DrawParticle(const Vec &halfMapSize, const double midHeight);
-		void	DrawPoint(const Vec &halfMapSize, const double midHeight);
 
 		Particle&	operator=(const Particle &p);
 		bool		operator==(const Particle &p) const;

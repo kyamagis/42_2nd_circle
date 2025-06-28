@@ -1,7 +1,6 @@
 #include "../includes/BucketsController.hpp"
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
-#include "../includes/Graphic.hpp"
 #include "../includes/Print.hpp"
 
 // BC::BC()
@@ -15,9 +14,9 @@ BC::BC(const Vec &visibleMapSize_,
 	    _totalMapSize(totalMapSize_ + BUCKET_LENGTH),
 		_weights(init_wall_weight()),
 		_bucketLast(NULL),
-		bc_bucketLength(BUCKET_LENGTH),
 		bc_radius_effective(E_RADIUS),
 		bc_radius_effectiveSQ(E_RADIUS_SQ),
+		bc_bucketLength(BUCKET_LENGTH),
 		bucketRow(to_bucket_coor(this->_totalMapSize.x)),
 		bucketColumn(to_bucket_coor(this->_totalMapSize.y)),
 		bucketDepth(to_bucket_coor(this->_totalMapSize.z)),
@@ -468,70 +467,4 @@ double	BC::BC_InterpolateWallWeight(const double interpolatedDist)
 	}
 	Print::Err("BC_InterpolateWallWeight: weight");
 	return 0.0;
-}
-
-void	DrawShortestVec(const Vec &halfMapSize, const double midHeight, const t_bucket bucket)
-{
-	glShadeModel(GL_SMOOTH);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	drawVertex(move_vec_to_map_center(bucket.position, halfMapSize, midHeight));
-	glColor3f(0.0f, 1.0f, 0.0f);
-	drawVertex(move_vec_to_map_center(bucket.position + bucket.shortestVec, halfMapSize, midHeight));
-	glEnd();
-}
-
-void	DrawNormalVec(const Vec &halfMapSize, const double midHeight, const t_bucket bucket)
-{
-	glShadeModel(GL_SMOOTH);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	drawVertex(move_vec_to_map_center(bucket.position, halfMapSize, midHeight));
-	glColor3f(0.0f, 0.0f, 1.0f);
-	drawVertex(move_vec_to_map_center(bucket.position + bucket.n * 1000, halfMapSize, midHeight));
-	glEnd();
-}
-
-void	DrawInterpolatedNormalVec(const Vec &halfMapSize, const double midHeight, const t_bucket bucket)
-{
-	glShadeModel(GL_SMOOTH);
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	drawVertex(move_vec_to_map_center(bucket.position, halfMapSize, midHeight));
-	glColor3f(1.0f, 0.0f, 0.0f);
-	drawVertex(move_vec_to_map_center(bucket.position + bucket.nInterpolation * 1000, halfMapSize, midHeight));
-	glEnd();
-}
-
-void	DrawBucketPos(const Vec &halfMapSize, const double midHeight, const t_bucket bucket)
-{
-	const double	midDist = BUCKET_LENGTH / 2.0;
-
-	glPointSize(5.0f);
-	glBegin(GL_POINTS);
-	if (abs(bucket.distFromWall) < midDist)
-	{
-		glColor3f(0, abs(bucket.distFromWall) / midDist, 1 - abs(bucket.distFromWall) / midDist);
-	}
-	else
-	{
-		glColor3f(abs(bucket.distFromWall) / midDist, 1 - abs(bucket.distFromWall) / midDist, 0);
-	}
-	drawVertex(move_vec_to_map_center(bucket.position, halfMapSize, midHeight));
-	glEnd();
-}
-
-void	BC::DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight)
-{	
-	for (size_t	i = 0; i < this->numOfBuckets; ++i)
-	{
-		if (abs(this->buckets[i].distFromWall) <= this->bc_bucketLength + EPS)
-		{
-			Print::OutWords(this->buckets[i].bucketX, this->buckets[i].bucketY, this->buckets[i].bucketZ, this->buckets[i].shortestVec);
-			DrawBucketPos(halfMapSize, midHeight, this->buckets[i]);
-			DrawShortestVec(halfMapSize, midHeight, this->buckets[i]);
-			DrawNormalVec(halfMapSize, midHeight, this->buckets[i]);
-			DrawInterpolatedNormalVec(halfMapSize, midHeight, this->buckets[i]);
-		}
-	}
 }

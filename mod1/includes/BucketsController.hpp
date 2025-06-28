@@ -80,7 +80,6 @@ class BC
 													double &neighborBDistFromWall);
 		
 	protected:
-		const double	bc_bucketLength;
 		const double	bc_radius_effective;
 		const double	bc_radius_effectiveSQ;
 
@@ -95,11 +94,13 @@ class BC
 										
 	public:
 
+		const double	bc_bucketLength;
 		const size_t	bucketRow;
 		const size_t	bucketColumn;
 		const size_t	bucketDepth;
 		const size_t	_columnMultiplDepth;
 		const size_t	numOfBuckets;
+
 
 		t_bucket			*buckets;
 		size_t				*particleNextIdxs;
@@ -108,8 +109,6 @@ class BC
 			const Vec &totalMapSize_);
 			virtual ~BC();
 
-
-		void	DrawDisFromWallSQ(const Vec &halfMapSize, const double midHeight);
 		// BC(const BC &BC);
 		// BC&	operator=(const BC &BC);
 		// bool	operator==(const BC &BC) const;

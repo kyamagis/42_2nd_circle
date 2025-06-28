@@ -27,8 +27,6 @@ void	line_gradation(const int64_t	maxHeight,
 
 std::deque<Vec>	init_wall_weight(void);
 
-Vec		move_vec_to_map_center(const Vec &vec, const Vec &halfMapSize, const double midHeight);
-
 double trilinear_interpolation_dist(const Vec &pPos, const size_t currentBX,
 								const size_t currentBY,
 								const size_t currentBZ, 

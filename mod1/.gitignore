@@ -22,6 +22,7 @@ test.cpp
 
 wall_weight.png
 WallWeight.csv
+srcs/WallWeight.py
 
 glad
 glfw

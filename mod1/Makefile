@@ -13,7 +13,7 @@ SRCSDIR = ./srcs
 
 # SRCS = *.cpp
 SRCS =	main.cpp \
-		Quadrangle.cpp \
+		Draw.cpp \
 		Quaternion.cpp \
 		Triangle.cpp \
 		Circle.cpp \
