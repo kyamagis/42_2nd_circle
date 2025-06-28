@@ -42,20 +42,22 @@ void	MPS::_InitBuckets(const std::deque<Triangle> &ts)
 	this->BC_CalcAllDistanceFromWallSQ(ts);
 }
 
+void	MPS::_InitParticlesRain(void)
+{
+	
+}
+
 void	MPS::_InitParticlesWaterColumnCollapse(void)
 {
 	this->ps.resize(NUM_OF_PARTICLES);
 	size_t	pIdx = 0;
 	const double	initPos = BUCKET_LENGTH;
-	// const double	initPos = RADIUS;
 	const size_t	maxXIdx = (this->totalMapSize.x - initPos) / DIAMETER;
 	const size_t	maxYIdx = (this->totalMapSize.y - initPos) / DIAMETER;
 	const size_t	maxZIdx = (this->totalMapSize.z - initPos) / DIAMETER * (3.0 / 4.0);
 	const size_t	psSize  = this->ps.size();
 	double			x;
 	double			y;
-
-	// Print::OutWords("particle", maxXIdx, maxYIdx, maxZIdx, psSize);
 
 	for (size_t	yIdx = 0; yIdx < maxYIdx && pIdx < psSize; ++yIdx) 
 	{
@@ -287,10 +289,6 @@ void	MPS::_SwitchContributionFromWall(const size_t oneself, const e_operation e,
 				{
 					acceleration += nVector * REPULSION_COEFFICIENT * (-closing);
 				}
-				// else if (0.0 < closing && distFromWall < 0.0)
-				// {
-				// 	acceleration += nVector * REPULSION_COEFFICIENT * (closing);
-				// }
 			}
 			break;
 		case e_PRESSURE:
@@ -530,17 +528,10 @@ void	MPS::_NavierStokesEquations(void)
 	this->_CalcParticlesPressure();
 	this->_PressureGradientTerm();
 	this->_UpdateVPA2();
-	// this->_CalcParticlesPressure();
 }
 
 void	MPS::_Simulation(void)
 {
-	// std::ofstream outputfile("particles_log");
-	// if (outputfile.fail())
-	// {
-	// 	Print::Err("calc_wall_weight");
-	// 	std::exit(EXIT_FAILURE);
-	// }
 	const double maxTime = ONE_SECOUD;
 
 	for (size_t elapsedTime = 0; elapsedTime < SIMULATION_TIME; elapsedTime += maxTime)
@@ -548,19 +539,12 @@ void	MPS::_Simulation(void)
 		this->_logs[elapsedTime].ps = this->ps;
 		for (double time = 0.0; time < maxTime; time += DELTA_TIME) {
 			this->_NavierStokesEquations();
-			// for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
-			// {
-			// 	outputfile << elapsedTime << ", "
-			// 			   << this->ps[i] << std::endl;
-			// }
 		}
 		g_t = elapsedTime;
 		std::cout << elapsedTime << " / " << SIMULATION_TIME
 		<< "\r" << std::flush;
 	}
 	std::cout <<  std::endl;
-	// outputfile.close();
-
 }
 
 void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight)
@@ -583,14 +567,6 @@ void	MPS::DrawParticles(const Vec &halfMapSize, const double midHeight,
 	for (size_t	i = 0; i < NUM_OF_PARTICLES; ++i)
 	{
 		this->_logs[elapsedTime].ps[i].DrawParticle(halfMapSize, midHeight);
-
-		// if (5 <= this->_logs[elapsedTime].ps[i].bucketX && this->_logs[elapsedTime].ps[i].bucketX < 8 &&
-		// 	5 <= this->_logs[elapsedTime].ps[i].bucketY && this->_logs[elapsedTime].ps[i].bucketY < 7 &&
-		// 	1 <= this->_logs[elapsedTime].ps[i].bucketZ && this->_logs[elapsedTime].ps[i].bucketZ <= 2)
-		// {
-		// 	this->_logs[elapsedTime].ps[i].DrawParticle(halfMapSize, midHeight);
-		// 	Print::OutWords(elapsedTime, i, this->_logs[elapsedTime].ps[i].velocity, this->_logs[elapsedTime].ps[i].acceleration);
-		// }
 	}
 }
 
@@ -613,47 +589,3 @@ void	MPS::DrawPoints(const Vec &halfMapSize, const double midHeight,
 	glEnd();
 	glDisable(GL_POINT_SMOOTH);
 }
-
-// MPS::MPS(const MPS &mps): MPS
-// {
-// 	*this = MPS;
-// }
-
-// bool	MPS::operator==(const MPS &mps) const
-// {
-// 	return (this->x == MPS.x) && 
-// 		   (this->y == MPS.y) &&
-// 		   (this->r == MPS.r);
-// }
-
-// MPS&	MPS::operator=(const MPS &mps)
-// {
-// 	if (this != &mps)
-// 	{
-// 		this->ps = mps.ps;
-// 		this->visibleMapSize.x = mps.visibleMapSize.x;
-// 		this->totalMapSize;
-// 	}
-// 	return *this;
-// }
-
-// std::ostream &operator<<(std::ostream &ostrm, const MPS &mps)
-// {
-// 	return ostrm << '(' << MPS.x << ", " 
-// 						<< MPS.y << ", "
-// 						<< MPS.r << ')' 
-// 						<< std::endl;
-// }
-
-
-// double	MPS::W(const size_t i, const size_t oneself, bool gradientFlg) // weight
-// {
-// 	double	rSQ = this->ps[i].center.Magnitude2d(this->ps[oneself].center);
-
-// 	if (gradientFlg == GRADIENT)
-// 	{
-// 		return E_RADIUS / rSQ - rSQ / E_RADIUS;
-// 	}
-
-// 	return E_RADIUS / rSQ + rSQ / E_RADIUS - 2;
-// }

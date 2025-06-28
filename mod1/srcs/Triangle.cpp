@@ -69,7 +69,6 @@ void	Triangle::CalcCircumcircle()
 
 	if (det == 0.0)
 	{
-		// std::cout << "det is 0" << std::endl;
 		this->circumcircle.center.x = 0.0;
 		this->circumcircle.center.y = 0.0;
 		this->circumcircle.rSQ = 0.0;

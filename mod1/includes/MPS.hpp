@@ -37,6 +37,8 @@ class MPS: public BC
 
 		MPS();
 		void	_InitBuckets(const std::deque<Triangle> &ts);
+
+		void	_InitParticlesRain(void);
 		void	_InitParticlesWaterColumnCollapse(void);
 
 		void	_InitTermCoefficient(void);

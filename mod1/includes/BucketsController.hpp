@@ -21,7 +21,6 @@ typedef struct s_bucket
 	size_t	bucketX;
 	size_t	bucketY;
 	size_t	bucketZ;
-	// size_t	bucketIdx;
 } t_bucket;
 
 class BC

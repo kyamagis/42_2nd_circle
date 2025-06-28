@@ -1,5 +1,3 @@
-
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,21 +20,21 @@ slope, intercept, r_value, p_value, std_err = stats.linregress(x_data, y_data)
 # 回帰直線を計算
 y_regression = slope * x_data_interp + intercept
 
-# 補完されたデータと回帰直線を描画
-plt.figure(figsize=(8, 6))
-plt.plot(x_data, y_data, 'o', label='Original Data', color='blue')
-plt.plot(x_data_interp, y_data_interp, '-', label='Interpolated Data', color='green')
-plt.plot(x_data_interp, y_regression, '--', label='Fitted Line (Linear Regression)', color='red')
+# # 補完されたデータと回帰直線を描画
+# plt.figure(figsize=(8, 6))
+# plt.plot(x_data, y_data, 'o', label='Original Data', color='blue')
+# plt.plot(x_data_interp, y_data_interp, '-', label='Interpolated Data', color='green')
+# plt.plot(x_data_interp, y_regression, '--', label='Fitted Line (Linear Regression)', color='red')
 
 
-# グラフを描画し、画像として保存
-plt.figure(figsize=(6, 4))
-plt.plot(x_data, y_data, marker="o", linestyle="-", color="b", label="Data")
-plt.xlabel("distance")
-plt.ylabel("weight")
-plt.title("distance - weight")
-plt.legend()
-plt.grid(True)
+# # グラフを描画し、画像として保存
+# plt.figure(figsize=(6, 4))
+# plt.plot(x_data, y_data, marker="o", linestyle="-", color="b", label="Data")
+# plt.xlabel("distance")
+# plt.ylabel("weight")
+# plt.title("distance - weight")
+# plt.legend()
+# plt.grid(True)
 
-# グラフを画像として保存
-plt.savefig('./wall_weight.png')
+# # グラフを画像として保存
+# plt.savefig('./wall_weight.png')

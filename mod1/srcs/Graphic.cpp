@@ -69,8 +69,6 @@ void	drawVertex(const Vec &vertex)
 	const double	mousePosX = double(g_data.mouseX) / double(g_data.windowSizeX) - 0.5;
 	const double	mousePosY = -(double(g_data.mouseY) / double(g_data.windowSizeY) - 0.5);
 
-	// Print::OutWords(g_data.mouseX, g_data.mouseY, g_data.windowSizeX, g_data.windowSizeY);
-
 	glVertex3f((coordinateX - mousePosX) * g_data.scaling, 
 			   (coordinateY - mousePosY) * g_data.scaling, 
 			   -coordinateZ * DEPTH_SCALING * g_data.scaling);
@@ -144,8 +142,6 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.q = 0.0;
 			g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 3, Vec(0,0,1));
 			g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 5, Vec(1,0,0));
-			// g_data.q = calcQuaternion(M_PI_2, Vec(1,0,0));
-			// g_data.q = calcQuaternion(M_PI_2, Vec(0,1,0));
 			g_data.scaling = SCALING;
 			g_data.elapsedTime = 0;
 			break;
@@ -228,7 +224,6 @@ void	RenderingAlgorithm()
 		g_data.mps->DrawDisFromWallSQ(g_data.halfMapSize, g_data.midHeight);
 	}
 	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
-	// g_data.mps->DrawPoints(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
@@ -236,7 +231,6 @@ void	RenderingAlgorithm()
 			g_data.ts[i].circumcircle.DrawCircle2d(g_data.halfMapSize, 
 													g_data.midHeight, 100);
 		}
-		// g_data.ts[i].DrawNormalVector(g_data.midHeight, g_data.halfMapSize);
 		g_data.ts[i].DrawTriangle(g_data.maxHeight,
 									g_data.minHeight,
 									g_data.midHeight,
@@ -276,7 +270,6 @@ Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int s
 	glutInit(const_cast<int*>(&argc), const_cast<char**>(argv));
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
-	// glutInitDisplayMode(GLUT_SINGLE);
 	glutInitWindowSize(sizeX, sizeY);
 	glutInitWindowPosition(300, 100);
 
@@ -292,7 +285,6 @@ Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int s
 	glutInit(const_cast<int*>(&argc), const_cast<char**>(argv));
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
-	// glutInitDisplayMode(GLUT_SINGLE);
 	glutInitWindowSize(sizeX, sizeY);
 	g_data.windowSizeX = sizeX;
 	g_data.windowSizeY = sizeY;
@@ -372,8 +364,6 @@ void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts,
 	g_data.rad.x = 0.0;
 	g_data.rad.y = 0.0;
 	g_data.rad.z = 0.0;
-	// g_data.q = g_data.q.calcQuaternion(M_PI_2, Vec(1,0,0));
-	// g_data.q = g_data.q.calcQuaternion(M_PI_2, Vec(0,1,0));
 	g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 3, Vec(0,0,1));
 	g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 5, Vec(1,0,0));
 	g_data.i = g_data.ts.size();

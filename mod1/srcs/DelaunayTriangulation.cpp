@@ -1,5 +1,4 @@
 #include <iostream>
-#include <iomanip>
 #include "../includes/DelaunayTriangulation.hpp"
 #include "../includes/Utils.hpp"
 #include "../includes/Graphic.hpp"
@@ -136,7 +135,6 @@ std::deque<Triangle>	DT::Calculation(void)
 {
 	const size_t	size = this->_specificPoints.size();
 
-	// i is 3, because (0,0,0) _tempVertexB, and _tempVertexC is top of this->_specificPoints
 	for (size_t	i = 3; i < size; ++i)
 	{
 		this->_SegmentTriangles(i);
