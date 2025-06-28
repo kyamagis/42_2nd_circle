@@ -8,6 +8,7 @@
 #include "./Particle.hpp"
 #include "./Triangle.hpp"
 #include "./BucketsController.hpp"
+#include "./Structs.hpp"
 
 enum	e_operation
 {
@@ -18,12 +19,6 @@ enum	e_operation
 	e_PGRADIENT2,
 };
 
-typedef struct s_log
-{
-	size_t		time;
-	std::deque<Particle>	ps;
-} t_log;
-
 class MPS: public BC
 {
 	private:
@@ -33,10 +28,11 @@ class MPS: public BC
 
 		const Vec	_g;
 		double		_n0;
-		t_log		_logs[SIMULATION_TIME];
 
 		MPS();
 		void	_InitBuckets(const std::deque<Triangle> &ts);
+
+		void	_InitParticlesRain(void);
 		void	_InitParticlesWaterColumnCollapse(void);
 
 		void	_InitTermCoefficient(void);
@@ -86,27 +82,20 @@ class MPS: public BC
 		void	_UpdateVPA2(void);
 		void	_UpdateVPA3(void);
 		void	_NavierStokesEquations(void);
-		void	_Simulation(void);
-
-
-	public:
+		
+		
+		public:
 		std::deque<Particle> ps;
 		const Vec	visibleMapSize;
 		const Vec	totalMapSize;
-
+		
 		MPS(const Vec mapSize, 
-		   const std::deque<Triangle> &ts);
-		~MPS();
-		MPS(const MPS &mps);
-		MPS&	operator=(const MPS &mps);
-
-		void	DrawParticles(const Vec &halfMapSize, const double midHeight);
-		void	DrawParticles(const Vec &halfMapSize, const double midHeight, 
-								const size_t elapsedTime);
-		void	DrawPoints(const Vec &halfMapSize, const double midHeight, 
-							const size_t elapsedTime);
-
-		// bool	operator==(const MPS &mps) const;
+			const std::deque<Triangle> &ts);
+			~MPS();
+			MPS(const MPS &mps);
+			MPS&	operator=(const MPS &mps);
+			
+		void	Simulation(t_log logs[SIMULATION_TIME]);
 };
 
 // std::ostream &operator<<(std::ostream &ostrm, const MPS &mps);

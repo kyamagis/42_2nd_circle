@@ -1,18 +1,6 @@
 #ifndef DEFINES_HPP
 # define DEFINES_HPP
 
-enum	e_coor
-{
-	e_000,
-	e_100,
-	e_110,
-	e_101,
-	e_111,
-	e_010,
-	e_011,
-	e_001
-};
-
 #define EPS 1e-6
 
 #define	MAX_COORDINATE 1000000
@@ -62,5 +50,17 @@ enum	e_coor
 #define DEPTH_SCALING 0.01f
 #define SCREEN_SIZE_X 1000
 #define SCREEN_SIZE_Y 1000
+
+enum	e_coor
+{
+	e_000,
+	e_100,
+	e_110,
+	e_101,
+	e_111,
+	e_010,
+	e_011,
+	e_001
+};
 
 #endif

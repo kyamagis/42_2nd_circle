@@ -5,37 +5,7 @@
 #include "../includes/Utils.hpp"
 #include "../includes/Defines.hpp"
 #include "../includes/Quaternion.hpp"
-
-typedef struct s_data
-{
-	Vec						mapSize;
-	Vec						halfMapSize;
-	std::deque<Triangle>	ts;
-	MPS						*mps;
-
-	int64_t	maxHeight;
-	int64_t	minHeight;
-	double	midHeight;
-	Vec		rad;
-	Quaternion q;
-	double	scaling;
-	size_t	i;
-	size_t	count;
-	Vec		rotatedVertex;
-	bool	circleFlg;
-	bool	lineFlg;
-	bool	visibleBucketsFlg;
-	bool	simulationFlg;
-	int		gWindowID;
-
-	unsigned char	key;
-	int				mouseX;
-	int				mouseY;
-	int				windowSizeX;
-	int				windowSizeY;
-	size_t			elapsedTime;
-
-} t_data;
+#include "../includes/Draw.hpp"
 
 static t_data g_data;
 
@@ -58,22 +28,6 @@ void defaultkeyboard(unsigned char key, int x, int y)
 		default:
 			break;
 	}
-}
-
-void	drawVertex(const Vec &vertex)
-{
-	const Vec		rotatedPos = vertex.Rotate(g_data.q);
-	const double	coordinateX = rotatedPos.x / g_data.mapSize.x;
-	const double	coordinateY =  - 1.0 * (rotatedPos.y / g_data.mapSize.y);
-	const double	coordinateZ = rotatedPos.z / g_data.midHeight;
-	const double	mousePosX = double(g_data.mouseX) / double(g_data.windowSizeX) - 0.5;
-	const double	mousePosY = -(double(g_data.mouseY) / double(g_data.windowSizeY) - 0.5);
-
-	// Print::OutWords(g_data.mouseX, g_data.mouseY, g_data.windowSizeX, g_data.windowSizeY);
-
-	glVertex3f((coordinateX - mousePosX) * g_data.scaling, 
-			   (coordinateY - mousePosY) * g_data.scaling, 
-			   -coordinateZ * DEPTH_SCALING * g_data.scaling);
 }
 
 void mouseWheel(int button, int dir, int x, int y)
@@ -144,8 +98,6 @@ void keyboard(unsigned char key, int x, int y)
 			g_data.q = 0.0;
 			g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 3, Vec(0,0,1));
 			g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 5, Vec(1,0,0));
-			// g_data.q = calcQuaternion(M_PI_2, Vec(1,0,0));
-			// g_data.q = calcQuaternion(M_PI_2, Vec(0,1,0));
 			g_data.scaling = SCALING;
 			g_data.elapsedTime = 0;
 			break;
@@ -223,26 +175,20 @@ void	RenderingAlgorithm()
 	glEnable(GL_DEPTH_TEST);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  // カラー & Zバッファーをクリア
 
-	if (g_data.visibleBucketsFlg)
-	{
-		g_data.mps->DrawDisFromWallSQ(g_data.halfMapSize, g_data.midHeight);
-	}
-	g_data.mps->DrawParticles(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
-	// g_data.mps->DrawPoints(g_data.halfMapSize, g_data.midHeight, g_data.elapsedTime);
+	// if (g_data.visibleBucketsFlg)
+	// {
+	// 	g_data.mps->DrawDisFromWallSQ(g_data.halfMapSize, g_data.midHeight);
+	// }
+	draw_particles(g_data);
 	for (size_t	i = 0; i < g_data.i; ++i)
 	{
 		if (g_data.circleFlg == true)
 		{
-			g_data.ts[i].circumcircle.DrawCircle2d(g_data.halfMapSize, 
-													g_data.midHeight, 100);
+			draw_circle_2d(g_data,
+						   g_data.ts[i].circumcircle, 
+						   100);
 		}
-		// g_data.ts[i].DrawNormalVector(g_data.midHeight, g_data.halfMapSize);
-		g_data.ts[i].DrawTriangle(g_data.maxHeight,
-									g_data.minHeight,
-									g_data.midHeight,
-									g_data.halfMapSize,
-									g_data.lineFlg);
-	
+		draw_triangle(g_data, g_data.ts[i]);
 	}
 	glFlush();
 	
@@ -276,7 +222,6 @@ Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int s
 	glutInit(const_cast<int*>(&argc), const_cast<char**>(argv));
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
-	// glutInitDisplayMode(GLUT_SINGLE);
 	glutInitWindowSize(sizeX, sizeY);
 	glutInitWindowPosition(300, 100);
 
@@ -285,20 +230,18 @@ Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int s
 	glutWMCloseFunc(onWindowClose);
 }
 
-Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int sizeY, 
-				const std::deque<Triangle> &ts, const uint32_t mapSize[3],
-				const int64_t maxHeight, const int64_t minHeight)
+Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int sizeY,
+				const t_data	&data)
 {
 	glutInit(const_cast<int*>(&argc), const_cast<char**>(argv));
 
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH);
-	// glutInitDisplayMode(GLUT_SINGLE);
 	glutInitWindowSize(sizeX, sizeY);
 	g_data.windowSizeX = sizeX;
 	g_data.windowSizeY = sizeY;
 	glutInitWindowPosition(300, 100);
 
-	this->_InitGraphicData(ts, mapSize, maxHeight, minHeight);
+	this->_InitGraphicData(data);
 
 	g_data.gWindowID = glutCreateWindow("mod1");
 	glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -308,7 +251,6 @@ Graphic::Graphic(const int argc, const char** argv, const int sizeX, const int s
 Graphic::~Graphic()
 {
 	Print::Out("des");
-	delete g_data.mps;
 }
 
 void	Graphic::GraphicLoop(void (*func)(void))
@@ -329,51 +271,27 @@ void	Graphic::GraphicLoop(void)
 	glutMainLoop();
 }
 
-double	extend_map(const uint32_t mapSize)
-{	
-	const uint32_t	num = (uint32_t)((mapSize) / BUCKET_LENGTH);
-	const double	diff = mapSize - num * BUCKET_LENGTH;
-
-	return mapSize + BUCKET_LENGTH - diff + 4 * BUCKET_LENGTH;
-}
-
-void	Graphic::_InitGraphicData(const std::deque<Triangle> &ts, 
-								 const uint32_t mapSize[3],
-								 const int64_t maxHeight,
-								 const int64_t minHeight)
+void	Graphic::_InitGraphicData(const t_data	&data)
 {
-	g_data.mapSize.x = extend_map(mapSize[X]);
-	g_data.mapSize.y = extend_map(mapSize[Y]);
-	g_data.mapSize.z = extend_map(mapSize[Z]);
-	g_data.halfMapSize.x = g_data.mapSize.x / 2.0;
-	g_data.halfMapSize.y = g_data.mapSize.y / 2.0;
-	g_data.halfMapSize.z = g_data.mapSize.z / 2.0;
-	g_data.ts = ts;
-	for (size_t	i = 0; i < g_data.ts.size(); ++i)
+	g_data.mapSize.x = data.mapSize.x;
+	g_data.mapSize.y = data.mapSize.y;
+	g_data.mapSize.z = data.mapSize.z;
+	g_data.halfMapSize.x = data.halfMapSize.x;
+	g_data.halfMapSize.y = data.halfMapSize.y;
+	g_data.halfMapSize.z = data.halfMapSize.z;
+	g_data.ts = data.ts;
+	
+	for (size_t i = 0; i < SIMULATION_TIME; ++i)
 	{
-		g_data.ts[i].a.x += 2.0 * BUCKET_LENGTH;
-		g_data.ts[i].a.y += 2.0 * BUCKET_LENGTH;
-		g_data.ts[i].b.x += 2.0 * BUCKET_LENGTH;
-		g_data.ts[i].b.y += 2.0 * BUCKET_LENGTH;
-		g_data.ts[i].c.x += 2.0 * BUCKET_LENGTH;
-		g_data.ts[i].c.y += 2.0 * BUCKET_LENGTH;
-		g_data.ts[i].circumcircle.center.x += 2.0 * BUCKET_LENGTH;
-		g_data.ts[i].circumcircle.center.y += 2.0 * BUCKET_LENGTH;
+		g_data.logs[i].ps = data.logs[i].ps;
 	}
-	add_bottom(g_data.ts, Vec(mapSize[X],mapSize[Y],mapSize[Z]),
-					g_data.mapSize,
-					2.0 * BUCKET_LENGTH);
-	add_cube(g_data.ts, g_data.mapSize);
-	g_data.mps = new MPS(g_data.mapSize, g_data.ts);
-
-	g_data.maxHeight = maxHeight;
-	g_data.minHeight = minHeight;
-	g_data.midHeight = (g_data.maxHeight + g_data.minHeight) / 2.0;
+	
+	g_data.maxHeight = data.maxHeight;
+	g_data.minHeight = data.minHeight;
+	g_data.midHeight = data.midHeight;
 	g_data.rad.x = 0.0;
 	g_data.rad.y = 0.0;
 	g_data.rad.z = 0.0;
-	// g_data.q = g_data.q.calcQuaternion(M_PI_2, Vec(1,0,0));
-	// g_data.q = g_data.q.calcQuaternion(M_PI_2, Vec(0,1,0));
 	g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 3, Vec(0,0,1));
 	g_data.q = g_data.q.calcQuaternion(M_PI / 12 * 5, Vec(1,0,0));
 	g_data.i = g_data.ts.size();

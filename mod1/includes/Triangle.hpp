@@ -36,17 +36,7 @@ class Triangle
 		bool	InternalAndExternalJudgments3d(const Vec &point) const;
 		void	CalcNormalVector();
 		double	FindZ(const double pX, const double pY);
-
-		void	DrawFrame(const double	midHeight, const Vec &halfMapSize);
-		void	DrawNormalVector(const double midHeight, const Vec &halfMapSize);
-		void	DrawTriangle(const int64_t	maxHeight,
-							const int64_t	minHeight,
-							const double	midHeight,
-							const Vec &halfMapSize,
-							const bool	lineFlg);
 		
-		void	MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight);
-
 		bool		operator==(const Triangle &triangle) const;
 		Triangle&	operator=(const Triangle &triangle);
 		void		operator-=(const double num);

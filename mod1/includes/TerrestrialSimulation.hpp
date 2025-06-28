@@ -3,9 +3,9 @@
 
 #include <deque>
 
-#include "../includes/Triangle.hpp"
-#include "./Vec.hpp"
+#include "./Triangle.hpp"
 #include "./Defines.hpp"
+#include "./Structs.hpp"
 
 class TS
 {
@@ -16,9 +16,7 @@ class TS
 		int64_t			_minHeight;
 
 		bool	_ReadMapData(const std::string &fileName);
-		void	_DrawSimulation(const int argc, 
-								const char** argv, 
-								const std::deque<Triangle> &ts);
+		void	_DrawSimulation(const int argc, const char** argv, const t_data &data);
 
 	public:
 		TS();

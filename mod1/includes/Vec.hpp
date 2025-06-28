@@ -42,7 +42,7 @@ class Vec
 		double	Magnitude2d(const Vec &p) const;
 		double	Magnitude2d(void) const;
 		
-		Vec		Rotate(Quaternion &q) const;
+		Vec		Rotate(const Quaternion &q) const;
 
 		bool	operator==(const Vec &vec) const;
 		Vec&	operator=(const Vec &vec);

@@ -115,7 +115,7 @@ double	Vec::Magnitude2d(void) const
 	return sqrt(this->MagnitudeSQ2d());
 }
 
-Vec	Vec::Rotate(Quaternion &qGlobal) const
+Vec	Vec::Rotate(const Quaternion &qGlobal) const
 {
 	if (qGlobal == 0.0)
 	{

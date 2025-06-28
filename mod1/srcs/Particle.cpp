@@ -1,5 +1,4 @@
 #include "../includes/Particle.hpp"
-#include "../includes/Graphic.hpp"
 #include "../includes/Utils.hpp"
 
 Particle::Particle():Circle(), velocity(), acceleration(), pressure(0),  validFlag(true)
@@ -31,16 +30,6 @@ Particle::Particle(const Particle &p): Circle(p)
 Particle::~Particle()
 {
 
-}
-
-void	Particle::DrawParticle(const Vec &halfMapSize, const double midHeight)
-{
-	this->DrawCircle3d(halfMapSize, midHeight, 10);
-}
-
-void	Particle::DrawPoint(const Vec &halfMapSize, const double midHeight)
-{
-	this->DrawPoint3d(halfMapSize, midHeight);
 }
 
 bool	Particle::operator==(const Particle &p) const

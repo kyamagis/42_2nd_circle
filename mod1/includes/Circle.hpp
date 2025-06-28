@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include "./Vec.hpp"
+#include "Vec.hpp"
 
 class Circle
 {
@@ -20,17 +20,6 @@ class Circle
 			   const double &_r, const double &_rSQ);
 		Circle(const Circle &c);
 		virtual ~Circle();
-
-		void	_DrawCircle(const Vec &halfMapSize,
-						const double midHeight,
-						const size_t num_segments, Vec &c);
-		void	DrawCircle2d(const Vec &halfMapSize,
-							const double midHeight,
-							const size_t num_segments);
-		void	DrawCircle3d(const Vec &halfMapSize,
-							const double midHeight,
-							const size_t num_segments);
-		void	DrawPoint3d(const Vec &halfMapSize, const double midHeight);
 
 		Circle&	operator=(const Circle &c);
 		bool	operator==(const Circle &c) const;

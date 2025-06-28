@@ -7,7 +7,7 @@
 #include "./Vec.hpp"
 #include "./Triangle.hpp"
 #include "./TerrestrialSimulation.hpp"
-#include "../includes/Print.hpp"
+#include "./Print.hpp"
 
 class DT
 {

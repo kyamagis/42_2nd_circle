@@ -69,7 +69,6 @@ void	Triangle::CalcCircumcircle()
 
 	if (det == 0.0)
 	{
-		// std::cout << "det is 0" << std::endl;
 		this->circumcircle.center.x = 0.0;
 		this->circumcircle.center.y = 0.0;
 		this->circumcircle.rSQ = 0.0;
@@ -139,64 +138,6 @@ void	Triangle::CalcNormalVector()
 double	Triangle::FindZ(const double pX, const double pY)
 {
 	return this->a.z - (this->n.x * (pX - this->a.x) + this->n.y * (pY - this->a.y)) / this->n.z;
-}
-
-void	Triangle::DrawFrame(const double midHeight, const Vec &halfMapSize)
-{
-	glBegin(GL_LINE_STRIP);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	drawVertex(move_vec_to_map_center(this->b, halfMapSize, midHeight));
-	drawVertex(move_vec_to_map_center(this->a, halfMapSize, midHeight));
-	drawVertex(move_vec_to_map_center(this->c, halfMapSize, midHeight));
-	glEnd();
-}
-
-void	Triangle::DrawNormalVector(const double midHeight, const Vec &halfMapSize)
-{
-	glBegin(GL_LINES);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	drawVertex(move_vec_to_map_center(this->g, halfMapSize, midHeight));
-	drawVertex(move_vec_to_map_center(this->g + this->n * 10, halfMapSize, midHeight));
-	glEnd();
-}
-
-void	Triangle::DrawTriangle(const int64_t	maxHeight,
-							const int64_t	minHeight,
-							const double	midHeight,
-							const Vec &halfMapSize,
-							const bool	lineFlg)
-{
-	if (!this->visibleFlg)
-	{
-		this->DrawFrame(midHeight, halfMapSize);
-		return ;
-	}
-	if (lineFlg || !this->visibleFlg)
-	{
-		glBegin(GL_LINE_LOOP);
-	}
-	else
-	{
-		glShadeModel(GL_SMOOTH);
-	}
-
-	glBegin(GL_TRIANGLES);
-
-	line_gradation(maxHeight, minHeight, midHeight, this->a.z);
-	drawVertex(move_vec_to_map_center(this->a, halfMapSize, midHeight));
-	line_gradation(maxHeight, minHeight, midHeight, this->b.z);
-	drawVertex(move_vec_to_map_center(this->b, halfMapSize, midHeight));
-	line_gradation(maxHeight, minHeight, midHeight, this->c.z);
-	drawVertex(move_vec_to_map_center(this->c, halfMapSize, midHeight));
-
-	glEnd();
-}
-
-void	Triangle::MoveVertexToMapCenter(const Vec &halfMapSize, const double midHeight)
-{
-	move_vec_to_map_center(this->a, halfMapSize, midHeight);
-	move_vec_to_map_center(this->b, halfMapSize, midHeight);
-	move_vec_to_map_center(this->c, halfMapSize, midHeight);
 }
 
 bool	Triangle::operator==(const Triangle &triangle) const
