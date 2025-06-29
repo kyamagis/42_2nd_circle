@@ -5,7 +5,6 @@
 
 #include <fstream>
 #include <string>
-#include <ctype.h>
 
 static std::string	CreateFileErrorMessage(const std::string &errorStr,
 	const size_t line, 

@@ -113,25 +113,6 @@ Vec	gradation(const int64_t	maxHeight,
 	return color;
 }
 
-void	line_gradation(const int64_t	maxHeight,
-						const int64_t	minHeight,
-						const double	midHeight, 
-						const int64_t height)
-{
-	double	ratio;
-
-	if (height <= midHeight)
-	{
-		ratio = (height - minHeight) / (midHeight - minHeight);
-		glColor3f(0.0f, ratio, 1.0f - ratio);
-	}
-	else if (height <= maxHeight)
-	{
-		ratio = (height - midHeight) / (maxHeight - midHeight);
-		glColor3f(ratio, 1.0f - ratio, 0.0f);
-	}
-}
-
 double	calibrate_dist(const double dist)
 {
 	if (dist < 0.1)

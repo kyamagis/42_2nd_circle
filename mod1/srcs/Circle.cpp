@@ -1,6 +1,3 @@
-#include <cmath>
-#include <omp.h>
-
 #include "../includes/Circle.hpp"
 #include "../includes/Utils.hpp"
 
