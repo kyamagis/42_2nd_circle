@@ -4,7 +4,6 @@
 #include <GL/glut.h>
 #include <GL/freeglut.h>
 
-// #include <deque>
 #include "./Triangle.hpp"
 #include "./MPS.hpp"
 

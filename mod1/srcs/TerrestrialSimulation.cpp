@@ -6,7 +6,7 @@
 #include "../includes/Utils.hpp"
 #include "../includes/MPS.hpp"
 
-double	extend_map(const uint32_t mapSize)
+static double	extend_map(const uint32_t mapSize)
 {	
 	const uint32_t	num = (uint32_t)((mapSize) / BUCKET_LENGTH);
 	const double	diff = mapSize - num * BUCKET_LENGTH;
@@ -14,38 +14,7 @@ double	extend_map(const uint32_t mapSize)
 	return mapSize + BUCKET_LENGTH - diff + 4 * BUCKET_LENGTH;
 }
 
-TS::TS()
-{
-
-}
-
-TS::~TS()
-{
-
-}
-
-bool	TS::_ReadMapData(const std::string &fileName)
-{
-	RMD	rmd(fileName);
-
-	if (rmd.ReadStart() == false)
-	{
-		return false;
-	}
-	this->_specificPoints = rmd.GetSpecificPoints();
-	rmd.GetMapSize(this->_mapSize);
-	rmd.GetMaxMinHeight(this->_maxHeight, this->_minHeight);
-
-	return	true;
-}
-
-void	TS::_DrawSimulation(const int argc, const char** argv, const t_data	&data)
-{
-	Graphic g = Graphic(argc, argv, SCREEN_SIZE_X, SCREEN_SIZE_Y, data);
-	g.GraphicLoop();
-}
-
-void	set_data(const std::deque<Triangle> &ts,
+static void	set_data(const std::deque<Triangle> &ts,
 								 t_data &data, 
 								 const uint32_t mapSize[3],
 								 const int64_t maxHeight,
@@ -77,6 +46,37 @@ void	set_data(const std::deque<Triangle> &ts,
 	data.maxHeight = maxHeight;
 	data.minHeight = minHeight;
 	data.midHeight = (data.maxHeight + data.minHeight) / 2.0;
+}
+
+TS::TS()
+{
+
+}
+
+TS::~TS()
+{
+
+}
+
+bool	TS::_ReadMapData(const std::string &fileName)
+{
+	RMD	rmd(fileName);
+
+	if (rmd.ReadStart() == false)
+	{
+		return false;
+	}
+	this->_specificPoints = rmd.GetSpecificPoints();
+	rmd.GetMapSize(this->_mapSize);
+	rmd.GetMaxMinHeight(this->_maxHeight, this->_minHeight);
+
+	return	true;
+}
+
+void	TS::_DrawSimulation(const int argc, const char** argv, const t_data	&data)
+{
+	Graphic g = Graphic(argc, argv, SCREEN_SIZE_X, SCREEN_SIZE_Y, data);
+	g.GraphicLoop();
 }
 
 bool	TS::SimulationStart(const int argc, const char** argv, 

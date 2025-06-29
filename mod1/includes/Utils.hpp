@@ -3,8 +3,8 @@
 
 #include <cmath>
 
-#include "./Graphic.hpp"
-#include "./Vec.hpp"
+#include "./Triangle.hpp"
+#include "./Particle.hpp"
 
 int64_t	cross_product_2d(const Vec &a, const Vec &b, const Vec &point);
 
@@ -20,10 +20,6 @@ size_t	to_bucket_coor(const double coordinate);
 Vec		gradation(const int64_t	maxHeight,
 					const int64_t	minHeight, 
 					const int64_t height);
-void	line_gradation(const int64_t	maxHeight,
-						const int64_t	minHeight,
-						const double	midHeight,  
-						const int64_t height);
 
 std::deque<Vec>	init_wall_weight(void);
 
