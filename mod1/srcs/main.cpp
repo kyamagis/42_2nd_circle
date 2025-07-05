@@ -2,7 +2,6 @@
 
 #include "../includes/Print.hpp"
 #include "../includes/TerrestrialSimulation.hpp"
-#include "../includes/Graphic.hpp"
 
 #define DEFAULT_FILE_NAME "./resources/demo1.mod1"
 

@@ -11,7 +11,6 @@ INCLUDE = -I ./includes/
 OBJDIR = ./obj
 SRCSDIR = ./srcs
 
-# SRCS = *.cpp
 SRCS =	main.cpp \
 		Draw.cpp \
 		Quaternion.cpp \
